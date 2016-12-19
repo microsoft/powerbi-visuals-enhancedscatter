@@ -536,6 +536,7 @@ module powerbi.extensibility.visual {
         public static converter(
             dataView: DataView,
             colorPalette: IColorPalette,
+            visualHost: IVisualHost,
             interactivityService?: IInteractivityService,
             categoryAxisProperties?: DataViewObject,
             valueAxisProperties?: DataViewObject): EnhancedScatterChartData {
@@ -642,6 +643,7 @@ module powerbi.extensibility.visual {
             }
 
             var dataPoints = EnhancedScatterChart.createDataPoints(
+                visualHost,
                 dataValues,
                 scatterMetadata,
                 categories,
@@ -662,11 +664,10 @@ module powerbi.extensibility.visual {
             var legendItems: LegendDataPoint[] = [];
 
             if (hasDynamicSeries) {
-                var formatString: string = valueFormatter.getFormatString(
-                    dvSource,
-                    PropertiesOfCapabilities["general"]["formatString"]);
+                var formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
 
                 legendItems = EnhancedScatterChart.createSeriesLegend(
+                    visualHost,
                     dataValues,
                     colorPalette,
                     dataValues,
@@ -744,6 +745,7 @@ module powerbi.extensibility.visual {
         }
 
         private static createSeriesLegend(
+            visualHost: IVisualHost,
             dataValues: DataViewValueColumns,
             colorPalette: IColorPalette,
             categorical: DataViewValueColumns,
@@ -767,10 +769,9 @@ module powerbi.extensibility.visual {
                     /*dataValues.identityFields,*/
                     grouping.name);
 
-                // TODO: fix SelectionId
-                // selectionId = grouping.identity
-                //     ? SelectionId.createWithId(grouping.identity)
-                //     : SelectionId.createNull();
+                selectionId = visualHost.createSelectionIdBuilder()
+                    .withSeries(dataValues, grouping)
+                    .createSelectionId();
 
                 legendItems.push({
                     color: color,
@@ -879,11 +880,11 @@ module powerbi.extensibility.visual {
         }
 
         public static createLazyFormattedCategory(formatter: IValueFormatter, value: string): () => string {
-            // return new Lazy(() => formatter.format(value));
             return () => formatter.format(value);
         }
 
         private static createDataPoints(
+            visualHost: IVisualHost,
             dataValues: DataViewValueColumns,
             metadata: EnhancedScatterChartMeasureMetadata,
             categories: DataViewCategoryColumn[],
@@ -982,13 +983,12 @@ module powerbi.extensibility.visual {
                         ? categories[indicies.category]
                         : null;
 
-                    // TODO: Use ISelectionIdBuilder to create an instance of ISelectionId.
-                    var identity: ISelectionId/* = SelectionIdBuilder.builder()
+                    var identity: ISelectionId = visualHost.createSelectionIdBuilder()
                         .withCategory(category, categoryIdx)
                         .withSeries(dataValues, grouping)
-                        .createSelectionId()*/;
+                        .createSelectionId();
 
-                    //TODO: need to refactor these lines below.
+                    // TODO: need to refactor these lines below.
                     var seriesData: TooltipSeriesDataItem[] = [];
                     if (dataValueSource) {
                         // Dynamic series
@@ -1138,6 +1138,7 @@ module powerbi.extensibility.visual {
                         this.data = EnhancedScatterChart.converter(
                             dataView,
                             this.colorPalette,
+                            this.visualHost,
                             this.interactivityService,
                             this.categoryAxisProperties,
                             this.valueAxisProperties);

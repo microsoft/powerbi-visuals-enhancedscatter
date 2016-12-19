@@ -30,167 +30,62 @@
  */
 @import (less) "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
 @import (less) "node_modules/powerbi-visuals-utils-formattingutils/lib/index.css";
+@import (less) "node_modules/powerbi-visuals-utils-chartutils/lib/index.css";
 
-.chicletSlicer {
-    @neutralDarkColor: #212121;
-    @neutralPrimaryColor: #333333;
+.enhancedScatterChart {
+    @enhancedScatterChartColor: #777777;
 
-    font-family: helvetica, arial, sans-serif;
+    cursor: default;
 
-    .clear {
-        background-image: data-uri("assets/clear.png");
-
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 13px;
-        height: 12px;
-        margin: 4px 2px;
-        float: right;
-        cursor: pointer;
-    }
-
-    .row {
-      white-space: nowrap;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .slicerBody {
-        .cell {
-            box-sizing: border-box;
-
-            display: inline-block;
-
-            position: relative;
-            cursor: pointer;
-            width: 100%;
-            float: left;
-        }
-
-        ul {
-            margin: 0;
-            padding: 0;
-            display: inline;
-        }
-
-        li.slicerItemContainer {
-            height: 100%;
-            width: 100%;
-            padding: 2px;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: nowrap;
-            justify-content: center;
-            align-content: center;
-            align-items: stretch;
-            box-sizing: border-box;
-
-            .slicer-text-wrapper {
-                box-sizing: border-box;
-                text-align: center;
-                order: 0;
-                align-self: auto;
-                flex-grow: 1;
-                flex-shrink: 1;
-                flex-basis: auto;
-                display: flex;
-                flex-direction: column;
-                flex-wrap: nowrap;
-                justify-content: center;
-                align-content: center;
-                align-items: stretch;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .slicer-img-wrapper {
-                max-width: 100%;
-                height: auto;
-                align-self: center;
-            }
-
-            .stretchImage {
-                align-self: auto;
-            }
-
-            .bottomImage {
-                order: 1;
-            }
-
-            .slicerItem-disabled {
-                opacity: 0.4;
-                color: #fff !important;
-            }
-        }
-
-        &.slicerBody-vertical {
-            .cell {
-                clear: both;
-            }
-
-            .row {
-                float: left;
-            }
+    path {
+        &.dot {
+            fill: none;
+            stroke-width: 3px;
         }
     }
 
-    .slicerItemContainer.selected {
-        background: #BDD7EE;
+    .notSelected {
+        opacity: 0.6;
     }
 
-    .row-horizontal {
-        display: inline-block;
+    .selected {
+        opacity: 1;
     }
 
-    .slicerText,
-    .slicerContainer .slicerText {
-        line-height: 20px;
+    .axisGraphicsContext {
+        text {
+            font-family: helvetica, arial, sans-serif;
+            font-size: 11px;
+            fill: @enhancedScatterChartColor;
+        }
     }
 
-    .searchHeader {
-        overflow: hidden;
+    .axis {
+        path, line {
+            fill: none;
+            stroke: @enhancedScatterChartColor;
+            shape-rendering: crispEdges;
+        }
+    }
 
-        &.collapsed {
-            display: none;
+    .crosshairCanvas {
+        display: none;
+        pointer-events: none;
+
+        .crosshairLine,
+        .crosshairText {
+            stroke: gray;
         }
 
-        &.show {
-            display: -webkit-box;
-            display: flex;
-            justify-content: space-between;
-            -webkit-align-items: center;
-            width: ~"calc(100% - 10px)";
-            border: 1px solid @neutralDarkColor;
-            height: 20px;
+        .crosshairLine {
+            stroke-width: 1px;
+            stroke-dasharray: 5, 5;
         }
 
-        .search {
-            cursor: pointer;
-            margin: 1px 4px;
-            color: @neutralDarkColor;
-            width: 17px;
-            height: 17px;
-            background-size: cover;
-
-            background-image: data-uri("assets/search.png");
-        }
-
-        input {
-            color: @neutralPrimaryColor;
-            cursor: auto;
-            align-self: center;
-            flex: 1 1 0px;
-            -webkit-flex: 1 1 0px;
-            border-style:none;
-            min-width: 0px;
-            padding: 0;
-
-            &:focus {
-                outline-width: 0;
-            }
+        .crosshairText {
+            stroke-width: 0;
+            font-size: 10px;
+            font-weight: bold;
         }
     }
 }
