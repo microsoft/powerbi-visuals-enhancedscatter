@@ -113,16 +113,16 @@
                     "Backdrop": {
                         "max": 1
                     },
-                    "X Start": {
+                    "XStart": {
                         "max": 1
                     },
-                    "X End": {
+                    "XEnd": {
                         "max": 1
                     },
-                    "Y Start": {
+                    "YStart": {
                         "max": 1
                     },
-                    "Y End": {
+                    "YEnd": {
                         "max": 1
                     }
                 },
@@ -160,16 +160,16 @@
                     "Backdrop": {
                         "max": 1
                     },
-                    "X Start": {
+                    "XStart": {
                         "max": 1
                     },
-                    "X End": {
+                    "XEnd": {
                         "max": 1
                     },
-                    "Y Start": {
+                    "YStart": {
                         "max": 1
                     },
-                    "Y End": {
+                    "YEnd": {
                         "max": 1
                     }
                 },
@@ -207,16 +207,16 @@
                     "Backdrop": {
                         "max": 1
                     },
-                    "X Start": {
+                    "XStart": {
                         "max": 1
                     },
-                    "X End": {
+                    "XEnd": {
                         "max": 1
                     },
-                    "Y Start": {
+                    "YStart": {
                         "max": 1
                     },
-                    "Y End": {
+                    "YEnd": {
                         "max": 1
                     }
                 },
@@ -254,16 +254,16 @@
                     "Backdrop": {
                         "max": 1
                     },
-                    "X Start": {
+                    "XStart": {
                         "max": 1
                     },
-                    "X End": {
+                    "XEnd": {
                         "max": 1
                     },
-                    "Y Start": {
+                    "YStart": {
                         "max": 1
                     },
-                    "Y End": {
+                    "YEnd": {
                         "max": 1
                     }
                 },
@@ -301,16 +301,16 @@
                     "Backdrop": {
                         "max": 1
                     },
-                    "X Start": {
+                    "XStart": {
                         "max": 1
                     },
-                    "X End": {
+                    "XEnd": {
                         "max": 1
                     },
-                    "Y Start": {
+                    "YStart": {
                         "max": 1
                     },
-                    "Y End": {
+                    "YEnd": {
                         "max": 1
                     }
                 }
@@ -402,11 +402,6 @@
                             "top": {}
                         }
                     }
-                },
-                "rowCount": {
-                    "preferred": {
-                        "min": 2
-                    }
                 }
             }
         }
@@ -440,21 +435,6 @@
                             }
                         }
                     }
-                },
-                "fillRule": {
-                    "displayName": "Color saturation",
-                    "type": {
-                        "fillRule": {}
-                    },
-                    "rule": {
-                        "inputRole": "Gradient",
-                        "output": {
-                            "property": "fill",
-                            "selector": [
-                                "Category"
-                            ]
-                        }
-                    }
                 }
             }
         },
@@ -465,14 +445,6 @@
                     "displayName": "Show",
                     "type": {
                         "bool": true
-                    }
-                },
-                "axisScale": {
-                    "displayName": "Scale type",
-                    "type": {
-                        "formatting": {
-                            "axisScale": true
-                        }
                     }
                 },
                 "start": {
@@ -491,14 +463,6 @@
                     "displayName": "Title",
                     "type": {
                         "bool": true
-                    }
-                },
-                "axisStyle": {
-                    "displayName": "Style",
-                    "type": {
-                        "formatting": {
-                            "axisStyle": true
-                        }
                     }
                 },
                 "axisColor": {
@@ -530,22 +494,6 @@
                         "bool": true
                     }
                 },
-                "position": {
-                    "displayName": "Position",
-                    "type": {
-                        "formatting": {
-                            "yAxisPosition": true
-                        }
-                    }
-                },
-                "axisScale": {
-                    "displayName": "Scale type",
-                    "type": {
-                        "formatting": {
-                            "axisScale": true
-                        }
-                    }
-                },
                 "start": {
                     "displayName": "Start",
                     "type": {
@@ -562,14 +510,6 @@
                     "displayName": "Title",
                     "type": {
                         "bool": true
-                    }
-                },
-                "axisStyle": {
-                    "displayName": "Style",
-                    "type": {
-                        "formatting": {
-                            "axisStyle": true
-                        }
                     }
                 },
                 "axisColor": {

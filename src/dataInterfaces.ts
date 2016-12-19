@@ -25,6 +25,24 @@
  */
 
 module powerbi.extensibility.visual {
+    // powerbi.visuals
+    import ISelectionId = powerbi.visuals.ISelectionId;
+
+    // powerbi.extensibility.utils.interactivity
+    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
+
+    // powerbi.extensibility.utils.tooltip
+    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+
+    // powerbi.extensibility.utils.chart
+    import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
+    import PointDataLabelsSettings = powerbi.extensibility.utils.chart.dataLabel.PointDataLabelsSettings;
+
+    // powerbi.extensibility.utils.svg
+    import IRect = powerbi.extensibility.utils.svg.IRect;
+    import IMargin = powerbi.extensibility.utils.svg.IMargin;
+    import ISize = powerbi.extensibility.utils.svg.shapes.ISize;
+
     export interface ElementProperty {
         [propertyName: string]: any;
     }
@@ -38,7 +56,7 @@ module powerbi.extensibility.visual {
         attributes?: ElementProperty;
     }
 
-    interface EnhancedScatterChartMeasureMetadataIndexes {
+    export interface EnhancedScatterChartMeasureMetadataIndexes {
         category?: number;
         x?: number;
         y?: number;
@@ -54,21 +72,93 @@ module powerbi.extensibility.visual {
         yEnd?: number;
     }
 
-    interface EnhancedScatterChartMeasureMetadataColumns {
+    export interface EnhancedScatterChartMeasureMetadataColumns {
         x?: DataViewMetadataColumn;
         y?: DataViewMetadataColumn;
         size?: DataViewMetadataColumn;
     }
 
-    interface EnhancedScatterChartMeasureMetadata {
+    export interface EnhancedScatterChartMeasureMetadata {
         idx: EnhancedScatterChartMeasureMetadataIndexes;
         cols: EnhancedScatterChartMeasureMetadataColumns;
         axesLabels: ChartAxesLabels;
     }
 
+    export interface ChartAxesLabels {
+        x: string;
+        y: string;
+        y2?: string;
+    }
+
     export interface EnhancedScatterChartRadiusData {
         sizeMeasure: DataViewValueColumn;
         index: number;
+    }
+
+    /** Defines possible content positions.  */
+    export const enum ContentPositions {
+
+        /** Content position is not defined. */
+        None = 0,
+
+        /** Content aligned top left. */
+        TopLeft = 1,
+
+        /** Content aligned top center. */
+        TopCenter = 2,
+
+        /** Content aligned top right. */
+        TopRight = 4,
+
+        /** Content aligned middle left. */
+        MiddleLeft = 8,
+
+        /** Content aligned middle center. */
+        MiddleCenter = 16,
+
+        /** Content aligned middle right. */
+        MiddleRight = 32,
+
+        /** Content aligned bottom left. */
+        BottomLeft = 64,
+
+        /** Content aligned bottom center. */
+        BottomCenter = 128,
+
+        /** Content aligned bottom right. */
+        BottomRight = 256,
+
+        /** Content is placed inside the bounding rectangle in the center. */
+        InsideCenter = 512,
+
+        /** Content is placed inside the bounding rectangle at the base. */
+        InsideBase = 1024,
+
+        /** Content is placed inside the bounding rectangle at the end. */
+        InsideEnd = 2048,
+
+        /** Content is placed outside the bounding rectangle at the base. */
+        OutsideBase = 4096,
+
+        /** Content is placed outside the bounding rectangle at the end. */
+        OutsideEnd = 8192,
+
+        /** Content supports all possible positions. */
+        All =
+        TopLeft |
+        TopCenter |
+        TopRight |
+        MiddleLeft |
+        MiddleCenter |
+        MiddleRight |
+        BottomLeft |
+        BottomCenter |
+        BottomRight |
+        InsideCenter |
+        InsideBase |
+        InsideEnd |
+        OutsideBase |
+        OutsideEnd,
     }
 
     export interface EnhancedScatterChartDataPoint extends
@@ -83,7 +173,8 @@ module powerbi.extensibility.visual {
         labelFill?: string;
         labelFontSize: any;
         contentPosition: ContentPositions;
-        formattedCategory: Lazy<string>;
+        // formattedCategory: Lazy<string>;
+        formattedCategory: () => string;
         colorFill?: string;
         svgurl?: string;
         shapeSymbolType?: (number) => string;
@@ -126,7 +217,7 @@ module powerbi.extensibility.visual {
         fillPoint?: boolean;
         colorBorder?: boolean;
         colorByCategory?: boolean;
-        selectedIds: SelectionId[];
+        selectedIds: ISelectionId[];
     }
 
     export interface EnhancedScatterDataRange {
@@ -135,11 +226,36 @@ module powerbi.extensibility.visual {
         delta: number;
     }
 
-    export interface EnhancedScatterChartProperty {
-        [properyName: string]: DataViewObjectPropertyIdentifier;
+    export interface TooltipSeriesDataItem {
+        value?: any;
+        highlightedValue?: any;
+        metadata: DataViewValueColumn;
     }
 
-    export interface EnhancedScatterChartProperties {
-        [properyName: string]: EnhancedScatterChartProperty;
+    export module yAxisPosition {
+        export const left: string = 'Left';
+        export const right: string = 'Right';
+    }
+
+    export interface CalculateScaleAndDomainOptions {
+        viewport: IViewport;
+        margin: IMargin;
+        showCategoryAxisLabel: boolean;
+        showValueAxisLabel: boolean;
+        forceMerge: boolean;
+        categoryAxisScaleType: string;
+        valueAxisScaleType: string;
+        trimOrdinalDataOnOverflow: boolean;
+        // optional
+        playAxisControlLayout?: IRect;
+        forcedTickCount?: number;
+        forcedYDomain?: any[];
+        forcedXDomain?: any[];
+        ensureXDomain?: NumberRange;
+        ensureYDomain?: NumberRange;
+        categoryAxisDisplayUnits?: number;
+        categoryAxisPrecision?: number;
+        valueAxisDisplayUnits?: number;
+        valueAxisPrecision?: number;
     }
 }

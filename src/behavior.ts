@@ -28,6 +28,10 @@ module powerbi.extensibility.visual {
     // d3
     import Selection = d3.Selection;
 
+    // powerbi.extensibility.utils.interactivity
+    import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
+    import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
+    import registerStandardSelectionHandler = powerbi.extensibility.utils.interactivity.interactivityUtils.registerStandardSelectionHandler;
 
     export interface CustomVisualBehaviorOptions {
         layerOptions: any[];
@@ -86,7 +90,7 @@ module powerbi.extensibility.visual {
             this.shouldEnableFill = (!data.sizeRange || !data.sizeRange.min) && data.fillPoint;
             this.colorBorder = data.colorBorder;
 
-            registerStandardInteractivityHandlers(bubbles, selectionHandler);
+            registerStandardSelectionHandler(bubbles, selectionHandler);
         }
 
         public renderSelection(hasSelection: boolean) {
