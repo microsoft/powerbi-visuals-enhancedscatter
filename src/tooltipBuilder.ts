@@ -24,10 +24,10 @@
  *  THE SOFTWARE.
  */
 
-// powerbi.extensibility.utils.formatting
-import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-
 module powerbi.extensibility.visual.tooltipBuilder {
+    // powerbi.extensibility.utils.formatting
+    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+
     export interface TooltipSeriesDataItem {
         value?: any;
         highlightedValue?: any;
