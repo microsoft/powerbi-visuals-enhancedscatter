@@ -79,6 +79,7 @@ module powerbi.extensibility.visual.test {
             it("should draw right amount of dots", done => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     expect(visualBuilder.dots.length).toBe(dataView.categorical.categories[0].values.length);
+
                     done();
                 });
             });
@@ -97,7 +98,7 @@ module powerbi.extensibility.visual.test {
                     categoryLabels: {
                         show: true
                     }
-                }
+                };
 
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     let selector: string = ".enhancedScatterChart .mainGraphicsContext .ScatterMarkers .dot";
@@ -133,7 +134,7 @@ module powerbi.extensibility.visual.test {
                 };
 
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    let labels: Element[] = visualBuilder.dataLabelsText.get();
+                    const labels: Element[] = visualBuilder.dataLabelsText.get();
 
                     labels.forEach((label: Element) => {
                         let jqueryLabel: JQuery = $(label),
@@ -180,7 +181,7 @@ module powerbi.extensibility.visual.test {
                 });
 
                 it("the first argument is null, the second argument is empty object", () => {
-                    callAddElementToDOMAndResultShouldBeNull(null, <any>{});
+                    callAddElementToDOMAndResultShouldBeNull(null, {} as any);
                 });
 
                 it("the first argument is <Element>, the second argument is null", () => {
@@ -229,12 +230,14 @@ module powerbi.extensibility.visual.test {
                 });
 
                 it("visiblity test", () => {
+                    const MiddleViewportFactor: number = 2;
+
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                    let event: any = new Event("mousemove");
+                    const event: any = new Event("mousemove");
 
-                    event.pageY = visualBuilder.viewport.height / 2;
-                    event.pageX = visualBuilder.viewport.width / 2;
+                    event.pageY = visualBuilder.viewport.height / MiddleViewportFactor;
+                    event.pageX = visualBuilder.viewport.width / MiddleViewportFactor;
 
                     visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(new Event("mouseover"));
                     visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(event);
@@ -289,7 +292,7 @@ module powerbi.extensibility.visual.test {
                 it("display Units", () => {
                     const displayUnits: number = 1000;
 
-                    (dataView.metadata.objects as any).categoryAxis.labelDisplayUnits = displayUnits
+                    (dataView.metadata.objects as any).categoryAxis.labelDisplayUnits = displayUnits;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     visualBuilder.xAxisTicks.toArray().map($).forEach((element: JQuery) => {
@@ -432,14 +435,14 @@ module powerbi.extensibility.visual.test {
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        expect(parseFloat(element.css('fill-opacity'))).toBeGreaterThan(0);
+                        expect(parseFloat(element.css("fill-opacity"))).toBeGreaterThan(0);
                     });
 
                     (dataView.metadata.objects as any).fillPoint.show = false;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        expect(parseFloat(element.css('fill-opacity'))).toBe(0);
+                        expect(parseFloat(element.css("fill-opacity"))).toBe(0);
                     });
                 });
             });
@@ -458,14 +461,14 @@ module powerbi.extensibility.visual.test {
                     (dataView.metadata.objects as any).backdrop.show = true;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
-                    expect(parseFloat(visualBuilder.backdropImage.attr('height'))).toBeGreaterThan(0);
-                    expect(parseFloat(visualBuilder.backdropImage.attr('width'))).toBeGreaterThan(0);
+                    expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBeGreaterThan(0);
+                    expect(parseFloat(visualBuilder.backdropImage.attr("width"))).toBeGreaterThan(0);
 
                     (dataView.metadata.objects as any).backdrop.show = false;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
-                    expect(parseFloat(visualBuilder.backdropImage.attr('height'))).toBe(0);
-                    expect(parseFloat(visualBuilder.backdropImage.attr('width'))).toBe(0);
+                    expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBe(0);
+                    expect(parseFloat(visualBuilder.backdropImage.attr("width"))).toBe(0);
                 });
 
                 it("url", () => {
@@ -484,7 +487,7 @@ module powerbi.extensibility.visual.test {
                         crosshair: {
                             show: true
                         }
-                    }
+                    };
                 });
 
                 it("show", () => {
@@ -512,14 +515,14 @@ module powerbi.extensibility.visual.test {
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        assertColorsMatch(element.css('fill'), element.css('stroke'), true);
+                        assertColorsMatch(element.css("fill"), element.css("stroke"), true);
                     });
 
                     (dataView.metadata.objects as any).outline.show = false;
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        assertColorsMatch(element.css('fill'), element.css('stroke'));
+                        assertColorsMatch(element.css("fill"), element.css("stroke"));
                     });
                 });
             });

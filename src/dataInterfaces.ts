@@ -173,11 +173,10 @@ module powerbi.extensibility.visual {
         labelFill?: string;
         labelFontSize: any;
         contentPosition: ContentPositions;
-        // formattedCategory: Lazy<string>;
         formattedCategory: () => string;
         colorFill?: string;
         svgurl?: string;
-        shapeSymbolType?: (number) => string;
+        shapeSymbolType?: (value: number) => string;
         rotation: number;
         backdrop?: string;
         xStart?: number;
@@ -224,11 +223,6 @@ module powerbi.extensibility.visual {
         minRange: number;
         maxRange: number;
         delta: number;
-    }
-
-    export module yAxisPosition {
-        export const left: string = 'Left';
-        export const right: string = 'Right';
     }
 
     export interface CalculateScaleAndDomainOptions {

@@ -60,6 +60,7 @@ module powerbi.extensibility.visual {
     import IAxisProperties = powerbi.extensibility.utils.chart.axis.IAxisProperties;
     import dataLabelUtils = powerbi.extensibility.utils.chart.dataLabel.utils;
     import ILabelLayout = powerbi.extensibility.utils.chart.dataLabel.ILabelLayout;
+    import PointLabelPosition = powerbi.extensibility.utils.chart.dataLabel.PointLabelPosition;
     import LabelTextProperties = powerbi.extensibility.utils.chart.dataLabel.utils.LabelTextProperties;
     import getLabelFormattedText = powerbi.extensibility.utils.chart.dataLabel.utils.getLabelFormattedText;
     import PointDataLabelsSettings = powerbi.extensibility.utils.chart.dataLabel.PointDataLabelsSettings;
@@ -97,6 +98,15 @@ module powerbi.extensibility.visual {
     import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
     import createTooltipServiceWrapper = powerbi.extensibility.utils.tooltip.createTooltipServiceWrapper;
 
+    interface ShapeFunction {
+        (value: any): string;
+    }
+
+    interface ShapeEntry {
+        key: string;
+        value: ShapeFunction;
+    }
+
     export class EnhancedScatterChart implements IVisual {
         private static MaxMarginFactor: number = 0.25;
 
@@ -121,13 +131,103 @@ module powerbi.extensibility.visual {
         private static DataLabelXOffset: number = 2;
         private static DataLabelYOffset: number = 1.8;
 
-        private static DotClasses: ClassAndSelector = createClassAndSelector("dot");
-        private static ImageClasses: ClassAndSelector = createClassAndSelector("img");
-
         private static TextProperties: TextProperties = {
-            fontFamily: "'Segoe UI', wf_segoe-ui_normal, helvetica, arial, sans-serif",
+            fontFamily: "helvetica, arial, sans-serif",
             fontSize: PixelConverter.toString(EnhancedScatterChart.AxisFontSize),
         };
+
+        private static MinAmountOfTicks: number = 0;
+        private static MinAmountOfCategories: number = 0;
+        private static MinAmountOfValues: number = 0;
+
+        private static MinIndex: number = 0;
+
+        private static EmptyString: string = "";
+
+        private static DefaultPositionOfCrosshair: number = 0;
+
+        private static DefaultCrosshairYPosition: number = 1;
+        private static CrosshairPrecision: number = 0.00001;
+        private static CrosshairStartPosition: number = 0;
+        private static CrosshairScaleFactor: number = 100;
+
+        private static DefaultBackgroundPosition: number = 0;
+
+        private static DefaultFillPoint: boolean = false;
+        private static DefaultCrosshair: boolean = false;
+        private static DefaultOutline: boolean = false;
+        private static DefaultShowAllDataPoints: boolean = true;
+
+        private static DefaultSelectionStateOfTheDataPoint: boolean = false;
+        private static DefaultContentPosition: number = 8;
+
+        private static DefaultColumnId: number = 0;
+
+        private static MinAmountOfDataViews: number = 0;
+        private static MinAmountOfDataPointsInTheLegend: number = 1;
+
+        private static isScrollbarVisible: boolean = false;
+
+        private static DefaultBubbleRadius: number = 0;
+        private static MinBubbleOpacity: number = 0;
+
+        private static BubbleRadiusDivider: number = 2;
+
+        private static DefaultBubbleRatio: number = 1;
+
+        private static DefaultProjectedSize: number = 0;
+        private static MinDelta: number = 0;
+        private static ProjectedSizeFactor: number = 2;
+
+        private static RadiusMultiplexer: number = 4;
+
+        private static DefaultXAxisOrientation: string = "bottom";
+        private static DefaultAxisXTickPadding: number = 5;
+        private static DefaultAxisYTickPadding: number = 10;
+
+        private static MinAnimationDuration: number = 0;
+
+        private static MinImageViewport: IViewport = {
+            width: 0,
+            height: 0
+        };
+
+        private static DefaultBackdrop: EnhancedScatterChartBackdrop = {
+            show: false,
+            url: ""
+        };
+
+        private static DefaultMargin: IMargin = {
+            top: 8,
+            right: 0,
+            bottom: 25,
+            left: 0
+        };
+
+        private static MinViewport: IViewport = {
+            width: 0,
+            height: 0
+        };
+
+        private static DefaultMarginValue: number = 1;
+
+        private static MaxIterations: number = 2;
+        private static DefaultNumIterations: number = 0;
+        private static DefaultValueOfDoneWithMargins: boolean = false;
+
+        private static AxisSide: number = 10;
+        private static SecondYAxisSide: number = 15;
+        private static SecondAxisSide: number = 20;
+        private static XMaxOffset: number = 12;
+        private static AdditionalXMaxOffset: number = 18;
+
+        private static DefaultSizeMeasure: number = 0;
+
+        private static EmptyDataValue: number = 0;
+
+        private static DefaultCategoryAxisFillColor: string = "#333";
+
+        private static TextAnchor: string = "middle";
 
         public static CrosshairCanvasSelector: ClassAndSelector = createClassAndSelector("crosshairCanvas");
         public static CrosshairLineSelector: ClassAndSelector = createClassAndSelector("crosshairLine");
@@ -135,11 +235,76 @@ module powerbi.extensibility.visual {
         public static CrosshairHorizontalLineSelector: ClassAndSelector = createClassAndSelector("crosshairHorizontalLine");
         public static CrosshairTextSelector: ClassAndSelector = createClassAndSelector("crosshairText");
 
+        public static SvgScrollableSelector: ClassAndSelector = createClassAndSelector("svgScrollable");
+
+        public static ShowLinesOnAxisSelector: ClassAndSelector = createClassAndSelector("showLinesOnAxis");
+        public static HideLinesOnAxisSelector: ClassAndSelector = createClassAndSelector("hideLinesOnAxis");
+
+        public static XAxisSelector: ClassAndSelector = createClassAndSelector("x axis");
+        public static YAxisSelector: ClassAndSelector = createClassAndSelector("y axis");
+
+        public static TickSelector: ClassAndSelector = createClassAndSelector("tick");
+        public static ZeroLineSelector: ClassAndSelector = createClassAndSelector("zero-line");
+
+        private static DotSelector: ClassAndSelector = createClassAndSelector("dot");
+        private static ImageSelector: ClassAndSelector = createClassAndSelector("img");
+
+        private static ScatterMarkersSelector: ClassAndSelector = createClassAndSelector("ScatterMarkers");
+        private static MarkerShapeSelector: ClassAndSelector = createClassAndSelector("markershape");
+        private static MarkerImageSelector: ClassAndSelector = createClassAndSelector("markerimage");
+
+        private static XAxisLabelSelector: ClassAndSelector = createClassAndSelector("xAxisLabel");
+        private static YAxisLabelSelector: ClassAndSelector = createClassAndSelector("yAxisLabel");
+
+        private static AxisLabelOffset: number = 2;
+        private static YAxisLabelTransformRotate: string = "rotate(-90)";
+        private static DefaultDY: string = "1em";
+
+        private static StrokeWidth: number = 1;
+
+        private static DefaultAxisOffset: number = 0;
+
+        private static DisplayUnitValue: number = 1;
+
+        private static MinAxisValue: number = 0;
+        private static MaxAxisValue: number = 10;
+
+        private static OuterPadding: number = 0;
+
+        private static NumberSignZero: number = 0;
+        private static NumberSignPositive: number = 1;
+
         public static MaxTranslateValue: number = 1e+25;
         public static MinTranslateValue: number = 1e-25;
 
         public static DefaultBubbleOpacity = 0.85;
         public static DimmedBubbleOpacity = 0.4;
+
+        public static ColumnCategory: string = "Category";
+        public static ColumnSeries: string = "Series";
+        public static ColumnX: string = "X";
+        public static ColumnY: string = "Y";
+        public static ColumnSize: string = "Size";
+        public static ColumnGradient: string = "Gradient";
+        public static ColumnColorFill: string = "ColorFill";
+        public static ColumnShape: string = "Shape";
+        public static ColumnImage: string = "Image";
+        public static ColumnRotation: string = "Rotation";
+        public static ColumnBackdrop: string = "Backdrop";
+        public static ColumnXStart: string = "XStart";
+        public static ColumnXEnd: string = "XEnd";
+        public static ColumnYStart: string = "YStart";
+        public static ColumnYEnd: string = "YEnd";
+
+        public static R2: number = 2;
+        public static R3: number = 3;
+        public static R5: number = 5;
+        public static R6: number = 6;
+        public static R10: number = 10;
+        public static R12: number = 12;
+
+        public static RMask: number = 1;
+        public static RMaskResult: number = 0;
 
         private tooltipServiceWrapper: ITooltipServiceWrapper;
 
@@ -192,12 +357,12 @@ module powerbi.extensibility.visual {
         private ScrollBarWidth = 10;
         private categoryAxisHasUnitType: boolean;
         private valueAxisHasUnitType: boolean;
-        private svgDefaultImage: string;
+        private svgDefaultImage: string = "";
         private oldBackdrop: string;
 
         private behavior: IInteractiveBehavior;
 
-        private keyArray: string[];
+        private keyArray: string[] = [];
 
         private _margin: IMargin;
         private get margin(): IMargin {
@@ -228,134 +393,127 @@ module powerbi.extensibility.visual {
             return this.legend.getMargins();
         }
 
-        public static ColumnCategory: string = "Category";
-        public static ColumnSeries: string = "Series";
-        public static ColumnX: string = "X";
-        public static ColumnY: string = "Y";
-        public static ColumnSize: string = "Size";
-        public static ColumnGradient: string = "Gradient";
-        public static ColumnColorFill: string = "ColorFill";
-        public static ColumnShape: string = "Shape";
-        public static ColumnImage: string = "Image";
-        public static ColumnRotation: string = "Rotation";
-        public static ColumnBackdrop: string = "Backdrop";
-        public static ColumnXStart: string = "XStart";
-        public static ColumnXEnd: string = "XEnd";
-        public static ColumnYStart: string = "YStart";
-        public static ColumnYEnd: string = "YEnd";
+
 
         private static substractMargin(viewport: IViewport, margin: IMargin): IViewport {
             return {
-                width: Math.max(viewport.width - (margin.left + margin.right), 0),
-                height: Math.max(viewport.height - (margin.top + margin.bottom), 0)
+                width: Math.max(
+                    viewport.width - (margin.left + margin.right),
+                    EnhancedScatterChart.MinViewport.width),
+                height: Math.max(
+                    viewport.height - (margin.top + margin.bottom),
+                    EnhancedScatterChart.MinViewport.height)
             };
         }
 
-        private static getCustomSymbolType(shape: any): (number) => string {
-            var customSymbolTypes = d3.map({
+        private static getCustomSymbolType(shape: any): ShapeFunction {
+            const customSymbolTypes = d3.map<ShapeFunction>({
                 "circle": (size) => {
-                    var r = Math.sqrt(size / Math.PI);
-                    return "M0," + r + "A" + r + "," + r + " 0 1,1 0," + (-r) + "A" + r + "," + r + " 0 1,1 0," + r + "Z";
+                    const r: number = Math.sqrt(size / Math.PI);
+
+                    return `M0,${r}A${r},${r} 0 1,1 0,${-r}A${r},${r} 0 1,1 0,${r}Z`;
                 },
 
-                "cross": function (size) {
-                    var r = Math.sqrt(size / 5) / 2;
-                    return "M" + -3 * r + "," + -r
-                        + "H" + -r + "V" + -3 * r + "H" + r + "V" + -r + "H" + 3 * r + "V" + r + "H" + r + "V" + 3 * r + "H" + -r + "V" + r + "H" + -3 * r + "Z";
+                "cross": (size) => {
+                    const r: number = Math.sqrt(size / EnhancedScatterChart.R5) / EnhancedScatterChart.R2;
+
+                    return `M${-EnhancedScatterChart.R3 * r},${-r}H${-r}V${-EnhancedScatterChart.R3 * r}H${r}V${-r}H${EnhancedScatterChart.R3 * r}V${r}H${r}V${EnhancedScatterChart.R3 * r}H${-r}V${r}H${-EnhancedScatterChart.R3 * r}Z`;
                 },
 
                 "diamond": (size) => {
-                    var ry = Math.sqrt(size / (2 * Math.tan(Math.PI / 6))),
-                        rx = ry * Math.tan(Math.PI / 6);
-                    return "M0," + -ry
-                        + "L" + rx + ",0"
-                        + " 0," + ry
-                        + " " + -rx + ",0"
-                        + "Z";
+                    const ry: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.tan(Math.PI / EnhancedScatterChart.R6))),
+                        rx: number = ry * Math.tan(Math.PI / EnhancedScatterChart.R6);
+
+                    return `M0,${-ry}L${rx},0 0,${ry} ${-rx},0Z`;
                 },
 
                 "square": (size) => {
-                    var r = Math.sqrt(size) / 2;
-                    return "M" + -r + "," + -r
-                        + "L" + r + "," + -r
-                        + " " + r + "," + r
-                        + " " + -r + "," + r
-                        + "Z";
+                    const r: number = Math.sqrt(size) / EnhancedScatterChart.R2;
+
+                    return `M${-r},${-r}L${r},${-r} ${r},${r} ${-r},${r}Z`;
                 },
 
                 "triangle-up": (size) => {
-                    var rx = Math.sqrt(size / Math.sqrt(3)),
-                        ry = rx * Math.sqrt(3) / 2;
-                    return "M0," + -ry
-                        + "L" + rx + "," + ry
-                        + " " + -rx + "," + ry
-                        + "Z";
+                    const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
+                        ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
+
+                    return `M0,${-ry}L${rx},${ry} ${-rx},${ry}Z`;
                 },
 
                 "triangle-down": (size) => {
-                    var rx = Math.sqrt(size / Math.sqrt(3)),
-                        ry = rx * Math.sqrt(3) / 2;
-                    return "M0," + ry
-                        + "L" + rx + "," + -ry
-                        + " " + -rx + "," + -ry
-                        + "Z";
+                    const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
+                        ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
+
+                    return `M0,${ry}L${rx},${-ry} ${-rx},${-ry}Z`;
                 },
 
                 "star": (size) => {
-                    var outerRadius = Math.sqrt(size / 2);
-                    var innerRadius = Math.sqrt(size / 10);
-                    var results = "";
-                    var angle = Math.PI / 5;
-                    for (var i = 0; i < 10; i++) {
+                    const outerRadius: number = Math.sqrt(size / EnhancedScatterChart.R2),
+                        innerRadius: number = Math.sqrt(size / EnhancedScatterChart.R10),
+                        angle: number = Math.PI / EnhancedScatterChart.R5;
+
+                    let results: string = "";
+
+                    for (let i: number = 0; i < EnhancedScatterChart.R10; i++) {
                         // Use outer or inner radius depending on what iteration we are in.
-                        var r = (i & 1) === 0 ? outerRadius : innerRadius;
-                        var currX = Math.cos(i * angle) * r;
-                        var currY = Math.sin(i * angle) * r;
+                        const r: number = (i & EnhancedScatterChart.RMask) === EnhancedScatterChart.RMaskResult
+                            ? outerRadius
+                            : innerRadius;
+
+                        const currX: number = Math.cos(i * angle) * r,
+                            currY: number = Math.sin(i * angle) * r;
+
                         // Our first time we simply append the coordinates, subsequet times
                         // we append a ", " to distinguish each coordinate pair.
                         if (i === 0) {
-                            results = "M" + currX + "," + currY + "L";
+                            results = `M${currX},${currY}L`;
                         } else {
-                            results += " " + currX + "," + currY;
+                            results += ` ${currX},${currY}`;
                         }
                     }
-                    return results + "Z";
+
+                    return `${results}Z`;
                 },
 
                 "hexagon": (size) => {
-                    var r = Math.sqrt(size / (6 * Math.sqrt(3)));
-                    var r2 = Math.sqrt(size / (2 * Math.sqrt(3)));
+                    const r: number = Math.sqrt(size / (EnhancedScatterChart.R6 * Math.sqrt(EnhancedScatterChart.R3))),
+                        r2: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.sqrt(EnhancedScatterChart.R3)));
 
-                    return "M0," + (2 * r) + "L" + (-r2) + "," + r + " " + (-r2) + "," + (-r) + " 0," + (-2 * r) + " " + r2 + "," + (-r) + " " + r2 + "," + r + "Z";
+                    return `M0,${EnhancedScatterChart.R2 * r}L${-r2},${r} ${-r2},${-r} 0,${-EnhancedScatterChart.R2 * r} ${r2},${-r} ${r2},${r}Z`;
                 },
 
                 "x": (size) => {
-                    var r = Math.sqrt(size / 10);
-                    return "M0," + r + "L" + (-r) + "," + 2 * r + " " + (-2 * r) + "," + r + " " + (-r) + ",0 " + (-2 * r) + "," + (-r) + " " + (-r) + "," + (-2 * r) + " 0," + (-r) + " " + r + "," + (-2 * r) + " " + (2 * r) + "," + (-r) + " " + r + ",0 " + (2 * r) + "," + r + " " + r + "," + (2 * r) + "Z";
+                    const r: number = Math.sqrt(size / EnhancedScatterChart.R10);
+
+                    return `M0,${r}L${-r},${EnhancedScatterChart.R2 * r} ${-EnhancedScatterChart.R2 * r},${r} ${-r},0 ${-EnhancedScatterChart.R2 * r},${-r} ${-r},${-EnhancedScatterChart.R2 * r} 0,${-r} ${r},${-EnhancedScatterChart.R2 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},0 ${EnhancedScatterChart.R2 * r},${r} ${r},${EnhancedScatterChart.R2 * r}Z`;
                 },
 
                 "uparrow": (size) => {
-                    var r = Math.sqrt(size / 12);
-                    return "M" + r + "," + (3 * r) + "L" + (-r) + "," + (3 * r) + " " + (-r) + "," + (-r) + " " + (-2 * r) + "," + (-r) + " 0," + (-3 * r) + " " + (2 * r) + "," + (-r) + " " + r + "," + (-r) + "Z";
+                    const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
+
+                    return `M${r},${EnhancedScatterChart.R3 * r}L${-r},${EnhancedScatterChart.R3 * r} ${-r},${-r} ${-EnhancedScatterChart.R2 * r},${-r} 0,${-EnhancedScatterChart.R3 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},${-r}Z`;
                 },
 
                 "downarrow": (size) => {
-                    var r = Math.sqrt(size / 12);
-                    return "M0," + (3 * r) + "L" + (-2 * r) + "," + r + " " + (-r) + "," + r + " " + (-r) + "," + (-3 * r) + " " + r + "," + (-3 * r) + " " + r + "," + r + " " + (2 * r) + "," + r + "Z";
+                    const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
+
+                    return `M0,${EnhancedScatterChart.R3 * r}L${(-EnhancedScatterChart.R2 * r)},${r} ${-r},${r} ${-r},${-EnhancedScatterChart.R3 * r} ${r},${-EnhancedScatterChart.R3 * r} ${r},${r} ${EnhancedScatterChart.R2 * r},${r}Z`;
                 }
             });
 
-            var defaultValue = customSymbolTypes.entries()[0].value;
+            const defaultValue: ShapeFunction = customSymbolTypes.entries()[0].value;
 
             if (!shape) {
                 return defaultValue;
             } else if (isNaN(shape)) {
                 return customSymbolTypes[shape && shape.toString().toLowerCase()] || defaultValue;
-            } else {
-                var result = customSymbolTypes.entries()[Math.floor(shape)];
-
-                return result ? result.value : defaultValue;
             }
+
+            const result: ShapeEntry = customSymbolTypes.entries()[Math.floor(shape)];
+
+            return result
+                ? result.value
+                : defaultValue;
         }
 
         constructor(options: VisualConstructorOptions) {
@@ -378,27 +536,27 @@ module powerbi.extensibility.visual {
                 this.element);
 
             this.margin = {
-                top: 1,
-                right: 1,
-                bottom: 1,
-                left: 1
+                top: EnhancedScatterChart.DefaultMarginValue,
+                right: EnhancedScatterChart.DefaultMarginValue,
+                bottom: EnhancedScatterChart.DefaultMarginValue,
+                left: EnhancedScatterChart.DefaultMarginValue
             };
 
             this.yAxisOrientation = yAxisPosition.left;
 
             this.adjustMargins();
 
-            var svg: Selection<any> = this.svg = d3.select(this.element)
+            this.svg = d3.select(this.element)
                 .append("svg")
-                .style("position", "absolute")
                 .classed(EnhancedScatterChart.ClassName, true);
 
-            var axisGraphicsContext = this.axisGraphicsContext = svg.append("g")
+            this.axisGraphicsContext = this.svg
+                .append("g")
                 .classed(EnhancedScatterChart.AxisGraphicsContextClassName, true);
 
-            this.svgScrollable = svg.append("svg")
-                .classed("svgScrollable", true)
-                .style("overflow", "hidden");
+            this.svgScrollable = this.svg
+                .append("svg")
+                .classed(EnhancedScatterChart.SvgScrollableSelector.class, true);
 
             this.axisGraphicsContextScrollable = this.svgScrollable
                 .append("g")
@@ -406,29 +564,40 @@ module powerbi.extensibility.visual {
 
             this.clearCatcher = appendClearCatcher(this.axisGraphicsContextScrollable);
 
-            var axisGroup: Selection<any> = this.scrollY
+            const axisGroup: Selection<any> = this.scrollY
                 ? this.axisGraphicsContextScrollable
-                : axisGraphicsContext;
+                : this.axisGraphicsContext;
 
-            this.backgroundGraphicsContext = axisGraphicsContext.append("svg:image");
+            this.backgroundGraphicsContext = this.axisGraphicsContext.append("svg:image");
 
             this.xAxisGraphicsContext = this.scrollY
-                ? axisGraphicsContext
+                ? this.axisGraphicsContext
                     .append("g")
-                    .attr("class", "x axis")
+                    .classed(EnhancedScatterChart.XAxisSelector.class, true)
                 : this.axisGraphicsContextScrollable
                     .append("g")
-                    .attr("class", "x axis");
+                    .classed(EnhancedScatterChart.XAxisSelector.class, true);
 
             this.y1AxisGraphicsContext = axisGroup
                 .append("g")
-                .attr("class", "y axis");
+                .classed(EnhancedScatterChart.YAxisSelector.class, true);
 
-            this.xAxisGraphicsContext.classed("showLinesOnAxis", this.scrollY);
-            this.y1AxisGraphicsContext.classed("showLinesOnAxis", this.scrollX);
+            this.xAxisGraphicsContext.classed(
+                EnhancedScatterChart.ShowLinesOnAxisSelector.class,
+                this.scrollY);
 
-            this.xAxisGraphicsContext.classed("hideLinesOnAxis", !this.scrollY);
-            this.y1AxisGraphicsContext.classed("hideLinesOnAxis", !this.scrollX);
+            this.y1AxisGraphicsContext.classed(
+                EnhancedScatterChart.ShowLinesOnAxisSelector.class,
+                this.scrollX);
+
+            this.xAxisGraphicsContext.classed(
+                EnhancedScatterChart.HideLinesOnAxisSelector.class,
+                !this.scrollY);
+
+            this.y1AxisGraphicsContext.classed(
+                EnhancedScatterChart.HideLinesOnAxisSelector.class,
+                !this.scrollX);
+
             this.interactivityService = createInteractivityService(this.visualHost);
 
             this.legend = createLegend(
@@ -443,22 +612,20 @@ module powerbi.extensibility.visual {
 
             this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
             this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
-
-            this.svgDefaultImage = "";
-            this.keyArray = [];
         }
 
         private adjustMargins(): void {
             // Adjust margins if ticks are not going to be shown on either axis
-            var xAxis = $(this.element).find(".x.axis");
+            const xAxis: JQuery = $(this.element).find(EnhancedScatterChart.XAxisSelector.selector);
 
-            if (axis.getRecommendedNumberOfTicksForXAxis(this.viewportIn.width) === 0
-                && axis.getRecommendedNumberOfTicksForYAxis(this.viewportIn.height) === 0) {
+            if (axis.getRecommendedNumberOfTicksForXAxis(this.viewportIn.width) === EnhancedScatterChart.MinAmountOfTicks
+                && axis.getRecommendedNumberOfTicksForYAxis(this.viewportIn.height) === EnhancedScatterChart.MinAmountOfTicks) {
+
                 this.margin = {
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    left: 0
+                    top: EnhancedScatterChart.DefaultMarginValue,
+                    right: EnhancedScatterChart.DefaultMarginValue,
+                    bottom: EnhancedScatterChart.DefaultMarginValue,
+                    left: EnhancedScatterChart.DefaultMarginValue
                 };
 
                 xAxis.hide();
@@ -467,25 +634,31 @@ module powerbi.extensibility.visual {
             }
         }
 
-        private getValueAxisProperties(dataViewMetadata: DataViewMetadata, axisTitleOnByDefault?: boolean): DataViewObject {
-            var toReturn: DataViewObject = {};
+        private getValueAxisProperties(
+            dataViewMetadata: DataViewMetadata,
+            axisTitleOnByDefault?: boolean): DataViewObject {
+
+            let dataViewObject: DataViewObject = {};
 
             if (!dataViewMetadata) {
-                return toReturn;
+                return dataViewObject;
             }
 
-            var objects: DataViewObjects = dataViewMetadata.objects;
+            const objects: DataViewObjects = dataViewMetadata.objects;
 
             if (objects) {
-                var valueAxisObject = objects["valueAxis"];
+                const valueAxisObject: DataViewObject = objects["valueAxis"];
+
                 if (valueAxisObject) {
-                    toReturn = {
+                    dataViewObject = {
                         show: valueAxisObject["show"],
                         position: valueAxisObject["position"],
                         axisScale: valueAxisObject["axisScale"],
                         start: valueAxisObject["start"],
                         end: valueAxisObject["end"],
-                        showAxisTitle: valueAxisObject["showAxisTitle"] == null ? axisTitleOnByDefault : valueAxisObject["showAxisTitle"],
+                        showAxisTitle: valueAxisObject["showAxisTitle"] == null
+                            ? axisTitleOnByDefault
+                            : valueAxisObject["showAxisTitle"],
                         axisStyle: valueAxisObject["axisStyle"],
                         axisColor: valueAxisObject["axisColor"],
                         secShow: valueAxisObject["secShow"],
@@ -499,23 +672,27 @@ module powerbi.extensibility.visual {
                     };
                 }
             }
-            return toReturn;
+
+            return dataViewObject;
         }
 
-        private getCategoryAxisProperties(dataViewMetadata: DataViewMetadata, axisTitleOnByDefault?: boolean): DataViewObject {
-            var toReturn: DataViewObject = {};
+        private getCategoryAxisProperties(
+            dataViewMetadata: DataViewMetadata,
+            axisTitleOnByDefault?: boolean): DataViewObject {
+
+            let dataViewObject: DataViewObject = {};
 
             if (!dataViewMetadata) {
-                return toReturn;
+                return dataViewObject;
             }
 
-            var objects: DataViewObjects = dataViewMetadata.objects;
+            const objects: DataViewObjects = dataViewMetadata.objects;
 
             if (objects) {
-                var categoryAxisObject = objects["categoryAxis"];
+                const categoryAxisObject: DataViewObject = objects["categoryAxis"];
 
                 if (categoryAxisObject) {
-                    toReturn = {
+                    dataViewObject = {
                         show: categoryAxisObject["show"],
                         axisType: categoryAxisObject["axisType"],
                         axisScale: categoryAxisObject["axisScale"],
@@ -523,14 +700,15 @@ module powerbi.extensibility.visual {
                         start: categoryAxisObject["start"],
                         end: categoryAxisObject["end"],
                         showAxisTitle: categoryAxisObject["showAxisTitle"] == null
-                            ? axisTitleOnByDefault : categoryAxisObject["showAxisTitle"],
+                            ? axisTitleOnByDefault
+                            : categoryAxisObject["showAxisTitle"],
                         axisStyle: categoryAxisObject["axisStyle"],
                         labelDisplayUnits: categoryAxisObject["labelDisplayUnits"]
                     };
                 }
             }
 
-            return toReturn;
+            return dataViewObject;
         }
 
         public static converter(
@@ -545,7 +723,7 @@ module powerbi.extensibility.visual {
                 return EnhancedScatterChart.getDefaultData();
             }
 
-            var categoryValues: any[],
+            let categoryValues: any[],
                 categoryFormatter: IValueFormatter,
                 categoryObjects: DataViewObjects[],
                 categoryIdentities: DataViewScopeIdentity[],
@@ -556,17 +734,20 @@ module powerbi.extensibility.visual {
                 dataValues: DataViewValueColumns = dataViewCategorical.values,
                 hasDynamicSeries: boolean = !!dataValues.source,
                 grouped: DataViewValueColumnGroup[] = dataValues.grouped(),
-                dvSource = dataValues.source,
-                scatterMetadata = EnhancedScatterChart.getMetadata(categories, grouped, dvSource),
+                dvSource: DataViewMetadataColumn = dataValues.source,
+                scatterMetadata: EnhancedScatterChartMeasureMetadata = EnhancedScatterChart.getMetadata(
+                    categories,
+                    grouped,
+                    dvSource),
                 categoryIndex: number = scatterMetadata.idx.category,
-                useShape: boolean = scatterMetadata.idx.image >= 0,
-                useCustomColor: boolean = scatterMetadata.idx.colorFill >= 0;
+                useShape: boolean = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex,
+                useCustomColor: boolean = scatterMetadata.idx.colorFill >= EnhancedScatterChart.MinIndex;
 
-            if (dataViewCategorical.categories &&
-                dataViewCategorical.categories.length > 0 &&
-                dataViewCategorical.categories[categoryIndex]) {
+            if (dataViewCategorical.categories
+                && dataViewCategorical.categories.length > 0
+                && dataViewCategorical.categories[categoryIndex]) {
 
-                var mainCategory: DataViewCategoryColumn = dataViewCategorical.categories[categoryIndex];
+                const mainCategory: DataViewCategoryColumn = dataViewCategorical.categories[categoryIndex];
 
                 categoryValues = mainCategory.values;
 
@@ -578,24 +759,31 @@ module powerbi.extensibility.visual {
 
                 categoryIdentities = mainCategory.identity;
                 categoryObjects = mainCategory.objects;
-                categoryQueryName = mainCategory.source ? mainCategory.source.queryName : null;
+
+                categoryQueryName = mainCategory.source
+                    ? mainCategory.source.queryName
+                    : null;
             }
             else {
                 categoryValues = [null];
+
                 // creating default formatter for null value (to get the right string of empty value from the locale)
                 categoryFormatter = valueFormatter.createDefaultFormatter(null);
             }
 
-            var dataLabelsSettings = dataLabelUtils.getDefaultPointLabelSettings(),
-                fillPoint = false,
-                backdrop = { show: false, url: "" },
-                crosshair = false,
-                outline = false,
-                defaultDataPointColor: string = "",
-                showAllDataPoints = true;
+            let dataLabelsSettings: PointDataLabelsSettings = dataLabelUtils.getDefaultPointLabelSettings(),
+                fillPoint: boolean = EnhancedScatterChart.DefaultFillPoint,
+                backdrop: EnhancedScatterChartBackdrop = {
+                    show: EnhancedScatterChart.DefaultBackdrop.show,
+                    url: EnhancedScatterChart.DefaultBackdrop.url
+                },
+                crosshair: boolean = EnhancedScatterChart.DefaultCrosshair,
+                outline: boolean = EnhancedScatterChart.DefaultOutline,
+                defaultDataPointColor: string = EnhancedScatterChart.EmptyString,
+                showAllDataPoints: boolean = EnhancedScatterChart.DefaultShowAllDataPoints;
 
             if (dataViewMetadata && dataViewMetadata.objects) {
-                var objects = dataViewMetadata.objects;
+                const objects: DataViewObjects = dataViewMetadata.objects;
 
                 defaultDataPointColor = DataViewObjects.getFillColor(
                     objects,
@@ -605,16 +793,19 @@ module powerbi.extensibility.visual {
                     objects,
                     PropertiesOfCapabilities["dataPoint"]["showAllDataPoints"]);
 
-                var labelsObj = objects["categoryLabels"];
+                const labelsObj: DataViewObject = objects["categoryLabels"];
+
                 if (labelsObj) {
                     dataLabelsSettings.show = (labelsObj["show"] !== undefined)
-                        ? <boolean>labelsObj["show"] : dataLabelsSettings.show;
+                        ? labelsObj["show"] as boolean
+                        : dataLabelsSettings.show;
 
                     dataLabelsSettings.fontSize = (labelsObj["fontSize"] !== undefined)
-                        ? <number>labelsObj["fontSize"] : dataLabelsSettings.fontSize;
+                        ? labelsObj["fontSize"] as number
+                        : dataLabelsSettings.fontSize;
 
                     if (labelsObj["color"] !== undefined) {
-                        dataLabelsSettings.labelColor = (<Fill>labelsObj["color"]).solid.color;
+                        dataLabelsSettings.labelColor = (labelsObj["color"] as Fill).solid.color;
                     }
                 }
 
@@ -623,26 +814,30 @@ module powerbi.extensibility.visual {
                     PropertiesOfCapabilities["fillPoint"]["show"],
                     fillPoint);
 
-                var backdropObject = objects["backdrop"];
+                const backdropObject: DataViewObject = objects["backdrop"];
+
                 if (backdropObject !== undefined) {
-                    backdrop.show = <boolean>backdropObject["show"];
+                    backdrop.show = backdropObject["show"] as boolean;
+
                     if (backdrop.show) {
-                        backdrop.url = <string>backdropObject["url"];
+                        backdrop.url = backdropObject["url"] as string;
                     }
                 }
 
-                var crosshairObject = objects["crosshair"];
+                const crosshairObject: DataViewObject = objects["crosshair"];
+
                 if (crosshairObject !== undefined) {
-                    crosshair = <boolean>crosshairObject["show"];
+                    crosshair = crosshairObject["show"] as boolean;
                 }
 
-                var outlineObject = objects["outline"];
+                const outlineObject: DataViewObject = objects["outline"];
+
                 if (outlineObject !== undefined) {
-                    outline = <boolean>outlineObject["show"];
+                    outline = outlineObject["show"] as boolean;
                 }
             }
 
-            var dataPoints = EnhancedScatterChart.createDataPoints(
+            const dataPoints: EnhancedScatterChartDataPoint[] = EnhancedScatterChart.createDataPoints(
                 visualHost,
                 dataValues,
                 scatterMetadata,
@@ -661,10 +856,10 @@ module powerbi.extensibility.visual {
                 interactivityService.applySelectionStateToData(dataPoints);
             }
 
-            var legendItems: LegendDataPoint[] = [];
+            let legendItems: LegendDataPoint[] = [];
 
             if (hasDynamicSeries) {
-                var formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
+                const formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
 
                 legendItems = EnhancedScatterChart.createSeriesLegend(
                     visualHost,
@@ -675,21 +870,27 @@ module powerbi.extensibility.visual {
                     defaultDataPointColor);
             }
 
-            var legendTitle: string = dataValues && dvSource
+            let legendTitle: string = dataValues && dvSource
                 ? dvSource.displayName
-                : "";
+                : EnhancedScatterChart.EmptyString;
 
             if (!legendTitle) {
-                legendTitle = categories &&
-                    categories[categoryIndex] &&
-                    categories[categoryIndex].source &&
-                    categories[categoryIndex].source.displayName
-                    ? categories[categoryIndex].source.displayName : "";
+                legendTitle = categories
+                    && categories[categoryIndex]
+                    && categories[categoryIndex].source
+                    && categories[categoryIndex].source.displayName
+                    ? categories[categoryIndex].source.displayName
+                    : EnhancedScatterChart.EmptyString;
             }
 
-            var legendData = { title: legendTitle, dataPoints: legendItems };
+            const legendData: LegendData = {
+                title: legendTitle,
+                dataPoints: legendItems
+            };
 
-            var sizeRange = EnhancedScatterChart.getSizeRangeForGroups(grouped, scatterMetadata.idx.size);
+            const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
+                grouped,
+                scatterMetadata.idx.size);
 
             if (categoryAxisProperties
                 && categoryAxisProperties["showAxisTitle"] !== null
@@ -703,44 +904,49 @@ module powerbi.extensibility.visual {
             }
 
             if (dataPoints && dataPoints[0]) {
-                var point = dataPoints[0];
-                if (point.backdrop != null) {
+                const dataPoint: EnhancedScatterChartDataPoint = dataPoints[0];
+
+                if (dataPoint.backdrop != null) {
                     backdrop.show = true;
-                    backdrop.url = point.backdrop;
+                    backdrop.url = dataPoint.backdrop;
                 }
-                if (point.xStart != null) {
-                    categoryAxisProperties["start"] = point.xStart;
+
+                if (dataPoint.xStart != null) {
+                    categoryAxisProperties["start"] = dataPoint.xStart;
                 }
-                if (point.xEnd != null) {
-                    categoryAxisProperties["end"] = point.xEnd;
+
+                if (dataPoint.xEnd != null) {
+                    categoryAxisProperties["end"] = dataPoint.xEnd;
                 }
-                if (point.yStart != null) {
-                    valueAxisProperties["start"] = point.yStart;
+
+                if (dataPoint.yStart != null) {
+                    valueAxisProperties["start"] = dataPoint.yStart;
                 }
-                if (point.yEnd != null) {
-                    valueAxisProperties["end"] = point.yEnd;
+
+                if (dataPoint.yEnd != null) {
+                    valueAxisProperties["end"] = dataPoint.yEnd;
                 }
             }
 
             return {
+                dataPoints,
+                legendData,
+                sizeRange,
+                dataLabelsSettings,
+                defaultDataPointColor,
+                hasDynamicSeries,
+                showAllDataPoints,
+                fillPoint,
+                useShape,
+                useCustomColor,
+                backdrop,
+                crosshair,
+                outline,
                 xCol: scatterMetadata.cols.x,
                 yCol: scatterMetadata.cols.y,
-                dataPoints: dataPoints,
-                legendData: legendData,
                 axesLabels: scatterMetadata.axesLabels,
                 selectedIds: [],
-                size: scatterMetadata.cols.size,
-                sizeRange: sizeRange,
-                dataLabelsSettings: dataLabelsSettings,
-                defaultDataPointColor: defaultDataPointColor,
-                hasDynamicSeries: hasDynamicSeries,
-                showAllDataPoints: showAllDataPoints,
-                fillPoint: fillPoint,
-                useShape: useShape,
-                useCustomColor: useCustomColor,
-                backdrop: backdrop,
-                crosshair: crosshair,
-                outline: outline
+                size: scatterMetadata.cols.size
             };
         }
 
@@ -752,15 +958,15 @@ module powerbi.extensibility.visual {
             formatString: string,
             defaultDataPointColor: string): LegendDataPoint[] {
 
-            var legendItems: LegendDataPoint[] = [],
+            const legendItems: LegendDataPoint[] = [],
                 grouped: DataViewValueColumnGroup[] = dataValues.grouped(),
                 colorHelper: ColorHelper = new ColorHelper(
                     colorPalette,
                     PropertiesOfCapabilities["dataPoint"]["fill"],
                     defaultDataPointColor);
 
-            for (var i = 0, len = grouped.length; i < len; i++) {
-                var grouping: DataViewValueColumnGroup = grouped[i],
+            for (let i: number = 0, len: number = grouped.length; i < len; i++) {
+                let grouping: DataViewValueColumnGroup = grouped[i],
                     selectionId: ISelectionId,
                     color: string;
 
@@ -777,7 +983,7 @@ module powerbi.extensibility.visual {
                     icon: LegendIcon.Circle,
                     label: valueFormatter.format(grouping.name, formatString),
                     identity: selectionId,
-                    selected: false,
+                    selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint
                 });
             }
 
@@ -788,12 +994,15 @@ module powerbi.extensibility.visual {
             dataViewValueGroups: DataViewValueColumnGroup[],
             sizeColumnIndex: number): NumberRange {
 
-            var result: NumberRange = {};
+            const result: NumberRange = {};
 
             if (dataViewValueGroups) {
                 dataViewValueGroups.forEach((group) => {
-                    var sizeColumn: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(sizeColumnIndex, group.values),
-                        currentRange: NumberRange = axis.getRangeForColumn(sizeColumn);
+                    const sizeColumn: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                        sizeColumnIndex,
+                        group.values);
+
+                    const currentRange: NumberRange = axis.getRangeForColumn(sizeColumn);
 
                     if (result.min == null || result.min > currentRange.min) {
                         result.min = currentRange.min;
@@ -813,7 +1022,7 @@ module powerbi.extensibility.visual {
             grouped: DataViewValueColumnGroup[],
             source: DataViewMetadataColumn): EnhancedScatterChartMeasureMetadata {
 
-            var categoryIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnCategory),
+            let categoryIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnCategory),
                 colorFillIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnColorFill),
                 imageIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnImage),
                 backdropIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnBackdrop),
@@ -829,11 +1038,11 @@ module powerbi.extensibility.visual {
                 xCol: DataViewMetadataColumn,
                 yCol: DataViewMetadataColumn,
                 sizeCol: DataViewMetadataColumn,
-                xAxisLabel: string = "",
-                yAxisLabel: string = "";
+                xAxisLabel: string = EnhancedScatterChart.EmptyString,
+                yAxisLabel: string = EnhancedScatterChart.EmptyString;
 
             if (grouped && grouped.length) {
-                var firstGroup: DataViewValueColumnGroup = grouped[0];
+                const firstGroup: DataViewValueColumnGroup = grouped[0];
 
                 if (xIndex >= 0) {
                     xCol = firstGroup.values[xIndex].source;
@@ -897,7 +1106,7 @@ module powerbi.extensibility.visual {
             defaultDataPointColor?: string,
             categoryQueryName?: string): EnhancedScatterChartDataPoint[] {
 
-            var dataPoints: EnhancedScatterChartDataPoint[] = [],
+            let dataPoints: EnhancedScatterChartDataPoint[] = [],
                 colorHelper: ColorHelper,
                 indicies: EnhancedScatterChartMeasureMetadataIndexes = metadata.idx,
                 dataValueSource: DataViewMetadataColumn = dataValues.source,
@@ -906,42 +1115,65 @@ module powerbi.extensibility.visual {
 
             colorHelper = new ColorHelper(
                 colorPalette,
-                PropertiesOfCapabilities["dataPoint"]["fill"],
+                PropertiesOfCapabilities.dataPoint.fill,
                 defaultDataPointColor);
 
-            for (var categoryIdx = 0, ilen = categoryValues.length; categoryIdx < ilen; categoryIdx++) {
-                var categoryValue = categoryValues[categoryIdx];
+            for (let categoryIdx: number = 0, ilen: number = categoryValues.length; categoryIdx < ilen; categoryIdx++) {
+                const categoryValue: any = categoryValues[categoryIdx];
 
-                for (var seriesIdx = 0, len = grouped.length; seriesIdx < len; seriesIdx++) {
-                    var measureColorFill: DataViewCategoricalColumn = categories[indicies.colorFill],
+                for (let seriesIdx: number = 0, len: number = grouped.length; seriesIdx < len; seriesIdx++) {
+                    const measureColorFill: DataViewCategoricalColumn = categories[indicies.colorFill],
                         measureImage: DataViewCategoricalColumn = categories[indicies.image],
                         measureBackdrop: DataViewCategoricalColumn = categories[indicies.backdrop];
 
-                    var grouping: DataViewValueColumnGroup = grouped[seriesIdx],
+                    const grouping: DataViewValueColumnGroup = grouped[seriesIdx],
                         seriesValues: DataViewValueColumn[] = grouping.values,
-                        measureX: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.x, seriesValues),
-                        measureY: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.y, seriesValues),
-                        measureSize: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.size, seriesValues),
-                        measureShape: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.shape, seriesValues),
-                        measureRotation: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.rotation, seriesValues),
-                        measureXStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.xStart, seriesValues),
-                        measureXEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.xEnd, seriesValues),
-                        measureYStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.yStart, seriesValues),
-                        measureYEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(indicies.yEnd, seriesValues);
+                        measureX: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.x,
+                            seriesValues),
+                        measureY: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.y,
+                            seriesValues),
+                        measureSize: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.size,
+                            seriesValues),
+                        measureShape: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.shape,
+                            seriesValues),
+                        measureRotation: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.rotation,
+                            seriesValues),
+                        measureXStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.xStart,
+                            seriesValues),
+                        measureXEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.xEnd,
+                            seriesValues),
+                        measureYStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.yStart,
+                            seriesValues),
+                        measureYEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+                            indicies.yEnd,
+                            seriesValues);
 
-                    //TODO: need to update (refactor) these lines below.
-                    var xVal = measureX && measureX.values && !isNaN(<number>measureX.values[categoryIdx]) ? measureX.values[categoryIdx] : null,
-                        yVal = measureY && measureY.values && !isNaN(<number>measureY.values[categoryIdx]) ? measureY.values[categoryIdx] : 0;
+                    // TODO: need to update (refactor) these lines below.
+                    const xVal: PrimitiveValue = measureX && measureX.values && !isNaN(<number>measureX.values[categoryIdx])
+                        ? measureX.values[categoryIdx]
+                        : null;
 
-                    var hasNullValue = (xVal == null) || (yVal == null);
+                    const yVal: PrimitiveValue = measureY && measureY.values && !isNaN(<number>measureY.values[categoryIdx])
+                        ? measureY.values[categoryIdx]
+                        : 0;
+
+                    const hasNullValue: boolean = (xVal == null) || (yVal == null);
 
                     if (hasNullValue) {
                         continue;
                     }
 
-                    var size: number,
+                    let size: number,
                         colorFill: string,
-                        shapeSymbolType: (number) => string,
+                        shapeSymbolType: ShapeFunction,
                         image: string,
                         rotation: number,
                         backdrop: string,
@@ -971,26 +1203,27 @@ module powerbi.extensibility.visual {
                         color = colorHelper.getColorForSeriesValue(grouping.objects, grouping.name);
                     } else {
                         // If we have no Size measure then use a blank query name
-                        var measureSource: string = (measureSize != null)
+                        let measureSource: string = (measureSize != null)
                             ? measureSize.source.queryName
-                            : "";
+                            : EnhancedScatterChart.EmptyString;
 
                         color = colorHelper.getColorForMeasure(
                             categoryObjects && categoryObjects[categoryIdx],
                             measureSource);
                     }
 
-                    var category: DataViewCategoryColumn = categories && categories.length > 0
+                    let category: DataViewCategoryColumn = categories && categories.length > EnhancedScatterChart.MinAmountOfCategories
                         ? categories[indicies.category]
                         : null;
 
-                    var identity: ISelectionId = visualHost.createSelectionIdBuilder()
+                    const identity: ISelectionId = visualHost.createSelectionIdBuilder()
                         .withCategory(category, categoryIdx)
                         .withSeries(dataValues, grouping)
                         .createSelectionId();
 
                     // TODO: need to refactor these lines below.
-                    var seriesData: tooltipBuilder.TooltipSeriesDataItem[] = [];
+                    const seriesData: tooltipBuilder.TooltipSeriesDataItem[] = [];
+
                     if (dataValueSource) {
                         // Dynamic series
                         seriesData.push({
@@ -1018,7 +1251,7 @@ module powerbi.extensibility.visual {
 
                     if (measureSize
                         && measureSize.values
-                        && measureSize.values.length > 0) {
+                        && measureSize.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureSize.values[categoryIdx],
@@ -1028,7 +1261,7 @@ module powerbi.extensibility.visual {
 
                     if (measureColorFill
                         && measureColorFill.values
-                        && measureColorFill.values.length > 0) {
+                        && measureColorFill.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureColorFill.values[categoryIdx],
@@ -1038,7 +1271,7 @@ module powerbi.extensibility.visual {
 
                     if (measureShape
                         && measureShape.values
-                        && measureShape.values.length > 0) {
+                        && measureShape.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureShape.values[categoryIdx],
@@ -1048,7 +1281,7 @@ module powerbi.extensibility.visual {
 
                     if (measureImage
                         && measureImage.values
-                        && measureImage.values.length > 0) {
+                        && measureImage.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureImage.values[categoryIdx],
@@ -1058,7 +1291,7 @@ module powerbi.extensibility.visual {
 
                     if (measureRotation
                         && measureRotation.values
-                        && measureRotation.values.length > 0) {
+                        && measureRotation.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureRotation.values[categoryIdx],
@@ -1068,7 +1301,7 @@ module powerbi.extensibility.visual {
 
                     if (measureBackdrop
                         && measureBackdrop.values
-                        && measureBackdrop.values.length > 0) {
+                        && measureBackdrop.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureBackdrop.values[categoryIdx],
@@ -1078,7 +1311,7 @@ module powerbi.extensibility.visual {
 
                     if (measureXStart
                         && measureXStart.values
-                        && measureXStart.values.length > 0) {
+                        && measureXStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureXStart.values[categoryIdx],
@@ -1088,7 +1321,7 @@ module powerbi.extensibility.visual {
 
                     if (measureXEnd
                         && measureXEnd.values
-                        && measureXEnd.values.length > 0) {
+                        && measureXEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureXEnd.values[categoryIdx],
@@ -1098,7 +1331,7 @@ module powerbi.extensibility.visual {
 
                     if (measureYStart
                         && measureYStart.values
-                        && measureYStart.values.length > 0) {
+                        && measureYStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureYStart.values[categoryIdx],
@@ -1108,7 +1341,7 @@ module powerbi.extensibility.visual {
 
                     if (measureYEnd
                         && measureYEnd.values
-                        && measureYEnd.values.length > 0) {
+                        && measureYEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
 
                         seriesData.push({
                             value: measureYEnd.values[categoryIdx],
@@ -1122,30 +1355,30 @@ module powerbi.extensibility.visual {
                         seriesData);
 
                     dataPoints.push({
+                        size,
+                        rotation,
+                        backdrop,
+                        xStart,
+                        xEnd,
+                        yStart,
+                        yEnd,
+                        identity,
+                        colorFill,
+                        shapeSymbolType,
+                        tooltipInfo,
                         x: xVal,
                         y: yVal,
-                        size: size,
                         radius: {
                             sizeMeasure: measureSize,
                             index: categoryIdx
                         },
                         fill: color,
                         formattedCategory: this.createLazyFormattedCategory(categoryFormatter, categoryValue),
-                        selected: false,
-                        identity: identity,
-                        tooltipInfo: tooltipInfo,
+                        selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                         labelFill: labelSettings.labelColor,
                         labelFontSize: fontSizeInPx,
-                        contentPosition: 8, //ContentPositions.MiddleLeft
-                        colorFill: colorFill,
-                        shapeSymbolType: shapeSymbolType,
+                        contentPosition: EnhancedScatterChart.DefaultContentPosition,
                         svgurl: image,
-                        rotation: rotation,
-                        backdrop: backdrop,
-                        xStart: xStart,
-                        xEnd: xEnd,
-                        yStart: yStart,
-                        yEnd: yEnd
                     });
                 }
             }
@@ -1153,23 +1386,34 @@ module powerbi.extensibility.visual {
             return dataPoints;
         }
 
-        private static getMeasureValue(measureIndex: number, seriesValues: DataViewValueColumn[]): DataViewValueColumn {
-            if (seriesValues && measureIndex >= 0) {
+        private static getMeasureValue(
+            measureIndex: number,
+            seriesValues: DataViewValueColumn[]): DataViewValueColumn {
+
+            if (seriesValues && measureIndex >= EnhancedScatterChart.MinIndex) {
                 return seriesValues[measureIndex];
             }
 
             return null;
         }
 
-        private static getNumberFromDataViewValueColumnById(dataViewValueColumn: DataViewCategoricalColumn, index: number): number {
-            var value: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(dataViewValueColumn, index);
+        private static getNumberFromDataViewValueColumnById(
+            dataViewValueColumn: DataViewCategoricalColumn,
+            index: number): number {
+
+            const value: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(
+                dataViewValueColumn,
+                index);
 
             return value && !isNaN(value)
                 ? value
-                : 0;
+                : EnhancedScatterChart.DefaultColumnId;
         }
 
-        private static getValueFromDataViewValueColumnById(dataViewValueColumn: DataViewCategoricalColumn, index: number): any {
+        private static getValueFromDataViewValueColumnById(
+            dataViewValueColumn: DataViewCategoricalColumn,
+            index: number): any {
+
             return dataViewValueColumn && dataViewValueColumn.values
                 ? dataViewValueColumn.values[index]
                 : null;
@@ -1180,8 +1424,13 @@ module powerbi.extensibility.visual {
                 xCol: undefined,
                 yCol: undefined,
                 dataPoints: [],
-                legendData: { dataPoints: [] },
-                axesLabels: { x: "", y: "" },
+                legendData: {
+                    dataPoints: []
+                },
+                axesLabels: {
+                    x: EnhancedScatterChart.EmptyString,
+                    y: EnhancedScatterChart.EmptyString
+                },
                 selectedIds: [],
                 sizeRange: [],
                 dataLabelsSettings: dataLabelUtils.getDefaultPointLabelSettings(),
@@ -1196,7 +1445,7 @@ module powerbi.extensibility.visual {
             this.data = EnhancedScatterChart.getDefaultData();
 
             if (dataViews && dataViews.length > 0) {
-                var dataView: DataView = dataViews[0];
+                const dataView: DataView = dataViews[0];
 
                 if (dataView) {
                     this.categoryAxisProperties = this.getCategoryAxisProperties(dataView.metadata, true);
@@ -1218,7 +1467,7 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions) {
-            var dataViews: DataView[] = this.dataViews = options.dataViews;
+            const dataViews: DataView[] = this.dataViews = options.dataViews;
 
             this.viewport = _.clone(options.viewport);
 
@@ -1226,76 +1475,81 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            if (dataViews && dataViews.length > 0) {
-                // var warnings = getInvalidValueWarnings(
-                //     dataViews,
-                //     false /*supportsNaN*/,
-                //     false /*supportsNegativeInfinity*/,
-                //     false /*supportsPositiveInfinity*/);
-
-                // if (warnings && warnings.length > 0)
-                //     this.visualHost.setWarnings(warnings);
-
+            if (dataViews && dataViews.length > EnhancedScatterChart.MinAmountOfDataViews) {
                 this.populateObjectProperties(dataViews);
             }
 
             this.setData(dataViews);
 
-            // Note: interactive legend shouldn"t be rendered explicitly here
-            // The interactive legend is being rendered in the render method of ICartesianVisual
-            //if (!(this.options.interactivity && this.options.interactivity.isInteractiveLegend)) { // TODO: check it. It's very weird condition.
             this.renderLegend();
-            //}
-
             this.render();
-
         }
 
-        private populateObjectProperties(dataViews: DataView[]) {
-            if (dataViews && dataViews.length > 0) {
-                var dataViewMetadata = dataViews[0].metadata;
+        private populateObjectProperties(dataViews: DataView[]): void {
+            if (dataViews && dataViews.length > EnhancedScatterChart.MinAmountOfDataViews) {
+                const dataViewMetadata: DataViewMetadata = dataViews[0].metadata;
 
                 if (dataViewMetadata) {
-                    this.legendObjectProperties = DataViewObjects.getObject(dataViewMetadata.objects, "legend", {});
+                    this.legendObjectProperties = DataViewObjects.getObject(
+                        dataViewMetadata.objects,
+                        "legend",
+                        {});
                 }
                 else {
                     this.legendObjectProperties = {};
                 }
+
                 this.categoryAxisProperties = this.getCategoryAxisProperties(dataViewMetadata);
                 this.valueAxisProperties = this.getValueAxisProperties(dataViewMetadata);
-                var axisPosition = this.valueAxisProperties["position"];
-                this.yAxisOrientation = axisPosition ? axisPosition.toString() : yAxisPosition.left;
+
+                const axisPosition: DataViewPropertyValue = this.valueAxisProperties["position"];
+
+                this.yAxisOrientation = axisPosition
+                    ? axisPosition.toString()
+                    : yAxisPosition.left;
             }
         }
 
         private renderLegend(): void {
-            var legendData: LegendData = { title: "", dataPoints: [] };
-            var legend: ILegend = this.legend;
+            const legendData: LegendData = {
+                title: EnhancedScatterChart.EmptyString,
+                dataPoints: []
+            };
+
+            const legend: ILegend = this.legend;
 
             this.layerLegendData = this.data.legendData;
+
             if (this.layerLegendData) {
-                legendData.title = this.layerLegendData.title || "";
+                legendData.title = this.layerLegendData.title || EnhancedScatterChart.EmptyString;
+
                 legendData.dataPoints = legendData.dataPoints.concat(this.layerLegendData.dataPoints || []);
-                legendData.fontSize = this.legendLabelFontSize ? this.legendLabelFontSize : EnhancedScatterChart.LegendLabelFontSizeDefault;
-                if (this.layerLegendData.grouped) {
-                    legendData.grouped = true;
-                }
+
+                legendData.fontSize = this.legendLabelFontSize
+                    ? this.legendLabelFontSize
+                    : EnhancedScatterChart.LegendLabelFontSizeDefault;
+
+                legendData.grouped = !!this.layerLegendData.grouped;
             }
 
-            var legendProperties = this.legendObjectProperties;
+            const legendProperties: DataViewObject = this.legendObjectProperties;
 
             if (legendProperties) {
                 legendDataModule.update(legendData, legendProperties);
-                var position = <string>legendProperties[legendProps.position];
 
-                if (position)
+                const position = legendProperties[legendProps.position] as string;
+
+                if (position) {
                     legend.changeOrientation(LegendPosition[position]);
+                }
             }
             else {
                 legend.changeOrientation(LegendPosition.Top);
             }
 
-            if (legendData.dataPoints.length === 1 && !legendData.grouped) {
+            if (legendData.dataPoints.length === EnhancedScatterChart.MinAmountOfDataPointsInTheLegend
+                && !legendData.grouped) {
+
                 legendData.dataPoints = [];
             }
 
@@ -1307,7 +1561,10 @@ module powerbi.extensibility.visual {
             legendModule.positionChartArea(this.svg, legend);
         }
 
-        private shouldRenderAxis(axisProperties: IAxisProperties, propertyName: string = "show"): boolean {
+        private shouldRenderAxis(
+            axisProperties: IAxisProperties,
+            propertyName: string = "show"): boolean {
+
             if (!axisProperties) {
                 return false;
             }
@@ -1316,18 +1573,22 @@ module powerbi.extensibility.visual {
                     || this.categoryAxisProperties[propertyName] == null
                     || this.categoryAxisProperties[propertyName])) {
 
-                return axisProperties.values && axisProperties.values.length > 0;
+                return axisProperties.values && axisProperties.values.length > EnhancedScatterChart.MinAmountOfValues;
             }
-            else if (!axisProperties.isCategoryAxis && (!this.valueAxisProperties || this.valueAxisProperties[propertyName] == null || this.valueAxisProperties[propertyName])) {
-                return axisProperties.values && axisProperties.values.length > 0;
+            else if (!axisProperties.isCategoryAxis && (!this.valueAxisProperties
+                || this.valueAxisProperties[propertyName] == null
+                || this.valueAxisProperties[propertyName])) {
+
+                return axisProperties.values && axisProperties.values.length > EnhancedScatterChart.MinAmountOfValues;
             }
 
             return false;
         }
 
         private adjustViewportbyBackdrop(): void {
-            var img = new Image();
-            var that = this;
+            const img: HTMLImageElement = new Image(),
+                that: EnhancedScatterChart = this;
+
             img.src = this.data.backdrop.url;
             img.onload = function () {
                 const imageElement: HTMLImageElement = this as HTMLImageElement;
@@ -1338,13 +1599,25 @@ module powerbi.extensibility.visual {
                 }
             };
 
-            if (img.width > 0 && img.height > 0) {
+            if (img.width > EnhancedScatterChart.MinImageViewport.width
+                && img.height > EnhancedScatterChart.MinImageViewport.height) {
+
                 if (img.width * this.viewportIn.height < this.viewportIn.width * img.height) {
-                    var deltaWidth = this.viewportIn.width - this.viewportIn.height * img.width / img.height;
-                    this.viewport = { width: this.viewport.width - deltaWidth, height: this.viewport.height };
+                    const deltaWidth: number = this.viewportIn.width
+                        - this.viewportIn.height * img.width / img.height;
+
+                    this.viewport = {
+                        width: this.viewport.width - deltaWidth,
+                        height: this.viewport.height
+                    };
                 } else {
-                    var deltaHeight = this.viewportIn.height - this.viewportIn.width * img.height / img.width;
-                    this.viewport = { width: this.viewport.width, height: this.viewport.height - deltaHeight };
+                    const deltaHeight: number = this.viewportIn.height
+                        - this.viewportIn.width * img.height / img.width;
+
+                    this.viewport = {
+                        width: this.viewport.width,
+                        height: this.viewport.height - deltaHeight
+                    };
                 }
             }
         }
@@ -1353,19 +1626,24 @@ module powerbi.extensibility.visual {
             this.viewport.height -= this.legendViewport.height;
             this.viewport.width -= this.legendViewport.width;
 
-            if (this.viewportIn.width === 0 || this.viewportIn.height === 0) {
+            if (this.viewportIn.width === EnhancedScatterChart.MinViewport.width
+                || this.viewportIn.height === EnhancedScatterChart.MinViewport.height) {
+
                 return;
             }
 
-            // var maxMarginFactor = this.getMaxMarginFactor();
-            var maxMarginFactor = EnhancedScatterChart.MaxMarginFactor;
+            const maxMarginFactor: number = EnhancedScatterChart.MaxMarginFactor;
+
             this.leftRightMarginLimit = this.viewport.width * maxMarginFactor;
-            var bottomMarginLimit = this.bottomMarginLimit = Math.max(25, Math.ceil(this.viewport.height * maxMarginFactor));
+
+            this.bottomMarginLimit = Math.max(
+                EnhancedScatterChart.DefaultMargin.bottom,
+                Math.ceil(this.viewport.height * maxMarginFactor));
 
             // reset defaults
-            this.margin.top = 8;
-            this.margin.bottom = bottomMarginLimit;
-            this.margin.right = 0;
+            this.margin.top = EnhancedScatterChart.DefaultMargin.top;
+            this.margin.bottom = this.bottomMarginLimit;
+            this.margin.right = EnhancedScatterChart.DefaultMargin.right;
 
             this.calculateAxes(
                 this.categoryAxisProperties,
@@ -1374,39 +1652,47 @@ module powerbi.extensibility.visual {
                 true);
 
             this.yAxisIsCategorical = this.yAxisProperties.isCategoryAxis;
-            this.hasCategoryAxis = this.yAxisIsCategorical ? this.yAxisProperties && this.yAxisProperties.values.length > 0 : this.xAxisProperties && this.xAxisProperties.values.length > 0;
 
-            var renderXAxis = this.shouldRenderAxis(this.xAxisProperties);
-            var renderY1Axis = this.shouldRenderAxis(this.yAxisProperties);
+            this.hasCategoryAxis = this.yAxisIsCategorical
+                ? this.yAxisProperties && this.yAxisProperties.values.length > EnhancedScatterChart.MinAmountOfValues
+                : this.xAxisProperties && this.xAxisProperties.values.length > EnhancedScatterChart.MinAmountOfValues;
 
-            var mainAxisScale;
-            this.isXScrollBarVisible = false;
-            this.isYScrollBarVisible = false;
-            var tickLabelMargins;
-            var axisLabels: ChartAxesLabels;
-            var chartHasAxisLabels: boolean;
+            const renderXAxis: boolean = this.shouldRenderAxis(this.xAxisProperties),
+                renderY1Axis: boolean = this.shouldRenderAxis(this.yAxisProperties);
 
-            var yAxisOrientation = this.yAxisOrientation;
-            var showY1OnRight = yAxisOrientation === yAxisPosition.right;
+            this.isXScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
+            this.isYScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
+
+            let tickLabelMargins: axis.TickLabelMargins,
+                axisLabels: ChartAxesLabels,
+                chartHasAxisLabels: boolean;
+
+            const showY1OnRight: boolean = this.yAxisOrientation === yAxisPosition.right;
 
             this.calculateAxes(
                 this.categoryAxisProperties,
                 this.valueAxisProperties,
-                EnhancedScatterChart.TextProperties, true);
+                EnhancedScatterChart.TextProperties);
 
-            var doneWithMargins = false,
-                maxIterations = 2,
-                numIterations = 0;
+            let doneWithMargins: boolean = EnhancedScatterChart.DefaultValueOfDoneWithMargins,
+                maxIterations: number = EnhancedScatterChart.MaxIterations,
+                numIterations: number = EnhancedScatterChart.DefaultNumIterations;
 
             while (!doneWithMargins && numIterations < maxIterations) {
                 numIterations++;
 
                 tickLabelMargins = axis.getTickLabelMargins(
-                    { width: this.viewportIn.width, height: this.viewport.height },
+                    {
+                        width: this.viewportIn.width,
+                        height: this.viewport.height
+                    },
                     this.leftRightMarginLimit,
                     measureSvgTextWidth,
                     measureSvgTextHeight,
-                    { x: this.xAxisProperties, y1: this.yAxisProperties },
+                    {
+                        x: this.xAxisProperties,
+                        y1: this.yAxisProperties
+                    },
                     this.bottomMarginLimit,
                     EnhancedScatterChart.TextProperties,
                     this.isXScrollBarVisible || this.isYScrollBarVisible,
@@ -1416,71 +1702,102 @@ module powerbi.extensibility.visual {
                     false);
 
                 // We look at the y axes as main and second sides, if the y axis orientation is right so the main side represents the right side
-                var maxMainYaxisSide = showY1OnRight ? tickLabelMargins.yRight : tickLabelMargins.yLeft,
-                    maxSecondYaxisSide = showY1OnRight ? tickLabelMargins.yLeft : tickLabelMargins.yRight,
-                    xMax = tickLabelMargins.xMax;
+                let maxMainYaxisSide: number = showY1OnRight
+                    ? tickLabelMargins.yRight
+                    : tickLabelMargins.yLeft;
 
-                maxMainYaxisSide += 10;
-                maxSecondYaxisSide += 10;
-                xMax += 12;
+                let maxSecondYaxisSide: number = showY1OnRight
+                    ? tickLabelMargins.yLeft
+                    : tickLabelMargins.yRight;
+
+                let xMax: number = tickLabelMargins.xMax;
+
+                maxMainYaxisSide += EnhancedScatterChart.AxisSide;
+                maxSecondYaxisSide += EnhancedScatterChart.AxisSide;
+
+                xMax += EnhancedScatterChart.XMaxOffset;
+
                 if (showY1OnRight && renderY1Axis) {
-                    maxSecondYaxisSide += 20;
+                    maxSecondYaxisSide += EnhancedScatterChart.SecondAxisSide;
                 }
 
                 if (!showY1OnRight && renderY1Axis) {
-                    maxMainYaxisSide += 20;
+                    maxMainYaxisSide += EnhancedScatterChart.SecondAxisSide;
                 }
 
                 this.addUnitTypeToAxisLabel(this.xAxisProperties, this.yAxisProperties);
 
-                axisLabels = { x: this.xAxisProperties.axisLabel, y: this.yAxisProperties.axisLabel, y2: null };
+                axisLabels = {
+                    x: this.xAxisProperties.axisLabel,
+                    y: this.yAxisProperties.axisLabel,
+                    y2: null
+                };
+
                 chartHasAxisLabels = (axisLabels.x != null) || (axisLabels.y != null || axisLabels.y2 != null);
 
-                if (axisLabels.x != null)
-                    xMax += 18;
+                if (axisLabels.x != null) {
+                    xMax += EnhancedScatterChart.AdditionalXMaxOffset;
+                }
 
-                if (axisLabels.y != null)
-                    maxMainYaxisSide += 20;
+                if (axisLabels.y != null) {
+                    maxMainYaxisSide += EnhancedScatterChart.SecondAxisSide;
+                }
 
-                if (axisLabels.y2 != null)
-                    maxSecondYaxisSide += 20;
+                if (axisLabels.y2 != null) {
+                    maxSecondYaxisSide += EnhancedScatterChart.SecondAxisSide;
+                }
 
-                this.margin.left = showY1OnRight ? maxSecondYaxisSide : maxMainYaxisSide;
-                this.margin.right = showY1OnRight ? maxMainYaxisSide : maxSecondYaxisSide;
+                this.margin.left = showY1OnRight
+                    ? maxSecondYaxisSide
+                    : maxMainYaxisSide;
+
+                this.margin.right = showY1OnRight
+                    ? maxMainYaxisSide
+                    : maxSecondYaxisSide;
+
                 this.margin.bottom = xMax;
 
                 // re-calculate the axes with the new margins
-                var previousTickCountY1 = this.yAxisProperties.values.length;
+                const previousTickCountY1: number = this.yAxisProperties.values.length;
 
                 this.calculateAxes(
                     this.categoryAxisProperties,
                     this.valueAxisProperties,
-                    EnhancedScatterChart.TextProperties,
-                    true);
+                    EnhancedScatterChart.TextProperties);
 
                 // the minor padding adjustments could have affected the chosen tick values, which would then need to calculate margins again
                 // e.g. [0,2,4,6,8] vs. [0,5,10] the 10 is wider and needs more margin.
-                if (this.yAxisProperties.values.length === previousTickCountY1)
-                    doneWithMargins = true;
+                if (this.yAxisProperties.values.length === previousTickCountY1) {
+                    doneWithMargins = !EnhancedScatterChart.DefaultValueOfDoneWithMargins;
+                }
             }
-            // we have to do the above process again since changes are made to viewport.
 
-            if (this.data.backdrop && this.data.backdrop.show && (this.data.backdrop.url !== undefined)) {
+            // we have to do the above process again since changes are made to viewport.
+            if (this.data.backdrop
+                && this.data.backdrop.show
+                && (this.data.backdrop.url !== undefined)) {
+
                 this.adjustViewportbyBackdrop();
 
-                doneWithMargins = false;
-                maxIterations = 2;
-                numIterations = 0;
+                doneWithMargins = EnhancedScatterChart.DefaultValueOfDoneWithMargins;
+                maxIterations = EnhancedScatterChart.MaxIterations;
+                numIterations = EnhancedScatterChart.DefaultNumIterations;
 
                 while (!doneWithMargins && numIterations < maxIterations) {
                     numIterations++;
 
                     tickLabelMargins = axis.getTickLabelMargins(
-                        { width: this.viewportIn.width, height: this.viewport.height },
+                        {
+                            width: this.viewportIn.width,
+                            height: this.viewport.height
+                        },
                         this.leftRightMarginLimit,
                         measureSvgTextWidth,
                         measureSvgTextHeight,
-                        { x: this.xAxisProperties, y1: this.yAxisProperties },
+                        {
+                            x: this.xAxisProperties,
+                            y1: this.yAxisProperties
+                        },
                         this.bottomMarginLimit,
                         EnhancedScatterChart.TextProperties,
                         this.isXScrollBarVisible || this.isYScrollBarVisible,
@@ -1490,54 +1807,70 @@ module powerbi.extensibility.visual {
                         false);
 
                     // We look at the y axes as main and second sides, if the y axis orientation is right so the main side represents the right side
-                    var maxMainYaxisSide = showY1OnRight ? tickLabelMargins.yRight : tickLabelMargins.yLeft,
-                        maxSecondYaxisSide = showY1OnRight ? tickLabelMargins.yLeft : tickLabelMargins.yRight,
-                        xMax = tickLabelMargins.xMax;
+                    let maxMainYaxisSide: number = showY1OnRight
+                        ? tickLabelMargins.yRight
+                        : tickLabelMargins.yLeft;
 
-                    maxMainYaxisSide += 10;
+                    let maxSecondYaxisSide: number = showY1OnRight
+                        ? tickLabelMargins.yLeft
+                        : tickLabelMargins.yRight;
+
+                    let xMax = tickLabelMargins.xMax;
+
+                    maxMainYaxisSide += EnhancedScatterChart.AxisSide;
 
                     if (showY1OnRight && renderY1Axis) {
-                        maxSecondYaxisSide += 15;
+                        maxSecondYaxisSide += EnhancedScatterChart.SecondYAxisSide;
                     }
 
-                    xMax += 12;
+                    xMax += EnhancedScatterChart.XMaxOffset;
 
                     this.addUnitTypeToAxisLabel(this.xAxisProperties, this.yAxisProperties);
 
-                    axisLabels = { x: this.xAxisProperties.axisLabel, y: this.yAxisProperties.axisLabel, y2: null };
+                    axisLabels = {
+                        x: this.xAxisProperties.axisLabel,
+                        y: this.yAxisProperties.axisLabel,
+                        y2: null
+                    };
+
                     chartHasAxisLabels = (axisLabels.x != null) || (axisLabels.y != null || axisLabels.y2 != null);
 
-                    if (axisLabels.x != null)
-                        xMax += 18;
+                    if (axisLabels.x != null) {
+                        xMax += EnhancedScatterChart.AdditionalXMaxOffset;
+                    }
 
-                    if (axisLabels.y != null)
-                        maxMainYaxisSide += 20;
+                    if (axisLabels.y != null) {
+                        maxMainYaxisSide += EnhancedScatterChart.SecondAxisSide;
+                    }
 
-                    if (axisLabels.y2 != null)
-                        maxSecondYaxisSide += 20;
+                    if (axisLabels.y2 != null) {
+                        maxSecondYaxisSide += EnhancedScatterChart.SecondAxisSide;
+                    }
 
-                    this.margin.left = showY1OnRight ? maxSecondYaxisSide : maxMainYaxisSide;
-                    this.margin.right = showY1OnRight ? maxMainYaxisSide : maxSecondYaxisSide;
+                    this.margin.left = showY1OnRight
+                        ? maxSecondYaxisSide
+                        : maxMainYaxisSide;
+
+                    this.margin.right = showY1OnRight
+                        ? maxMainYaxisSide
+                        : maxSecondYaxisSide;
+
                     this.margin.bottom = xMax;
-
-                    // re-calculate the axes with the new margins
-                    var previousTickCountY1 = this.yAxisProperties.values.length;
 
                     this.calculateAxes(
                         this.categoryAxisProperties,
                         this.valueAxisProperties,
-                        EnhancedScatterChart.TextProperties,
-                        true);
+                        EnhancedScatterChart.TextProperties);
 
                     // the minor padding adjustments could have affected the chosen tick values, which would then need to calculate margins again
                     // e.g. [0,2,4,6,8] vs. [0,5,10] the 10 is wider and needs more margin.
-                    if (this.yAxisProperties.values.length === previousTickCountY1)
-                        doneWithMargins = true;
+                    if (this.yAxisProperties.values.length === this.yAxisProperties.values.length) {
+                        doneWithMargins = !EnhancedScatterChart.DefaultValueOfDoneWithMargins;
+                    }
                 }
             }
 
             this.renderChart(
-                mainAxisScale,
                 this.xAxisProperties,
                 this.yAxisProperties,
                 tickLabelMargins,
@@ -1550,21 +1883,24 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            var data: EnhancedScatterChartData = this.data,
+            const data: EnhancedScatterChartData = this.data,
                 dataPoints: EnhancedScatterChartDataPoint[] = this.data.dataPoints,
                 hasSelection: boolean = this.interactivityService && this.interactivityService.hasSelection();
 
-            this.mainGraphicsSVGSelection
-                .attr("width", this.viewportIn.width)
-                .attr("height", this.viewportIn.height);
-
-            var sortedData: EnhancedScatterChartDataPoint[] = dataPoints.sort((a, b) => {
-                return b.radius.sizeMeasure
-                    ? (<number>b.radius.sizeMeasure.values[b.radius.index] - <number>a.radius.sizeMeasure.values[a.radius.index])
-                    : 0;
+            this.mainGraphicsSVGSelection.attr({
+                "width": this.viewportIn.width,
+                "height": this.viewportIn.height
             });
 
-            var scatterMarkers: UpdateSelection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
+            const sortedData: EnhancedScatterChartDataPoint[] = dataPoints.sort(
+                (firstDataPoint: EnhancedScatterChartDataPoint, secondDataPoint: EnhancedScatterChartDataPoint) => {
+                    return secondDataPoint.radius.sizeMeasure
+                        ? secondDataPoint.radius.sizeMeasure.values[secondDataPoint.radius.index] as number
+                        - (firstDataPoint.radius.sizeMeasure.values[firstDataPoint.radius.index] as number)
+                        : EnhancedScatterChart.DefaultSizeMeasure;
+                });
+
+            const scatterMarkers: UpdateSelection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
                 sortedData,
                 hasSelection,
                 data.sizeRange,
@@ -1572,7 +1908,7 @@ module powerbi.extensibility.visual {
                 dataLabelsSettings: PointDataLabelsSettings = this.data.dataLabelsSettings;
 
             if (dataLabelsSettings.show) {
-                var layout: ILabelLayout,
+                let layout: ILabelLayout,
                     clonedDataPoints: EnhancedScatterChartDataPoint[],
                     labels: UpdateSelection<any>;
 
@@ -1591,7 +1927,7 @@ module powerbi.extensibility.visual {
 
                 if (labels) {
                     labels.attr("transform", (d: EnhancedScatterChartDataPoint) => {
-                        var size: ISize = <ISize>d.size,
+                        let size: ISize = <ISize>d.size,
                             dx: number,
                             dy: number;
 
@@ -1608,30 +1944,11 @@ module powerbi.extensibility.visual {
 
             this.renderCrosshair(data);
 
-            var behaviorOptions: EnhancedScatterBehaviorOptions;
-
-            if (this.interactivityService) {
-                behaviorOptions = {
-                    dataPointsSelection: scatterMarkers,
-                    data: this.data,
-                    plotContext: this.mainGraphicsSVGSelection,
-                };
-            }
-
             this.bindTooltip(scatterMarkers);
 
-            if (this.behavior) {
-                var layerBehaviorOptions: any[] = [behaviorOptions];
-
-                if (this.interactivityService) {
-                    var cbehaviorOptions: CustomVisualBehaviorOptions = {
-                        layerOptions: layerBehaviorOptions,
-                        clearCatcher: this.clearCatcher,
-                    };
-
-                    this.interactivityService.bind(dataPoints, this.behavior, cbehaviorOptions);
-                }
-            }
+            this.bindInteractivityService(
+                scatterMarkers,
+                dataPoints);
         }
 
         private bindTooltip(selection: Selection<TooltipEnabledDataPoint>): void {
@@ -1642,59 +1959,91 @@ module powerbi.extensibility.visual {
                 });
         }
 
+        private bindInteractivityService(
+            dataPointsSelection: Selection<EnhancedScatterChartDataPoint>,
+            dataPoints: EnhancedScatterChartDataPoint[]): void {
+
+            if (!this.behavior || !this.interactivityService) {
+                return;
+            }
+
+            const behaviorOptions: EnhancedScatterBehaviorOptions = {
+                dataPointsSelection,
+                data: this.data,
+                plotContext: this.mainGraphicsSVGSelection,
+            };
+
+            const cbehaviorOptions: CustomVisualBehaviorOptions = {
+                layerOptions: [behaviorOptions],
+                clearCatcher: this.clearCatcher,
+            };
+
+            this.interactivityService.bind(dataPoints, this.behavior, cbehaviorOptions);
+        }
+
         private cloneDataPoints(dataPoints: EnhancedScatterChartDataPoint[]): EnhancedScatterChartDataPoint[] {
             return dataPoints.map((dataPoint: EnhancedScatterChartDataPoint) => {
                 return _.clone(dataPoint);
             });
         }
 
-        private darkenZeroLine(g: Selection<any>): void {
-            var zeroTick = g.selectAll("g.tick").filter((data) => data === 0).node();
-            if (zeroTick) {
-                d3.select(zeroTick).select("line").classed("zero-line", true);
+        private darkenZeroLine(selection: Selection<any>): void {
+            const zeroTick: Selection<any> = selection
+                .selectAll(`g${EnhancedScatterChart.TickSelector.selector}`)
+                .filter((data: any) => data === EnhancedScatterChart.EmptyDataValue);
+
+            if (zeroTick.node()) {
+                zeroTick
+                    .select("line")
+                    .classed(EnhancedScatterChart.ZeroLineSelector.class, true);
             }
         }
 
         private getCategoryAxisFill(): Fill {
             if (this.dataView && this.dataView.metadata.objects) {
-                var label = this.dataView.metadata.objects["categoryAxis"];
+                const label: DataViewObject = this.dataView.metadata.objects["categoryAxis"];
+
                 if (label) {
-                    return <Fill>label["axisColor"];
+                    return label["axisColor"];
                 }
             }
-            return { solid: { color: "#333" } };
+
+            return { solid: { color: EnhancedScatterChart.DefaultCategoryAxisFillColor } };
         }
 
         private getEnhanchedScatterChartLabelLayout(labelSettings: PointDataLabelsSettings,
             viewport: IViewport,
             sizeRange: NumberRange): ILabelLayout {
 
-            var xScale = this.xAxisProperties.scale;
-            var yScale = this.yAxisProperties.scale;
-            var fontSizeInPx = PixelConverter.fromPoint(labelSettings.fontSize);
-            var fontFamily: string = LabelTextProperties.fontFamily;
+            const xScale: any = this.xAxisProperties.scale,
+                yScale: any = this.yAxisProperties.scale,
+                fontSizeInPx: string = PixelConverter.fromPoint(labelSettings.fontSize),
+                fontFamily: string = LabelTextProperties.fontFamily;
 
             return {
-                labelText: (d: EnhancedScatterChartDataPoint) => {
+                labelText: (dataPoint: EnhancedScatterChartDataPoint) => {
                     return getLabelFormattedText({
-                        label: d.formattedCategory(),//.getValue(),
+                        label: dataPoint.formattedCategory(),
                         fontSize: labelSettings.fontSize,
                         maxWidth: viewport.width,
                     });
                 },
                 labelLayout: {
-                    x: (d: EnhancedScatterChartDataPoint) => xScale(d.x),
-                    y: (d: EnhancedScatterChartDataPoint) => {
-                        var margin = EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, viewport) + /*dataLabelUtils.labelMargin*/EnhancedScatterChart.LabelMargin;
+                    x: (dataPoint: EnhancedScatterChartDataPoint) => xScale(dataPoint.x),
+                    y: (dataPoint: EnhancedScatterChartDataPoint) => {
+                        const margin = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport)
+                            + EnhancedScatterChart.LabelMargin;
 
-                        return labelSettings.position === 0 /* Above */
-                            ? yScale(d.y) - margin
-                            : yScale(d.y) + margin;
+                        return labelSettings.position === PointLabelPosition.Above
+                            ? yScale(dataPoint.y) - margin
+                            : yScale(dataPoint.y) + margin;
                     },
                 },
-                filter: (d: EnhancedScatterChartDataPoint) => (d != null && d.formattedCategory()/*.getValue()*/ != null),
+                filter: (dataPoint: EnhancedScatterChartDataPoint) => {
+                    return dataPoint != null && dataPoint.formattedCategory() != null;
+                },
                 style: {
-                    "fill": (d: EnhancedScatterChartDataPoint) => d.labelFill,
+                    "fill": (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.labelFill,
                     "font-size": fontSizeInPx,
                     "font-family": fontFamily,
                 },
@@ -1706,19 +2055,24 @@ module powerbi.extensibility.visual {
             sizeRange: NumberRange,
             viewport: IViewport): number {
 
-            let actualSizeDataRange = null,
-                bubblePixelAreaSizeRange = null,
-                measureSize = radiusData.sizeMeasure;
+            let actualSizeDataRange: EnhancedScatterDataRange = null,
+                bubblePixelAreaSizeRange: EnhancedScatterDataRange = null,
+                measureSize: DataViewValueColumn = radiusData.sizeMeasure;
 
             if (!measureSize) {
                 return EnhancedScatterChart.BubbleRadius;
             }
 
-            let minSize = sizeRange.min ? sizeRange.min : 0,
-                maxSize = sizeRange.max ? sizeRange.max : 0;
+            const minSize: number = sizeRange.min
+                ? sizeRange.min
+                : EnhancedScatterChart.DefaultBubbleRadius;
 
-            let min = Math.min(minSize, 0),
-                max = Math.max(maxSize, 0);
+            const maxSize = sizeRange.max
+                ? sizeRange.max
+                : EnhancedScatterChart.DefaultBubbleRadius;
+
+            const min: number = Math.min(minSize, EnhancedScatterChart.DefaultBubbleRadius),
+                max: number = Math.max(maxSize, EnhancedScatterChart.DefaultBubbleRadius);
 
             actualSizeDataRange = {
                 minRange: min,
@@ -1732,13 +2086,13 @@ module powerbi.extensibility.visual {
                 EnhancedScatterChart.MaxSizeRange);
 
             if (measureSize.values) {
-                let sizeValue = <number>measureSize.values[radiusData.index];
+                const sizeValue: number = measureSize.values[radiusData.index] as number;
 
                 if (sizeValue != null) {
                     return EnhancedScatterChart.projectSizeToPixels(
                         sizeValue,
                         actualSizeDataRange,
-                        bubblePixelAreaSizeRange) / 2;
+                        bubblePixelAreaSizeRange) / EnhancedScatterChart.BubbleRadiusDivider;
                 }
             }
 
@@ -1750,9 +2104,13 @@ module powerbi.extensibility.visual {
             minSizeRange: number,
             maxSizeRange: number): EnhancedScatterDataRange {
 
-            let ratio = 1.0;
-            if (viewPort.height > 0 && viewPort.width > 0) {
-                let minSize = Math.min(viewPort.height, viewPort.width);
+            let ratio: number = EnhancedScatterChart.DefaultBubbleRatio;
+
+            if (viewPort.height > EnhancedScatterChart.MinViewport.height
+                && viewPort.width > EnhancedScatterChart.MinViewport.width) {
+
+                const minSize: number = Math.min(viewPort.height, viewPort.width);
+
                 ratio = (minSize * minSize) / EnhancedScatterChart.AreaOf300By300Chart;
             }
 
@@ -1771,17 +2129,25 @@ module powerbi.extensibility.visual {
             actualSizeDataRange: EnhancedScatterDataRange,
             bubblePixelAreaSizeRange: EnhancedScatterDataRange): number {
 
-            let projectedSize = 0;
+            let projectedSize: number = EnhancedScatterChart.DefaultProjectedSize;
+
             if (actualSizeDataRange) {
                 // Project value on the required range of bubble area sizes
                 projectedSize = bubblePixelAreaSizeRange.maxRange;
-                if (actualSizeDataRange.delta !== 0) {
-                    let value = Math.min(Math.max(size, actualSizeDataRange.minRange), actualSizeDataRange.maxRange);
 
-                    projectedSize = EnhancedScatterChart.project(value, actualSizeDataRange, bubblePixelAreaSizeRange);
+                if (actualSizeDataRange.delta !== EnhancedScatterChart.MinDelta) {
+                    const value: number = Math.min(
+                        Math.max(size, actualSizeDataRange.minRange),
+                        actualSizeDataRange.maxRange);
+
+                    projectedSize = EnhancedScatterChart.project(
+                        value,
+                        actualSizeDataRange,
+                        bubblePixelAreaSizeRange);
                 }
 
-                projectedSize = Math.sqrt(projectedSize / Math.PI) * 2;
+                projectedSize = Math.sqrt(projectedSize / Math.PI)
+                    * EnhancedScatterChart.ProjectedSizeFactor;
             }
 
             return Math.round(projectedSize);
@@ -1792,15 +2158,18 @@ module powerbi.extensibility.visual {
             actualSizeDataRange: EnhancedScatterDataRange,
             bubblePixelAreaSizeRange: EnhancedScatterDataRange): number {
 
-            if (actualSizeDataRange.delta === 0 || bubblePixelAreaSizeRange.delta === 0) {
+            if (actualSizeDataRange.delta === EnhancedScatterChart.MinDelta
+                || bubblePixelAreaSizeRange.delta === EnhancedScatterChart.MinDelta) {
+
                 return (EnhancedScatterChart.rangeContains(actualSizeDataRange, value))
                     ? bubblePixelAreaSizeRange.minRange
                     : null;
             }
 
-            let relativeX = (value - actualSizeDataRange.minRange) / actualSizeDataRange.delta;
+            const relativeX: number = (value - actualSizeDataRange.minRange) / actualSizeDataRange.delta;
 
-            return bubblePixelAreaSizeRange.minRange + relativeX * bubblePixelAreaSizeRange.delta;
+            return bubblePixelAreaSizeRange.minRange
+                + relativeX * bubblePixelAreaSizeRange.delta;
         }
 
         public static rangeContains(range: EnhancedScatterDataRange, value: number): boolean {
@@ -1809,14 +2178,14 @@ module powerbi.extensibility.visual {
 
         private getValueAxisFill(): Fill {
             if (this.dataView && this.dataView.metadata.objects) {
-                var label = this.dataView.metadata.objects["valueAxis"];
+                const valueAxis: DataViewObject = this.dataView.metadata.objects["valueAxis"];
 
-                if (label) {
-                    return <Fill>label["axisColor"];
+                if (valueAxis) {
+                    return valueAxis["axisColor"];
                 }
             }
 
-            return { solid: { color: "#333" } };
+            return { solid: { color: EnhancedScatterChart.DefaultCategoryAxisFillColor } };
         }
 
         /**
@@ -1831,10 +2200,12 @@ module powerbi.extensibility.visual {
 
             if (data && data.crosshair) {
                 this.crosshairVerticalLineSelection = this.addCrosshairLineToDOM(
-                    this.crosshairCanvasSelection, EnhancedScatterChart.CrosshairVerticalLineSelector);
+                    this.crosshairCanvasSelection,
+                    EnhancedScatterChart.CrosshairVerticalLineSelector);
 
                 this.crosshairHorizontalLineSelection = this.addCrosshairLineToDOM(
-                    this.crosshairCanvasSelection, EnhancedScatterChart.CrosshairHorizontalLineSelector);
+                    this.crosshairCanvasSelection,
+                    EnhancedScatterChart.CrosshairHorizontalLineSelector);
 
                 this.crosshairTextSelection = this.addCrosshairTextToDOM(this.crosshairCanvasSelection);
 
@@ -1860,7 +2231,7 @@ module powerbi.extensibility.visual {
          * Public for testability.
          */
         public addCrosshairCanvasToDOM(rootElement: Selection<any>): Selection<any> {
-            var crosshairCanvasSelector: ClassAndSelector = EnhancedScatterChart.CrosshairCanvasSelector;
+            const crosshairCanvasSelector: ClassAndSelector = EnhancedScatterChart.CrosshairCanvasSelector;
 
             return this.addElementToDOM(rootElement, {
                 name: "g",
@@ -1873,14 +2244,22 @@ module powerbi.extensibility.visual {
         /**
          * Public for testability.
          */
-        public addCrosshairLineToDOM(rootElement: Selection<any>, elementSelector: ClassAndSelector): Selection<any> {
-            var crosshairLineSelector: ClassAndSelector = EnhancedScatterChart.CrosshairLineSelector;
+        public addCrosshairLineToDOM(
+            rootElement: Selection<any>,
+            elementSelector: ClassAndSelector): Selection<any> {
+
+            const crosshairLineSelector: ClassAndSelector = EnhancedScatterChart.CrosshairLineSelector;
 
             return this.addElementToDOM(rootElement, {
                 name: "line",
                 selector: elementSelector.selector,
                 className: `${crosshairLineSelector.class} ${elementSelector.class}`,
-                attributes: { x1: 0, y1: 0, x2: 0, y2: 0 }
+                attributes: {
+                    x1: EnhancedScatterChart.DefaultPositionOfCrosshair,
+                    y1: EnhancedScatterChart.DefaultPositionOfCrosshair,
+                    x2: EnhancedScatterChart.DefaultPositionOfCrosshair,
+                    y2: EnhancedScatterChart.DefaultPositionOfCrosshair
+                }
             });
         }
 
@@ -1888,7 +2267,7 @@ module powerbi.extensibility.visual {
          * Public for testability.
          */
         public addCrosshairTextToDOM(rootElement: Selection<any>): Selection<any> {
-            var crosshairTextSelector: ClassAndSelector = EnhancedScatterChart.CrosshairTextSelector;
+            const crosshairTextSelector: ClassAndSelector = EnhancedScatterChart.CrosshairTextSelector;
 
             return this.addElementToDOM(rootElement, {
                 name: "text",
@@ -1907,21 +2286,31 @@ module powerbi.extensibility.visual {
 
             this.axisGraphicsContextScrollable
                 .on("mousemove", () => {
-                    var currentTarget: SVGElement = (d3.event as MouseEvent).currentTarget as SVGElement,
+                    let currentTarget: SVGElement = (d3.event as MouseEvent).currentTarget as SVGElement,
                         coordinates: number[] = d3.mouse(currentTarget),
                         svgNode: SVGElement = currentTarget.viewportElement,
                         scaledRect: ClientRect = svgNode.getBoundingClientRect(),
-                        domRect: SVGRect = (<any>svgNode).getBBox(),
+                        domRect: SVGRect = (svgNode as any).getBBox(),
                         ratioX: number = scaledRect.width / domRect.width,
                         ratioY: number = scaledRect.height / domRect.height,
                         x: number = coordinates[0],
                         y: number = coordinates[1];
 
-                    if (domRect.width > 0 && !equalWithPrecision(ratioX, 1.0, 0.00001)) {
+                    if (domRect.width > EnhancedScatterChart.MinViewport.width
+                        && !equalWithPrecision(
+                            ratioX,
+                            EnhancedScatterChart.DefaultCrosshairYPosition,
+                            EnhancedScatterChart.CrosshairPrecision)) {
+
                         x = x / ratioX;
                     }
 
-                    if (domRect.height > 0 && !equalWithPrecision(ratioY, 1.0, 0.00001)) {
+                    if (domRect.height > EnhancedScatterChart.MinViewport.height
+                        && !equalWithPrecision(
+                            ratioY,
+                            EnhancedScatterChart.DefaultCrosshairYPosition,
+                            EnhancedScatterChart.CrosshairPrecision)) {
+
                         y = y / ratioY;
                     }
 
@@ -1939,48 +2328,64 @@ module powerbi.extensibility.visual {
          * Public for testability.
          */
         public updateCrosshair(x: number, y: number): void {
-            if (!this.viewportIn ||
-                !this.crosshairHorizontalLineSelection ||
-                !this.crosshairVerticalLineSelection ||
-                !this.crosshairTextSelection ||
-                !this.xAxisProperties) {
+            if (!this.viewportIn
+                || !this.crosshairHorizontalLineSelection
+                || !this.crosshairVerticalLineSelection
+                || !this.crosshairTextSelection
+                || !this.xAxisProperties) {
 
                 return;
             }
 
-            var crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
+            let crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
                 xScale = <LinearScale<number, number>>this.xAxisProperties.scale,
                 yScale = <LinearScale<number, number>>this.yAxisProperties.scale,
                 xFormated: number,
                 yFormated: number;
 
-            this.crosshairHorizontalLineSelection
-                .attr({ x1: 0, y1: y, x2: this.viewportIn.width, y2: y });
+            this.crosshairHorizontalLineSelection.attr({
+                x1: EnhancedScatterChart.CrosshairStartPosition,
+                y1: y,
+                x2: this.viewportIn.width,
+                y2: y
+            });
 
-            this.crosshairVerticalLineSelection
-                .attr({ x1: x, y1: 0, x2: x, y2: this.viewportIn.height });
+            this.crosshairVerticalLineSelection.attr({
+                x1: x,
+                y1: EnhancedScatterChart.CrosshairStartPosition,
+                x2: x,
+                y2: this.viewportIn.height
+            });
 
-            xFormated = Math.round(xScale.invert(x) * 100) / 100;
-            yFormated = Math.round(yScale.invert(y) * 100) / 100;
+            xFormated = Math.round(xScale.invert(x) * EnhancedScatterChart.CrosshairScaleFactor)
+                / EnhancedScatterChart.CrosshairScaleFactor;
+
+            yFormated = Math.round(yScale.invert(y) * EnhancedScatterChart.CrosshairScaleFactor)
+                / EnhancedScatterChart.CrosshairScaleFactor;
 
             this.crosshairTextSelection
-                .attr({ x: x + crosshairTextMargin, y: y - crosshairTextMargin })
+                .attr({
+                    x: x + crosshairTextMargin,
+                    y: y - crosshairTextMargin
+                })
                 .text(`(${xFormated}, ${yFormated})`);
         }
 
         /**
          * Public for testability.
          */
-        public addElementToDOM(rootElement: Selection<any>, properties: ElementProperties): Selection<any> {
+        public addElementToDOM(
+            rootElement: Selection<any>,
+            properties: ElementProperties): Selection<any> {
+
             if (!rootElement || !properties) {
                 return null;
             }
 
-            var elementSelection: Selection<any>,
+            let elementSelection: Selection<any>,
                 elementUpdateSelection: UpdateSelection<any>;
 
-            elementSelection = rootElement
-                .selectAll(properties.selector);
+            elementSelection = rootElement.selectAll(properties.selector);
 
             elementUpdateSelection = elementSelection.data(properties.data || [[]]);
 
@@ -1998,72 +2403,75 @@ module powerbi.extensibility.visual {
             return elementUpdateSelection;
         }
 
-        private renderBackground() {
-            if (this.data.backdrop && this.data.backdrop.show && (this.data.backdrop.url !== undefined)) {
-                this.backgroundGraphicsContext
-                    .attr("xlink:href", this.data.backdrop.url)
-                    .attr("x", 0)
-                    .attr("y", 0)
-                    .attr("width", this.viewportIn.width)
-                    .attr("height", this.viewportIn.height);
+        private renderBackground(): void {
+            if (this.data.backdrop
+                && this.data.backdrop.show
+                && (this.data.backdrop.url !== undefined)) {
+
+                this.backgroundGraphicsContext.attr({
+                    "xlink:href": this.data.backdrop.url,
+                    "x": EnhancedScatterChart.DefaultBackgroundPosition,
+                    "y": EnhancedScatterChart.DefaultBackgroundPosition,
+                    "width": this.viewportIn.width,
+                    "height": this.viewportIn.height
+                });
             } else {
-                this.backgroundGraphicsContext
-                    .attr("width", 0)
-                    .attr("height", 0);
+                this.backgroundGraphicsContext.attr({
+                    "width": EnhancedScatterChart.DefaultBackgroundPosition,
+                    "height": EnhancedScatterChart.DefaultBackgroundPosition
+                });
             }
         }
 
         private renderChart(
-            mainAxisScale: any,
             xAxis: IAxisProperties,
             yAxis: IAxisProperties,
             tickLabelMargins: any,
             chartHasAxisLabels: boolean,
-            axisLabels: ChartAxesLabels,
-            scrollScale?: any,
-            extent?: number[]) {
+            axisLabels: ChartAxesLabels): void {
 
-            var bottomMarginLimit: number = this.bottomMarginLimit,
+            let bottomMarginLimit: number = this.bottomMarginLimit,
                 leftRightMarginLimit: number = this.leftRightMarginLimit,
                 duration: number = EnhancedScatterChart.AnimationDuration;
 
             this.renderBackground();
 
-            //hide show x-axis here
+            // hide show x-axis here
             if (this.shouldRenderAxis(xAxis)) {
-                xAxis.axis.orient("bottom");
-                if (!xAxis.willLabelsFit)
-                    xAxis.axis.tickPadding(5);
+                xAxis.axis.orient(EnhancedScatterChart.DefaultXAxisOrientation);
 
-                var xAxisGraphicsElement = this.xAxisGraphicsContext;
+                if (!xAxis.willLabelsFit) {
+                    xAxis.axis.tickPadding(EnhancedScatterChart.DefaultAxisXTickPadding);
+                }
+
                 if (duration) {
-                    xAxisGraphicsElement
+                    this.xAxisGraphicsContext
                         .transition()
                         .duration(duration)
                         .call(xAxis.axis)
                         .call(this.darkenZeroLine as any);
                 }
                 else {
-                    xAxisGraphicsElement
+                    this.xAxisGraphicsContext
                         .call(xAxis.axis)
                         .call(this.darkenZeroLine);
                 }
 
-                var xZeroTick: Selection<any> = xAxisGraphicsElement
-                    .selectAll("g.tick")
-                    .filter((data) => data === 0);
+                const xZeroTick: Selection<any> = this.xAxisGraphicsContext
+                    .selectAll(`g${EnhancedScatterChart.TickSelector.selector}`)
+                    .filter((data: any) => data === EnhancedScatterChart.EmptyDataValue);
 
                 if (xZeroTick) {
-                    var xZeroColor: Fill = this.getValueAxisFill();
+                    const xZeroColor: Fill = this.getValueAxisFill();
 
                     if (xZeroColor) {
                         xZeroTick
                             .selectAll("line")
-                            .style({ "stroke": xZeroColor.solid.color });
+                            .style("stroke", xZeroColor.solid.color);
                     }
                 }
 
-                var xAxisTextNodes: Selection<any> = xAxisGraphicsElement.selectAll("text");
+                const xAxisTextNodes: Selection<any> = this.xAxisGraphicsContext.selectAll("text");
 
                 if (xAxis.willLabelsWordBreak) {
                     xAxisTextNodes.call(
@@ -2084,110 +2492,148 @@ module powerbi.extensibility.visual {
                 }
             }
             else {
-                this.xAxisGraphicsContext.selectAll("*").remove();
+                this.xAxisGraphicsContext
+                    .selectAll("*")
+                    .remove();
             }
 
             if (this.shouldRenderAxis(yAxis)) {
-                var yAxisOrientation = this.yAxisOrientation;
-
                 yAxis.axis
                     .tickSize(-this.viewportIn.width)
-                    .tickPadding(10)
-                    .orient(yAxisOrientation.toLowerCase());
+                    .tickPadding(EnhancedScatterChart.DefaultAxisYTickPadding)
+                    .orient(this.yAxisOrientation.toLowerCase());
 
-                var y1AxisGraphicsElement = this.y1AxisGraphicsContext;
                 if (duration) {
-                    y1AxisGraphicsElement
+                    this.y1AxisGraphicsContext
                         .transition()
                         .duration(duration)
                         .call(yAxis.axis)
                         .call(this.darkenZeroLine as any);
                 }
                 else {
-                    y1AxisGraphicsElement
+                    this.y1AxisGraphicsContext
                         .call(yAxis.axis)
                         .call(this.darkenZeroLine);
                 }
 
-                var yZeroTick = y1AxisGraphicsElement.selectAll("g.tick").filter((data) => data === 0);
+                const yZeroTick: Selection<any> = this.y1AxisGraphicsContext
+                    .selectAll(`g${EnhancedScatterChart.TickSelector.selector}`)
+                    .filter((data: any) => data === EnhancedScatterChart.EmptyDataValue);
+
                 if (yZeroTick) {
-                    var yZeroColor = this.getCategoryAxisFill();
+                    const yZeroColor: Fill = this.getCategoryAxisFill();
+
                     if (yZeroColor) {
-                        yZeroTick.selectAll("line").style({ "stroke": yZeroColor.solid.color });
+                        yZeroTick
+                            .selectAll("line")
+                            .style("stroke", yZeroColor.solid.color);
                     }
                 }
 
                 if (tickLabelMargins.yLeft >= leftRightMarginLimit) {
-                    y1AxisGraphicsElement.selectAll("text")
+                    this.y1AxisGraphicsContext
+                        .selectAll("text")
                         .call(axis.LabelLayoutStrategy.clip,
-                        // Can"t use padding space to render text, so subtract that from available space for ellipses calculations
-                        leftRightMarginLimit - 10,
+                        // Can't use padding space to render text, so subtract that from available space for ellipses calculations
+                        leftRightMarginLimit - EnhancedScatterChart.AxisSide,
                         svgEllipsis);
                 }
 
                 // TODO: clip (svgEllipsis) the Y2 labels
             }
             else {
-                this.y1AxisGraphicsContext.selectAll("*").remove();
+                this.y1AxisGraphicsContext
+                    .selectAll("*")
+                    .remove();
             }
+
             // Axis labels
-            //TODO: Add label for second Y axis for combo chart
+            // TODO: Add label for second Y axis for combo chart
             if (chartHasAxisLabels) {
-                var hideXAxisTitle = !this.shouldRenderAxis(xAxis, "showAxisTitle");
-                var hideYAxisTitle = !this.shouldRenderAxis(yAxis, "showAxisTitle");
-                var hideY2AxisTitle = this.valueAxisProperties && this.valueAxisProperties["secShowAxisTitle"] != null && this.valueAxisProperties["secShowAxisTitle"] === false;
+                const hideXAxisTitle: boolean = !this.shouldRenderAxis(xAxis, "showAxisTitle"),
+                    hideYAxisTitle: boolean = !this.shouldRenderAxis(yAxis, "showAxisTitle"),
+                    hideY2AxisTitle: boolean = this.valueAxisProperties
+                        && this.valueAxisProperties["secShowAxisTitle"] != null
+                        && this.valueAxisProperties["secShowAxisTitle"] === false;
 
                 this.renderAxesLabels(axisLabels, this.legendViewport.height, hideXAxisTitle, hideYAxisTitle, hideY2AxisTitle);
             }
             else {
-                this.axisGraphicsContext.selectAll(".xAxisLabel").remove();
-                this.axisGraphicsContext.selectAll(".yAxisLabel").remove();
+                this.removeAxisLabels();
             }
         }
 
-        private renderAxesLabels(axisLabels: ChartAxesLabels, legendMargin: number, hideXAxisTitle: boolean, hideYAxisTitle: boolean, hideY2AxisTitle: boolean): void {
-            this.axisGraphicsContext.selectAll(".xAxisLabel").remove();
-            this.axisGraphicsContext.selectAll(".yAxisLabel").remove();
+        private removeAxisLabels(): void {
+            this.axisGraphicsContext
+                .selectAll(".xAxisLabel")
+                .remove();
 
-            var margin = this.margin;
-            var width = this.viewportIn.width;
-            var height = this.viewport.height;
-            var fontSize = EnhancedScatterChart.AxisFontSize;
-            var yAxisOrientation = this.yAxisOrientation;
-            var showY1OnRight = yAxisOrientation === yAxisPosition.right;
+            this.axisGraphicsContext
+                .selectAll(".yAxisLabel")
+                .remove();
+        }
+
+        /**
+         * We have to optimize this function as soon as we have time for it.
+         * There's a small memory leak by removing node from the DOM every time after calling of the update method.
+         */
+        private renderAxesLabels(
+            axisLabels: ChartAxesLabels,
+            legendMargin: number,
+            hideXAxisTitle: boolean,
+            hideYAxisTitle: boolean,
+            hideY2AxisTitle: boolean): void {
+
+            this.removeAxisLabels();
+
+            const margin: IMargin = this.margin,
+                width: number = this.viewportIn.width,
+                height: number = this.viewport.height,
+                fontSize: number = EnhancedScatterChart.AxisFontSize,
+                yAxisOrientation: string = this.yAxisOrientation,
+                showY1OnRight: boolean = yAxisOrientation === yAxisPosition.right;
 
             if (!hideXAxisTitle) {
-                var xAxisLabel = this.axisGraphicsContext.append("text")
-                    .style("text-anchor", "middle")
+                const xAxisLabel: Selection<any> = this.axisGraphicsContext
+                    .append("text")
+                    .style("text-anchor", EnhancedScatterChart.TextAnchor)
                     .text(axisLabels.x)
                     .call((text: Selection<any>) => {
                         text.each(function () {
-                            var text = d3.select(this);
-                            text.attr({
-                                "class": "xAxisLabel",
-                                "transform": svg.translate(width / 2, height - fontSize - 2)
+                            const textSelection: Selection<any> = d3.select(this);
+
+                            textSelection.attr({
+                                "class": EnhancedScatterChart.XAxisLabelSelector.class,
+                                "transform": svg.translate(
+                                    width / EnhancedScatterChart.AxisLabelOffset,
+                                    height - fontSize - EnhancedScatterChart.AxisLabelOffset)
                             });
                         });
                     });
 
-                xAxisLabel.call(axis.LabelLayoutStrategy.clip,
+                xAxisLabel.call(
+                    axis.LabelLayoutStrategy.clip,
                     width,
                     svgEllipsis);
             }
 
             if (!hideYAxisTitle) {
-                var yAxisLabel = this.axisGraphicsContext.append("text")
-                    .style("text-anchor", "middle")
+                const yAxisLabel: Selection<any> = this.axisGraphicsContext
+                    .append("text")
+                    .style("text-anchor", EnhancedScatterChart.TextAnchor)
                     .text(axisLabels.y)
                     .call((text: Selection<any>) => {
                         text.each(function () {
-                            var text = d3.select(this);
+                            const text: Selection<any> = d3.select(this);
+
                             text.attr({
-                                "class": "yAxisLabel",
-                                "transform": "rotate(-90)",
-                                "y": showY1OnRight ? width + margin.right - fontSize : -margin.left,
-                                "x": -((height - margin.top - legendMargin) / 2),
-                                "dy": "1em"
+                                "class": EnhancedScatterChart.YAxisLabelSelector.class,
+                                "transform": EnhancedScatterChart.YAxisLabelTransformRotate,
+                                "y": showY1OnRight
+                                    ? width + margin.right - fontSize
+                                    : -margin.left,
+                                "x": -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset),
+                                "dy": EnhancedScatterChart.DefaultDY
                             });
                         });
                     });
@@ -2199,18 +2645,22 @@ module powerbi.extensibility.visual {
             }
 
             if (!hideY2AxisTitle && axisLabels.y2) {
-                var y2AxisLabel = this.axisGraphicsContext.append("text")
-                    .style("text-anchor", "middle")
+                const y2AxisLabel: Selection<any> = this.axisGraphicsContext
+                    .append("text")
+                    .style("text-anchor", EnhancedScatterChart.TextAnchor)
                     .text(axisLabels.y2)
                     .call((text: Selection<any>) => {
                         text.each(function () {
-                            var text = d3.select(this);
+                            const text: Selection<any> = d3.select(this);
+
                             text.attr({
-                                "class": "yAxisLabel",
-                                "transform": "rotate(-90)",
-                                "y": showY1OnRight ? -margin.left : width + margin.right - fontSize,
-                                "x": -((height - margin.top - legendMargin) / 2),
-                                "dy": "1em"
+                                "class": EnhancedScatterChart.YAxisLabelSelector.class,
+                                "transform": EnhancedScatterChart.YAxisLabelTransformRotate,
+                                "y": showY1OnRight
+                                    ? -margin.left
+                                    : width + margin.right - fontSize,
+                                "x": -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset),
+                                "dy": EnhancedScatterChart.DefaultDY
                             });
                         });
                     });
@@ -2225,14 +2675,22 @@ module powerbi.extensibility.visual {
         private updateAxis(): void {
             this.adjustMargins();
 
-            var yAxisOrientation = this.yAxisOrientation;
-            var showY1OnRight = yAxisOrientation === yAxisPosition.right;
+            const yAxisOrientation: string = this.yAxisOrientation,
+                showY1OnRight: boolean = yAxisOrientation === yAxisPosition.right;
 
-            this.xAxisGraphicsContext
-                .attr("transform", svg.translate(0, this.viewportIn.height));
+            this.xAxisGraphicsContext.attr(
+                "transform",
+                svg.translate(
+                    EnhancedScatterChart.DefaultAxisOffset,
+                    this.viewportIn.height));
 
-            this.y1AxisGraphicsContext
-                .attr("transform", svg.translate(showY1OnRight ? this.viewportIn.width : 0, 0));
+            this.y1AxisGraphicsContext.attr(
+                "transform",
+                svg.translate(
+                    showY1OnRight
+                        ? this.viewportIn.width
+                        : EnhancedScatterChart.DefaultAxisOffset,
+                    EnhancedScatterChart.DefaultAxisOffset));
 
             this.svg.attr({
                 "width": this.viewport.width,
@@ -2245,11 +2703,11 @@ module powerbi.extensibility.visual {
             });
 
             this.svgScrollable.attr({
-                "x": 0
+                "x": EnhancedScatterChart.DefaultAxisOffset
             });
 
-            var left: number = this.margin.left;
-            var top: number = this.margin.top;
+            const left: number = this.margin.left,
+                top: number = this.margin.top;
 
             this.axisGraphicsContext.attr("transform", svg.translate(left, top));
             this.axisGraphicsContextScrollable.attr("transform", svg.translate(left, top));
@@ -2259,28 +2717,40 @@ module powerbi.extensibility.visual {
                 this.svgScrollable.attr({
                     "x": left
                 });
+
                 this.axisGraphicsContextScrollable.attr("transform", svg.translate(0, top));
+
                 this.svgScrollable.attr("width", this.viewportIn.width);
-                this.svg.attr("width", this.viewport.width)
-                    .attr("height", this.viewport.height + this.ScrollBarWidth);
+
+                this.svg.attr({
+                    "width": this.viewport.width,
+                    "height": this.viewport.height + this.ScrollBarWidth
+                });
             }
             else if (this.isYScrollBarVisible) {
                 this.svgScrollable.attr("height", this.viewportIn.height + top);
-                this.svg.attr("width", this.viewport.width + this.ScrollBarWidth)
-                    .attr("height", this.viewport.height);
+
+                this.svg.attr({
+                    "width": this.viewport.width + this.ScrollBarWidth,
+                    "height": this.viewport.height
+                });
             }
         }
 
-        private getUnitType(xAxis: IAxisProperties) {
-            if (xAxis.formatter &&
-                xAxis.formatter.displayUnit &&
-                xAxis.formatter.displayUnit.value > 1)
+        private getUnitType(xAxis: IAxisProperties): string {
+            if (xAxis.formatter
+                && xAxis.formatter.displayUnit
+                && xAxis.formatter.displayUnit.value > EnhancedScatterChart.DisplayUnitValue) {
+
                 return xAxis.formatter.displayUnit.title;
+            }
+
             return null;
         }
 
         private addUnitTypeToAxisLabel(xAxis: IAxisProperties, yAxis: IAxisProperties): void {
-            var unitType = this.getUnitType(xAxis);
+            let unitType: string = this.getUnitType(xAxis);
+
             if (xAxis.isCategoryAxis) {
                 this.categoryAxisHasUnitType = unitType !== null;
             }
@@ -2290,10 +2760,16 @@ module powerbi.extensibility.visual {
 
             if (xAxis.axisLabel && unitType) {
                 if (xAxis.isCategoryAxis) {
-                    xAxis.axisLabel = axis.createAxisLabel(this.categoryAxisProperties, xAxis.axisLabel, unitType);
+                    xAxis.axisLabel = axis.createAxisLabel(
+                        this.categoryAxisProperties,
+                        xAxis.axisLabel,
+                        unitType);
                 }
                 else {
-                    xAxis.axisLabel = axis.createAxisLabel(this.valueAxisProperties, xAxis.axisLabel, unitType);
+                    xAxis.axisLabel = axis.createAxisLabel(
+                        this.valueAxisProperties,
+                        xAxis.axisLabel,
+                        unitType);
                 }
             }
 
@@ -2308,10 +2784,16 @@ module powerbi.extensibility.visual {
 
             if (yAxis.axisLabel && unitType) {
                 if (!yAxis.isCategoryAxis) {
-                    yAxis.axisLabel = axis.createAxisLabel(this.valueAxisProperties, yAxis.axisLabel, unitType);
+                    yAxis.axisLabel = axis.createAxisLabel(
+                        this.valueAxisProperties,
+                        yAxis.axisLabel,
+                        unitType);
                 }
                 else {
-                    yAxis.axisLabel = axis.createAxisLabel(this.categoryAxisProperties, yAxis.axisLabel, unitType);
+                    yAxis.axisLabel = axis.createAxisLabel(
+                        this.categoryAxisProperties,
+                        yAxis.axisLabel,
+                        unitType);
                 }
             }
         }
@@ -2322,21 +2804,21 @@ module powerbi.extensibility.visual {
             sizeRange: NumberRange,
             duration: number): UpdateSelection<EnhancedScatterChartDataPoint> {
 
-            var xScale = this.xAxisProperties.scale,
-                yScale = this.yAxisProperties.scale,
-                shouldEnableFill = (!sizeRange || !sizeRange.min) && this.data.fillPoint;
+            const xScale: any = this.xAxisProperties.scale,
+                yScale: any = this.yAxisProperties.scale,
+                shouldEnableFill: boolean = (!sizeRange || !sizeRange.min) && this.data.fillPoint;
 
-            var markers: UpdateSelection<EnhancedScatterChartDataPoint>,
-                useCustomColor = this.data.useCustomColor;
+            let markers: UpdateSelection<EnhancedScatterChartDataPoint>,
+                useCustomColor: boolean = this.data.useCustomColor;
 
             if (!this.data.useShape) {
                 this.mainGraphicsContext
-                    .selectAll(EnhancedScatterChart.ImageClasses.selector)
+                    .selectAll(EnhancedScatterChart.ImageSelector.selector)
                     .remove();
 
                 markers = this.mainGraphicsContext
-                    .classed("ScatterMarkers", true)
-                    .selectAll(EnhancedScatterChart.DotClasses.selector)
+                    .classed(EnhancedScatterChart.ScatterMarkersSelector.class, true)
+                    .selectAll(EnhancedScatterChart.DotSelector.selector)
                     .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
                         return (dataPoint.identity as ISelectionId).getKey();
                     });
@@ -2344,79 +2826,94 @@ module powerbi.extensibility.visual {
                 markers
                     .enter()
                     .append("path")
-                    .classed(EnhancedScatterChart.DotClasses.class, true)
-                    .attr("id", "markershape");
+                    .classed(EnhancedScatterChart.DotSelector.class, true)
+                    .attr("id", EnhancedScatterChart.MarkerShapeSelector.class);
 
                 markers
                     .style({
-                        "stroke-opacity": (d: EnhancedScatterChartDataPoint) => {
-                            return EnhancedScatterChart.getBubbleOpacity(d, hasSelection);
+                        "stroke-opacity": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            return EnhancedScatterChart.getBubbleOpacity(dataPoint, hasSelection);
                         },
-                        "stroke-width": "1px",
-                        "stroke": (d: EnhancedScatterChartDataPoint) => {
-                            var color = useCustomColor ? d.colorFill : d.fill;
+                        "stroke-width": PixelConverter.toString(EnhancedScatterChart.StrokeWidth),
+                        "stroke": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            const color: string = useCustomColor
+                                ? dataPoint.colorFill
+                                : dataPoint.fill;
+
                             if (this.data.outline) {
                                 return d3.rgb(color).darker().toString();
                             }
+
                             return d3.rgb(color).toString();
                         },
-                        "fill": (d: EnhancedScatterChartDataPoint) => {
-                            return d3.rgb(useCustomColor ? d.colorFill : d.fill).toString();
+                        "fill": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            return d3.rgb(useCustomColor
+                                ? dataPoint.colorFill
+                                : dataPoint.fill).toString();
                         },
-                        "fill-opacity": (d: EnhancedScatterChartDataPoint) => {
-                            return (d.size != null || shouldEnableFill)
-                                ? EnhancedScatterChart.getBubbleOpacity(d, hasSelection)
-                                : 0;
+                        "fill-opacity": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            return (dataPoint.size != null || shouldEnableFill)
+                                ? EnhancedScatterChart.getBubbleOpacity(dataPoint, hasSelection)
+                                : EnhancedScatterChart.MinBubbleOpacity;
                         }
                     })
-                    .attr("d", (d: EnhancedScatterChartDataPoint) => {
-                        var r: number = EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, this.viewport),
-                            area: number = 4 * r * r;
+                    .attr("d", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport),
+                            area: number = EnhancedScatterChart.RadiusMultiplexer * r * r;
 
-                        return d.shapeSymbolType(area);
+                        return dataPoint.shapeSymbolType(area);
                     })
                     .transition()
                     .duration((dataPoint: EnhancedScatterChartDataPoint) => {
                         if (this.keyArray.indexOf((dataPoint.identity as ISelectionId).getKey()) >= 0) {
                             return duration;
                         } else {
-                            return 0;
+                            return EnhancedScatterChart.MinAnimationDuration;
                         }
                     })
-                    .attr("transform", function (d) {
-                        return "translate(" + xScale(d.x) + "," + yScale(d.y) + ") rotate(" + d.rotation + ")";
+                    .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        return `translate(${xScale(dataPoint.x)},${yScale(dataPoint.y)}) rotate(${dataPoint.rotation})`;
                     });
             } else {
                 this.mainGraphicsContext
-                    .selectAll(EnhancedScatterChart.DotClasses.selector)
+                    .selectAll(EnhancedScatterChart.DotSelector.selector)
                     .remove();
 
                 markers = this.mainGraphicsContext
-                    .classed("ScatterMarkers", true)
-                    .selectAll(EnhancedScatterChart.ImageClasses.selector)
-                    .data(scatterData, (d: EnhancedScatterChartDataPoint) => {
-                        return (d.identity as ISelectionId).getKey();
+                    .classed(EnhancedScatterChart.ScatterMarkersSelector.class, true)
+                    .selectAll(EnhancedScatterChart.ImageSelector.selector)
+                    .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
+                        return (dataPoint.identity as ISelectionId).getKey();
                     });
 
                 markers
                     .enter()
                     .append("svg:image")
-                    .classed(EnhancedScatterChart.ImageClasses.class, true)
-                    .attr("id", "markerimage");
+                    .classed(EnhancedScatterChart.ImageSelector.class, true)
+                    .attr("id", EnhancedScatterChart.MarkerImageSelector.class);
 
                 markers
                     .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        if (dataPoint.svgurl !== undefined && dataPoint.svgurl != null && dataPoint.svgurl !== "") {
+                        if (dataPoint.svgurl !== undefined
+                            && dataPoint.svgurl != null
+                            && dataPoint.svgurl !== "") {
+
                             return dataPoint.svgurl;
                         }
 
                         return this.svgDefaultImage;
                     })
                     .attr("width", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport) * 2;
+                        return EnhancedScatterChart.getBubbleRadius(
+                            dataPoint.radius,
+                            sizeRange,
+                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
                     })
                     .attr("height", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport) * 2;
+                        return EnhancedScatterChart.getBubbleRadius(
+                            dataPoint.radius,
+                            sizeRange,
+                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
                     })
                     .transition()
                     .duration((dataPoint: EnhancedScatterChartDataPoint) => {
@@ -2424,12 +2921,15 @@ module powerbi.extensibility.visual {
                             return duration;
                         }
 
-                        return 0;
+                        return EnhancedScatterChart.MinAnimationDuration;
                     })
-                    .attr("transform", (d) => {
-                        var radius: number = EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, this.viewport);
+                    .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        const radius: number = EnhancedScatterChart.getBubbleRadius(
+                            dataPoint.radius,
+                            sizeRange,
+                            this.viewport);
 
-                        return "translate(" + (xScale(d.x) - radius) + "," + (yScale(d.y) - radius) + ") rotate(" + d.rotation + "," + radius + "," + radius + ")";
+                        return `translate(${xScale(dataPoint.x) - radius},${yScale(dataPoint.y) - radius}) rotate(${dataPoint.rotation},${radius},${radius})`;
                     });
             }
 
@@ -2441,10 +2941,6 @@ module powerbi.extensibility.visual {
                 return (dataPoint.identity as ISelectionId).getKey();
             });
 
-            // for (var i = 0; i < scatterData.length; i++) {
-            //     this.keyArray.push((scatterData[i].identity as ISelectionId).getKey());
-            // }
-
             return markers;
         }
 
@@ -2452,6 +2948,7 @@ module powerbi.extensibility.visual {
             if (hasSelection && !d.selected) {
                 return EnhancedScatterChart.DimmedBubbleOpacity;
             }
+
             return EnhancedScatterChart.DefaultBubbleOpacity;
         }
 
@@ -2459,35 +2956,51 @@ module powerbi.extensibility.visual {
             categoryAxisProperties: DataViewObject,
             valueAxisProperties: DataViewObject,
             textProperties: TextProperties,
-            scrollbarVisible: boolean): IAxisProperties[] {
+            scrollbarVisible: boolean = true): IAxisProperties[] {
 
-            var visualOptions: CalculateScaleAndDomainOptions = {
+            let visualOptions: CalculateScaleAndDomainOptions = {
                 viewport: this.viewport,
                 margin: this.margin,
-                forcedXDomain: [categoryAxisProperties ? categoryAxisProperties["start"] : null, categoryAxisProperties ? categoryAxisProperties["end"] : null],
+                forcedXDomain: [
+                    categoryAxisProperties
+                        ? categoryAxisProperties["start"]
+                        : null,
+                    categoryAxisProperties
+                        ? categoryAxisProperties["end"]
+                        : null
+                ],
                 forceMerge: valueAxisProperties && valueAxisProperties["secShow"] === false,
                 showCategoryAxisLabel: false,
-                showValueAxisLabel: false,
-                categoryAxisScaleType: categoryAxisProperties && categoryAxisProperties["axisScale"] != null ? <string>categoryAxisProperties["axisScale"] : null,
-                valueAxisScaleType: valueAxisProperties && valueAxisProperties["axisScale"] != null ? <string>valueAxisProperties["axisScale"] : null,
-                valueAxisDisplayUnits: valueAxisProperties && valueAxisProperties["labelDisplayUnits"] != null ? <number>valueAxisProperties["labelDisplayUnits"] : EnhancedScatterChart.LabelDisplayUnitsDefault,
-                categoryAxisDisplayUnits: categoryAxisProperties && categoryAxisProperties["labelDisplayUnits"] != null ? <number>categoryAxisProperties["labelDisplayUnits"] : EnhancedScatterChart.LabelDisplayUnitsDefault,
+                showValueAxisLabel: true,
+                categoryAxisScaleType: categoryAxisProperties && categoryAxisProperties["axisScale"] != null
+                    ? <string>categoryAxisProperties["axisScale"]
+                    : null,
+                valueAxisScaleType: valueAxisProperties && valueAxisProperties["axisScale"] != null
+                    ? <string>valueAxisProperties["axisScale"]
+                    : null,
+                valueAxisDisplayUnits: valueAxisProperties && valueAxisProperties["labelDisplayUnits"] != null
+                    ? <number>valueAxisProperties["labelDisplayUnits"]
+                    : EnhancedScatterChart.LabelDisplayUnitsDefault,
+                categoryAxisDisplayUnits: categoryAxisProperties && categoryAxisProperties["labelDisplayUnits"] != null
+                    ? <number>categoryAxisProperties["labelDisplayUnits"]
+                    : EnhancedScatterChart.LabelDisplayUnitsDefault,
                 trimOrdinalDataOnOverflow: false
             };
 
             if (valueAxisProperties) {
                 visualOptions.forcedYDomain = axis.applyCustomizedDomain(
-                    [valueAxisProperties["start"], valueAxisProperties["end"]],
+                    [
+                        valueAxisProperties["start"],
+                        valueAxisProperties["end"]
+                    ],
                     visualOptions.forcedYDomain);
             }
 
-            visualOptions.showCategoryAxisLabel = (!!categoryAxisProperties && !!categoryAxisProperties["showAxisTitle"]);
+            visualOptions.showCategoryAxisLabel = !!categoryAxisProperties
+                && !!categoryAxisProperties["showAxisTitle"];
 
-            visualOptions.showValueAxisLabel = true;
-
-            var width = this.viewport.width - (this.margin.left + this.margin.right);
-
-            var axes = this.calculateAxesProperties(visualOptions);
+            const width: number = this.viewport.width - (this.margin.left + this.margin.right),
+                axes: axis.IAxisProperties[] = this.calculateAxesProperties(visualOptions);
 
             axes[0].willLabelsFit = axis.LabelLayoutStrategy.willLabelsFit(
                 axes[0],
@@ -2496,45 +3009,47 @@ module powerbi.extensibility.visual {
                 textProperties);
 
             // If labels do not fit and we are not scrolling, try word breaking
-            axes[0].willLabelsWordBreak = (!axes[0].willLabelsFit && !scrollbarVisible) && axis.LabelLayoutStrategy.willLabelsWordBreak(
-                axes[0],
-                this.margin,
-                width,
-                measureSvgTextWidth,
-                estimateSvgTextHeight,
-                getTailoredTextOrDefault,
-                textProperties);
+            axes[0].willLabelsWordBreak = (!axes[0].willLabelsFit && !scrollbarVisible)
+                && axis.LabelLayoutStrategy.willLabelsWordBreak(
+                    axes[0],
+                    this.margin,
+                    width,
+                    measureSvgTextWidth,
+                    estimateSvgTextHeight,
+                    getTailoredTextOrDefault,
+                    textProperties);
 
             return axes;
         }
 
         public calculateAxesProperties(options: CalculateScaleAndDomainOptions): IAxisProperties[] {
-            var data: EnhancedScatterChartData = this.data,
+            const data: EnhancedScatterChartData = this.data,
                 dataPoints: EnhancedScatterChartDataPoint[] = data.dataPoints;
 
             this.margin = options.margin;
             this.viewport = options.viewport;
 
-            var minY: number = 0,
-                maxY: number = 10,
-                minX: number = 0,
-                maxX: number = 10;
+            let minY: number = EnhancedScatterChart.MinAxisValue,
+                maxY: number = EnhancedScatterChart.MaxAxisValue,
+                minX: number = EnhancedScatterChart.MinAxisValue,
+                maxX: number = EnhancedScatterChart.MaxAxisValue;
 
             if (dataPoints.length > 0) {
-                minY = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, d => d.y);
-                maxY = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, d => d.y);
-                minX = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, d => d.x);
-                maxX = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, d => d.x);
+                minY = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
+                maxY = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
+                minX = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
+                maxX = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
             }
 
-            var xDomain: number[] = [minX, maxX],
+            let xDomain: number[] = [minX, maxX],
                 combinedXDomain: number[],
                 combinedYDomain: number[],
                 xAxisFormatString: string,
                 yAxisFormatString: string;
 
             combinedXDomain = axis.combineDomain(
-                this.optimizeTranslateValues(options.forcedXDomain), xDomain);
+                this.optimizeTranslateValues(options.forcedXDomain),
+                xDomain);
 
             xAxisFormatString = valueFormatter.getFormatStringByColumn(data.xCol);
 
@@ -2543,17 +3058,20 @@ module powerbi.extensibility.visual {
                 dataDomain: combinedXDomain,
                 metaDataColumn: data.xCol,
                 formatString: xAxisFormatString,
-                outerPadding: 0,
+                outerPadding: EnhancedScatterChart.OuterPadding,
                 isScalar: true,
                 isVertical: false,
                 forcedTickCount: options.forcedTickCount,
                 useTickIntervalForDisplayUnits: true,
-                isCategoryAxis: true, //scatter doesn"t have a categorical axis, but this is needed for the pane to react correctly to the x-axis toggle one/off
+                isCategoryAxis: true, // scatter doesn"t have a categorical axis, but this is needed for the pane to react correctly to the x-axis toggle one/off
                 scaleType: options.categoryAxisScaleType,
                 axisDisplayUnits: options.categoryAxisDisplayUnits
             });
 
-            this.xAxisProperties.axis.tickSize(-this.viewportIn.height, 0);
+            this.xAxisProperties.axis.tickSize(
+                -this.viewportIn.height,
+                EnhancedScatterChart.OuterPadding);
+
             this.xAxisProperties.axisLabel = this.data.axesLabels.x;
 
             combinedYDomain = axis.combineDomain(
@@ -2566,7 +3084,7 @@ module powerbi.extensibility.visual {
                 dataDomain: combinedYDomain,
                 metaDataColumn: data.yCol,
                 formatString: yAxisFormatString,
-                outerPadding: 0,
+                outerPadding: EnhancedScatterChart.OuterPadding,
                 isScalar: true,
                 isVertical: true,
                 forcedTickCount: options.forcedTickCount,
@@ -2578,7 +3096,10 @@ module powerbi.extensibility.visual {
 
             this.yAxisProperties.axisLabel = this.data.axesLabels.y;
 
-            return [this.xAxisProperties, this.yAxisProperties];
+            return [
+                this.xAxisProperties,
+                this.yAxisProperties
+            ];
         }
 
         /**
@@ -2599,8 +3120,11 @@ module powerbi.extensibility.visual {
          */
         public optimizeTranslateValue(value: number): number {
             if (value) {
-                var numberSign: number = value >= 0 ? 1 : -1,
-                    absoluteValue: number = Math.abs(value);
+                const numberSign: number = value >= EnhancedScatterChart.NumberSignZero
+                    ? EnhancedScatterChart.NumberSignPositive
+                    : -EnhancedScatterChart.NumberSignPositive;
+
+                const absoluteValue: number = Math.abs(value);
 
                 if (absoluteValue > EnhancedScatterChart.MaxTranslateValue) {
                     return EnhancedScatterChart.MaxTranslateValue * numberSign;
@@ -2613,14 +3137,14 @@ module powerbi.extensibility.visual {
         }
 
         private enumerateDataPoints(instances: VisualObjectInstance[]): void {
-            var data = this.data;
-            if (!data)
+            if (!this.data) {
                 return;
+            }
 
-            var seriesCount = data.dataPoints.length;
+            const seriesCount: number = this.data.dataPoints.length;
 
-            if (!data.hasDynamicSeries) {
-                var showAllDataPoints: boolean = data.showAllDataPoints;
+            if (!this.data.hasDynamicSeries) {
+                const showAllDataPoints: boolean = this.data.showAllDataPoints;
 
                 // Add default color and show all slices
                 instances.push({
@@ -2628,7 +3152,9 @@ module powerbi.extensibility.visual {
                     selector: null,
                     properties: {
                         defaultColor: {
-                            solid: { color: data.defaultDataPointColor || this.colorPalette.getColor("0").value }
+                            solid: {
+                                color: this.data.defaultDataPointColor || this.colorPalette.getColor("0").value
+                            }
                         }
                     }
                 });
@@ -2636,16 +3162,19 @@ module powerbi.extensibility.visual {
                 instances.push({
                     objectName: "dataPoint",
                     selector: null,
-                    properties: { showAllDataPoints: showAllDataPoints }
+                    properties: { showAllDataPoints }
                 });
 
                 if (showAllDataPoints) {
-                    for (var i = 0; i < seriesCount; i++) {
-                        var seriesDataPoints = data.dataPoints[i];
+                    for (let i: number = 0; i < seriesCount; i++) {
+                        const seriesDataPoints = this.data.dataPoints[i];
+
                         instances.push({
                             objectName: "dataPoint",
-                            displayName: seriesDataPoints.formattedCategory/*.getValue*/(),
-                            selector: ColorHelper.normalizeSelector((seriesDataPoints.identity as ISelectionId).getSelector(), /*isSingleSeries*/ true),
+                            displayName: seriesDataPoints.formattedCategory(),
+                            selector: ColorHelper.normalizeSelector(
+                                (seriesDataPoints.identity as ISelectionId).getSelector(),
+                                true),
                             properties: {
                                 fill: { solid: { color: seriesDataPoints.fill } }
                             },
@@ -2654,9 +3183,11 @@ module powerbi.extensibility.visual {
                 }
             }
             else {
-                var legendDataPointLength = data.legendData.dataPoints.length;
-                for (var i = 0; i < legendDataPointLength; i++) {
-                    var series = data.legendData.dataPoints[i];
+                const legendDataPointLength: number = this.data.legendData.dataPoints.length;
+
+                for (let i: number = 0; i < legendDataPointLength; i++) {
+                    const series: legendModule.LegendDataPoint = this.data.legendData.dataPoints[i];
+
                     instances.push({
                         objectName: "dataPoint",
                         displayName: series.label,
@@ -2670,11 +3201,11 @@ module powerbi.extensibility.visual {
         }
 
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-            var instances: VisualObjectInstance[] = [];
+            const instances: VisualObjectInstance[] = [];
 
             switch (options.objectName) {
                 case "dataPoint": {
-                    var categoricalDataView: DataViewCategorical = this.dataView && this.dataView.categorical
+                    const categoricalDataView: DataViewCategorical = this.dataView && this.dataView.categorical
                         ? this.dataView.categorical
                         : null;
 
@@ -2700,15 +3231,22 @@ module powerbi.extensibility.visual {
                     };
 
                     if (this.data) {
-                        dataLabelUtils.enumerateCategoryLabels(instanceEnumerationObject, this.data.dataLabelsSettings, true);
+                        dataLabelUtils.enumerateCategoryLabels(
+                            instanceEnumerationObject,
+                            this.data.dataLabelsSettings,
+                            true);
                     } else {
-                        dataLabelUtils.enumerateCategoryLabels(instanceEnumerationObject, null, true);
+                        dataLabelUtils.enumerateCategoryLabels(
+                            instanceEnumerationObject,
+                            null,
+                            true);
                     }
 
                     break;
                 }
                 case "fillPoint": {
-                    var sizeRange = this.data.sizeRange;
+                    const sizeRange: ValueRange<number> = this.data.sizeRange;
+
                     // Check if the card should be shown or not
                     if (sizeRange && sizeRange.min) {
                         break;
@@ -2730,8 +3268,12 @@ module powerbi.extensibility.visual {
                         displayName: "Backdrop",
                         selector: null,
                         properties: {
-                            show: this.data.backdrop ? this.data.backdrop.show : false,
-                            url: this.data.backdrop ? this.data.backdrop.url : null
+                            show: this.data.backdrop
+                                ? this.data.backdrop.show
+                                : false,
+                            url: this.data.backdrop
+                                ? this.data.backdrop.url
+                                : null
                         },
                     });
 
@@ -2778,22 +3320,22 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            var show: boolean = DataViewObject.getValue<boolean>(
+            const show: boolean = DataViewObject.getValue<boolean>(
                 this.legendObjectProperties,
                 legendProps.show,
                 this.legend.isVisible());
 
-            var showTitle: boolean = DataViewObject.getValue<boolean>(
+            const showTitle: boolean = DataViewObject.getValue<boolean>(
                 this.legendObjectProperties,
                 legendProps.showTitle,
                 true);
 
-            var titleText: string = DataViewObject.getValue<string>(
+            const titleText: string = DataViewObject.getValue<string>(
                 this.legendObjectProperties,
                 legendProps.titleText,
                 this.layerLegendData ? this.layerLegendData.title : "");
 
-            var legendLabelColor: string = DataViewObject.getValue<string>(
+            const legendLabelColor: string = DataViewObject.getValue<string>(
                 this.legendObjectProperties,
                 legendProps.labelColor,
                 legendDataModule.DefaultLegendLabelFillColor);
@@ -2803,7 +3345,7 @@ module powerbi.extensibility.visual {
                 legendProps.fontSize,
                 EnhancedScatterChart.LegendLabelFontSizeDefault);
 
-            var position: string = DataViewObject.getValue<string>(
+            const position: string = DataViewObject.getValue<string>(
                 this.legendObjectProperties,
                 legendProps.position,
                 LegendPosition[LegendPosition.Top]);
@@ -2823,13 +3365,12 @@ module powerbi.extensibility.visual {
         }
 
         private getCategoryAxisValues(instances: VisualObjectInstance[]): void {
-            var //supportedType = axisType.both,
-                isScalar = true,
-                logPossible = false,
-                scaleOptions = [
+            const isScalar: boolean = true,
+                logPossible: boolean = false,
+                scaleOptions: string[] = [
                     axisScale.log,
                     axisScale.linear
-                ];//until options can be update in propPane, show all options
+                ]; // until options can be update in propPane, show all options
 
             if (!isScalar) {
                 if (this.categoryAxisProperties) {
@@ -2838,7 +3379,7 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            var instance: VisualObjectInstance = {
+            const instance: VisualObjectInstance = {
                 selector: null,
                 properties: {},
                 objectName: "categoryAxis",
@@ -2847,19 +3388,44 @@ module powerbi.extensibility.visual {
                 }
             };
 
-            instance.properties["show"] = this.categoryAxisProperties && this.categoryAxisProperties["show"] != null ? this.categoryAxisProperties["show"] : true;
-            if (this.yAxisIsCategorical)//in case of e.g. barChart
-                instance.properties["position"] = this.valueAxisProperties && this.valueAxisProperties["position"] != null ? this.valueAxisProperties["position"] : yAxisPosition.left;
-            // if (supportedType === axisType.both) {
-            instance.properties["axisType"] = isScalar ? axisType.scalar : axisType.categorical;
-            // }
-            if (isScalar) {
-                instance.properties["axisScale"] = (this.categoryAxisProperties && this.categoryAxisProperties["axisScale"] != null && logPossible) ? this.categoryAxisProperties["axisScale"] : axisScale.linear;
-                instance.properties["start"] = this.categoryAxisProperties ? this.categoryAxisProperties["start"] : null;
-                instance.properties["end"] = this.categoryAxisProperties ? this.categoryAxisProperties["end"] : null;
-                instance.properties["labelDisplayUnits"] = this.categoryAxisProperties && this.categoryAxisProperties["labelDisplayUnits"] != null ? this.categoryAxisProperties["labelDisplayUnits"] : EnhancedScatterChart.LabelDisplayUnitsDefault;
+            instance.properties["show"] = this.categoryAxisProperties && this.categoryAxisProperties["show"] != null
+                ? this.categoryAxisProperties["show"]
+                : true;
+
+            if (this.yAxisIsCategorical) { // in case of e.g. barChart
+                instance.properties["position"] = this.valueAxisProperties && this.valueAxisProperties["position"] != null
+                    ? this.valueAxisProperties["position"]
+                    : yAxisPosition.left;
             }
-            instance.properties["showAxisTitle"] = this.categoryAxisProperties && this.categoryAxisProperties["showAxisTitle"] != null ? this.categoryAxisProperties["showAxisTitle"] : true;
+
+            instance.properties["axisType"] = isScalar
+                ? axisType.scalar
+                : axisType.categorical;
+
+            if (isScalar) {
+                instance.properties["axisScale"] = (this.categoryAxisProperties
+                    && this.categoryAxisProperties["axisScale"] != null
+                    && logPossible)
+                    ? this.categoryAxisProperties["axisScale"]
+                    : axisScale.linear;
+
+                instance.properties["start"] = this.categoryAxisProperties
+                    ? this.categoryAxisProperties["start"]
+                    : null;
+
+                instance.properties["end"] = this.categoryAxisProperties
+                    ? this.categoryAxisProperties["end"]
+                    : null;
+
+                instance.properties["labelDisplayUnits"] = this.categoryAxisProperties
+                    && this.categoryAxisProperties["labelDisplayUnits"] != null
+                    ? this.categoryAxisProperties["labelDisplayUnits"]
+                    : EnhancedScatterChart.LabelDisplayUnitsDefault;
+            }
+            instance.properties["showAxisTitle"] = this.categoryAxisProperties
+                && this.categoryAxisProperties["showAxisTitle"] != null
+                ? this.categoryAxisProperties["showAxisTitle"]
+                : true;
 
             instances.push(instance);
 
@@ -2867,8 +3433,11 @@ module powerbi.extensibility.visual {
                 selector: null,
                 properties: {
                     axisStyle: this.categoryAxisProperties && this.categoryAxisProperties["axisStyle"]
-                        ? this.categoryAxisProperties["axisStyle"] : axisStyle.showTitleOnly,
-                    labelColor: this.categoryAxisProperties ? this.categoryAxisProperties["labelColor"] : null
+                        ? this.categoryAxisProperties["axisStyle"]
+                        : axisStyle.showTitleOnly,
+                    labelColor: this.categoryAxisProperties
+                        ? this.categoryAxisProperties["labelColor"]
+                        : null
                 },
                 objectName: "categoryAxis",
                 validValues: {
@@ -2879,12 +3448,12 @@ module powerbi.extensibility.visual {
             });
         }
 
-        //todo: wrap all these object getters and other related stuff into an interface
+        // TODO: wrap all these object getters and other related stuff into an interface
         private getValueAxisValues(instances: VisualObjectInstance[]): void {
-            var scaleOptions = [axisScale.log, axisScale.linear];  //until options can be update in propPane, show all options
-            var logPossible = false;
+            let scaleOptions: string[] = [axisScale.log, axisScale.linear],
+                logPossible: boolean = false;
 
-            var instance: VisualObjectInstance = {
+            const instance: VisualObjectInstance = {
                 selector: null,
                 properties: {},
                 objectName: "valueAxis",
@@ -2894,30 +3463,57 @@ module powerbi.extensibility.visual {
                 }
             };
 
-            instance.properties["show"] = this.valueAxisProperties && this.valueAxisProperties["show"] != null ? this.valueAxisProperties["show"] : true;
+            instance.properties["show"] = this.valueAxisProperties && this.valueAxisProperties["show"] != null
+                ? this.valueAxisProperties["show"]
+                : true;
 
             if (!this.yAxisIsCategorical) {
-                instance.properties["position"] = this.valueAxisProperties && this.valueAxisProperties["position"] != null ? this.valueAxisProperties["position"] : yAxisPosition.left;
+                instance.properties["position"] = this.valueAxisProperties && this.valueAxisProperties["position"] != null
+                    ? this.valueAxisProperties["position"]
+                    : yAxisPosition.left;
             }
-            instance.properties["axisScale"] = (this.valueAxisProperties && this.valueAxisProperties["axisScale"] != null && logPossible) ? this.valueAxisProperties["axisScale"] : axisScale.linear;
-            instance.properties["start"] = this.valueAxisProperties ? this.valueAxisProperties["start"] : null;
-            instance.properties["end"] = this.valueAxisProperties ? this.valueAxisProperties["end"] : null;
-            instance.properties["showAxisTitle"] = this.valueAxisProperties && this.valueAxisProperties["showAxisTitle"] != null ? this.valueAxisProperties["showAxisTitle"] : true;
-            instance.properties["labelDisplayUnits"] = this.valueAxisProperties && this.valueAxisProperties["labelDisplayUnits"] != null ? this.valueAxisProperties["labelDisplayUnits"] : EnhancedScatterChart.LabelDisplayUnitsDefault;
+            instance.properties["axisScale"] = (this.valueAxisProperties
+                && this.valueAxisProperties["axisScale"] != null
+                && logPossible)
+                ? this.valueAxisProperties["axisScale"]
+                : axisScale.linear;
 
-            instances
-                .push(instance);
+            instance.properties["start"] = this.valueAxisProperties
+                ? this.valueAxisProperties["start"]
+                : null;
+
+            instance.properties["end"] = this.valueAxisProperties
+                ? this.valueAxisProperties["end"]
+                : null;
+
+            instance.properties["showAxisTitle"] = this.valueAxisProperties
+                && this.valueAxisProperties["showAxisTitle"] != null
+                ? this.valueAxisProperties["showAxisTitle"]
+                : true;
+
+            instance.properties["labelDisplayUnits"] = this.valueAxisProperties
+                && this.valueAxisProperties["labelDisplayUnits"] != null
+                ? this.valueAxisProperties["labelDisplayUnits"]
+                : EnhancedScatterChart.LabelDisplayUnitsDefault;
+
+            instances.push(instance);
 
             instances
                 .push({
                     selector: null,
                     properties: {
-                        axisStyle: this.valueAxisProperties && this.valueAxisProperties["axisStyle"] != null ? this.valueAxisProperties["axisStyle"] : axisStyle.showTitleOnly,
-                        labelColor: this.valueAxisProperties ? this.valueAxisProperties["labelColor"] : null
+                        axisStyle: this.valueAxisProperties && this.valueAxisProperties["axisStyle"] != null
+                            ? this.valueAxisProperties["axisStyle"]
+                            : axisStyle.showTitleOnly,
+                        labelColor: this.valueAxisProperties
+                            ? this.valueAxisProperties["labelColor"]
+                            : null
                     },
                     objectName: "valueAxis",
                     validValues: {
-                        axisStyle: this.valueAxisHasUnitType ? [axisStyle.showTitleOnly, axisStyle.showUnitOnly, axisStyle.showBoth] : [axisStyle.showTitleOnly]
+                        axisStyle: this.valueAxisHasUnitType
+                            ? [axisStyle.showTitleOnly, axisStyle.showUnitOnly, axisStyle.showBoth]
+                            : [axisStyle.showTitleOnly]
                     },
                 });
         }

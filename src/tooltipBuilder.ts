@@ -39,6 +39,9 @@ module powerbi.extensibility.visual.tooltipBuilder {
         metadata: DataViewMetadataColumn[];
     }
 
+    const DefaultDisplayName: string = "";
+    const DefaultDisplayNameDelimiter: string = "/";
+
     export function createTooltipInfo(
         categoryValue: any,
         categories?: DataViewCategoryColumn[],
@@ -49,7 +52,7 @@ module powerbi.extensibility.visual.tooltipBuilder {
 
         if (categories && categories.length > 0) {
             if (categories.length > 1) {
-                let compositeCategoriesData: DataViewMetadataColumn[] = [];
+                const compositeCategoriesData: DataViewMetadataColumn[] = [];
 
                 for (let i: number = 0, length: number = categories.length; i < length; i++) {
                     compositeCategoriesData.push(categories[i].source);
@@ -70,7 +73,7 @@ module powerbi.extensibility.visual.tooltipBuilder {
 
         if (seriesData) {
             for (let i: number = 0, len: number = seriesData.length; i < len; i++) {
-                let singleSeriesData: TooltipSeriesDataItem = seriesData[i];
+                const singleSeriesData: TooltipSeriesDataItem = seriesData[i];
 
                 if (categorySource
                     && categorySource.metadata[0] === singleSeriesData.metadata.source) {
@@ -96,11 +99,11 @@ module powerbi.extensibility.visual.tooltipBuilder {
 
         if (categoryValue) {
             if (categoryValue.metadata.length > 1) {
-                let displayName: string = '';
+                let displayName: string = DefaultDisplayName;
 
                 for (let i: number = 0, ilen: number = categoryValue.metadata.length; i < ilen; i++) {
                     if (i !== 0) {
-                        displayName += '/';
+                        displayName += DefaultDisplayNameDelimiter;
                     }
 
                     displayName += categoryValue.metadata[i].displayName;
@@ -132,7 +135,7 @@ module powerbi.extensibility.visual.tooltipBuilder {
 
             if (seriesData && seriesData.metadata) {
                 const seriesMetadataColumn = seriesData.metadata.source,
-                    value = seriesData.value;;
+                    value = seriesData.value;
 
                 if (value || value === 0) {
                     let formattedValue: string = getFormattedValue(

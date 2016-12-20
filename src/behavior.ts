@@ -30,6 +30,7 @@ module powerbi.extensibility.visual {
 
     // powerbi.extensibility.utils.interactivity
     import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
+    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
     import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
     import registerStandardSelectionHandler = powerbi.extensibility.utils.interactivity.interactivityUtils.registerStandardSelectionHandler;
 
@@ -46,11 +47,9 @@ module powerbi.extensibility.visual {
         }
 
         public bindEvents(options: CustomVisualBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            let behaviors: IInteractiveBehavior[] = this.behaviors;
-
-            for (let i = 0, ilen = behaviors.length; i < ilen; i++) {
-                behaviors[i].bindEvents(options.layerOptions[i], selectionHandler);
-            }
+            this.behaviors.forEach((behavior: IInteractiveBehavior, index: number) => {
+                behavior.bindEvents(options.layerOptions[index], selectionHandler);
+            });
 
             options.clearCatcher.on("click", () => {
                 selectionHandler.handleClearSelection();
@@ -65,12 +64,15 @@ module powerbi.extensibility.visual {
     }
 
     export interface EnhancedScatterBehaviorOptions {
-        dataPointsSelection: Selection<any>;
+        dataPointsSelection: Selection<SelectableDataPoint>;
         data: EnhancedScatterChartData;
         plotContext: Selection<any>;
     }
 
     export class EnhancedScatterChartWebBehavior implements IInteractiveBehavior {
+        private static MinOpacity: number = 0;
+        private static MaxOpacity: number = 1;
+
         private dimmedBubbleOpacity: number;
         private defaultBubbleOpacity: number;
 
@@ -84,25 +86,34 @@ module powerbi.extensibility.visual {
         }
 
         public bindEvents(options: EnhancedScatterBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            let bubbles: Selection<any> = this.bubbles = options.dataPointsSelection,
-                data: EnhancedScatterChartData = options.data;
+            const data: EnhancedScatterChartData = options.data;
+
+            this.bubbles = options.dataPointsSelection;
 
             this.shouldEnableFill = (!data.sizeRange || !data.sizeRange.min) && data.fillPoint;
             this.colorBorder = data.colorBorder;
 
-            registerStandardSelectionHandler(bubbles, selectionHandler);
+            registerStandardSelectionHandler(this.bubbles, selectionHandler);
         }
 
         public renderSelection(hasSelection: boolean) {
-            let shouldEnableFill: boolean = this.shouldEnableFill,
+            const shouldEnableFill: boolean = this.shouldEnableFill,
                 colorBorder: boolean = this.colorBorder;
 
-            this.bubbles.style("fill-opacity", (d: EnhancedScatterChartDataPoint) => {
-                return this.getMarkerFillOpacity(d.size != null, shouldEnableFill, hasSelection, d.selected);
+            this.bubbles.style("fill-opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
+                return this.getMarkerFillOpacity(
+                    dataPoint.size != null,
+                    shouldEnableFill,
+                    hasSelection,
+                    dataPoint.selected);
             });
 
-            this.bubbles.style("stroke-opacity", (d: EnhancedScatterChartDataPoint) => {
-                return this.getMarkerStrokeOpacity(d.size != null, colorBorder, hasSelection, d.selected);
+            this.bubbles.style("stroke-opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
+                return this.getMarkerStrokeOpacity(
+                    dataPoint.size != null,
+                    colorBorder,
+                    hasSelection,
+                    dataPoint.selected);
             });
         }
 
@@ -118,9 +129,9 @@ module powerbi.extensibility.visual {
                 }
 
                 return this.defaultBubbleOpacity;
-            } else {
-                return 0;
             }
+
+            return EnhancedScatterChartWebBehavior.MinOpacity;
         }
 
         public getMarkerStrokeOpacity(
@@ -130,14 +141,14 @@ module powerbi.extensibility.visual {
             isSelected: boolean): number {
 
             if (hasSize && colorBorder) {
-                return 1;
-            } else {
-                if (hasSelection && !isSelected) {
-                    return this.dimmedBubbleOpacity;
-                }
-
-                return this.defaultBubbleOpacity;
+                return EnhancedScatterChartWebBehavior.MaxOpacity;
             }
+
+            if (hasSelection && !isSelected) {
+                return this.dimmedBubbleOpacity;
+            }
+
+            return this.defaultBubbleOpacity;
         }
     }
 }

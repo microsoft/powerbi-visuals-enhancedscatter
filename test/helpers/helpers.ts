@@ -27,9 +27,12 @@
 /// <reference path="../_references.ts"/>
 
 module powerbi.extensibility.visual.test.helpers {
-    import RgbColor = powerbi.extensibility.utils.test.helpers.color.RgbColor
+    import RgbColor = powerbi.extensibility.utils.test.helpers.color.RgbColor;
     import getRandomNumber = powerbi.extensibility.utils.test.helpers.getRandomNumber;
     import parseColorString = powerbi.extensibility.utils.test.helpers.color.parseColorString;
+
+    const MinColorValue: number = 0;
+    const MaxColorValue: number = 16777216;
 
     export function getSolidColorStructuralObject(color: string): any {
         return { solid: { color } };
@@ -55,7 +58,10 @@ module powerbi.extensibility.visual.test.helpers {
     }
 
     export function getRandomUniqueHexColors(count: number): string[] {
-        return getRandomUniqueIntegers(count, 0, 16777215 + 1).map(getHexColorFromNumber);
+        return getRandomUniqueIntegers(
+            count,
+            MinColorValue,
+            MaxColorValue).map(getHexColorFromNumber);
     }
 
     export function getHexColorFromNumber(value: number) {
