@@ -33,7 +33,7 @@ module powerbi.extensibility.visual {
         [properyName: string]: EnhancedScatterChartProperty;
     }
 
-    // TODO: 
+    // TODO: We have to migrate it to DataViewObjectsParser. You can find it in powerbi-visuals-utils-dataviewutils
     export const PropertiesOfCapabilities: EnhancedScatterChartProperties = {
         "dataPoint": {
             "defaultColor": {
@@ -174,7 +174,11 @@ module powerbi.extensibility.visual {
             "show": {
                 "objectName": "backdrop",
                 "propertyName": "show"
-            }, "url": { "objectName": "backdrop", "propertyName": "url" }
+            },
+            "url": {
+                "objectName": "backdrop",
+                "propertyName": "url"
+            }
         },
         "crosshair": {
             "show": {

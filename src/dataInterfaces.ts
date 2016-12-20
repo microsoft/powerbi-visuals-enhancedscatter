@@ -226,12 +226,6 @@ module powerbi.extensibility.visual {
         delta: number;
     }
 
-    export interface TooltipSeriesDataItem {
-        value?: any;
-        highlightedValue?: any;
-        metadata: DataViewValueColumn;
-    }
-
     export module yAxisPosition {
         export const left: string = 'Left';
         export const right: string = 'Right';

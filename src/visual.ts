@@ -91,9 +91,13 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.color
     import ColorHelper = powerbi.extensibility.utils.color.ColorHelper;
 
-    export class EnhancedScatterChart implements IVisual {
-        private static SuppressAnimations: boolean = true; // TODO: check it.
+    // powerbi.extensibility.utils.tooltip
+    import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
+    import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
+    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+    import createTooltipServiceWrapper = powerbi.extensibility.utils.tooltip.createTooltipServiceWrapper;
 
+    export class EnhancedScatterChart implements IVisual {
         private static MaxMarginFactor: number = 0.25;
 
         private static AnimationDuration: number = 0;
@@ -137,6 +141,8 @@ module powerbi.extensibility.visual {
         public static DefaultBubbleOpacity = 0.85;
         public static DimmedBubbleOpacity = 0.4;
 
+        private tooltipServiceWrapper: ITooltipServiceWrapper;
+
         private legend: ILegend;
 
         private element: Element;
@@ -157,23 +163,20 @@ module powerbi.extensibility.visual {
         private crosshairHorizontalLineSelection: Selection<any>;
         private crosshairTextSelection: Selection<any>;
 
-        // private style: IVisualStyle;
         private data: EnhancedScatterChartData;
         private dataView: DataView;
 
         private xAxisProperties: IAxisProperties;
         private yAxisProperties: IAxisProperties;
         private colorPalette: IColorPalette;
-        private options: VisualConstructorOptions;
-
-        // private interactivity: InteractivityOptions; // TODO: check it
 
         private interactivityService: IInteractivityService;
         private categoryAxisProperties: DataViewObject;
         private valueAxisProperties: DataViewObject;
         private yAxisOrientation: string;
-        private scrollY: boolean;
-        private scrollX: boolean;
+
+        private scrollY: boolean = true;
+        private scrollX: boolean = true;
 
         private dataViews: DataView[];
         private legendObjectProperties: DataViewObject;
@@ -193,7 +196,7 @@ module powerbi.extensibility.visual {
         private oldBackdrop: string;
 
         private behavior: IInteractiveBehavior;
-        // private animator: IGenericAnimator; // TODO: check it
+
         private keyArray: string[];
 
         private _margin: IMargin;
@@ -240,12 +243,6 @@ module powerbi.extensibility.visual {
         public static ColumnXEnd: string = "XEnd";
         public static ColumnYStart: string = "YStart";
         public static ColumnYEnd: string = "YEnd";
-
-        /**
-         * Public for testability.
-         */
-        // public static Properties: EnhancedScatterChartProperties =
-        // EnhancedScatterChart.getPropertiesByCapabilities<EnhancedScatterChartProperties>(EnhancedScatterChart.capabilities);
 
         private static substractMargin(viewport: IViewport, margin: IMargin): IViewport {
             return {
@@ -366,20 +363,19 @@ module powerbi.extensibility.visual {
         }
 
         public init(options: VisualConstructorOptions): void {
-            this.options = options;
+            this.element = options.element;
 
             this.behavior = new CustomVisualBehavior([new EnhancedScatterChartWebBehavior(
                 EnhancedScatterChart.DimmedBubbleOpacity,
                 EnhancedScatterChart.DefaultBubbleOpacity
             )]);
 
-            var element: Element = this.element = options.element;
-
-            // this.viewport = _.clone(options.viewport); // TODO: check it
-            // this.style = options.style;
             this.visualHost = options.host;
             this.colorPalette = options.host.colorPalette;
-            // this.interactivity = options.interactivity;
+
+            this.tooltipServiceWrapper = createTooltipServiceWrapper(
+                this.visualHost.tooltipService,
+                this.element);
 
             this.margin = {
                 top: 1,
@@ -389,12 +385,10 @@ module powerbi.extensibility.visual {
             };
 
             this.yAxisOrientation = yAxisPosition.left;
+
             this.adjustMargins();
 
-            var showLinesOnX: boolean = this.scrollY = true;
-            var showLinesOnY: boolean = this.scrollX = true;
-
-            var svg: Selection<any> = this.svg = d3.select(element)
+            var svg: Selection<any> = this.svg = d3.select(this.element)
                 .append("svg")
                 .style("position", "absolute")
                 .classed(EnhancedScatterChart.ClassName, true);
@@ -406,33 +400,39 @@ module powerbi.extensibility.visual {
                 .classed("svgScrollable", true)
                 .style("overflow", "hidden");
 
-            var axisGraphicsContextScrollable = this.axisGraphicsContextScrollable = this.svgScrollable.append("g")
+            this.axisGraphicsContextScrollable = this.svgScrollable
+                .append("g")
                 .classed(EnhancedScatterChart.AxisGraphicsContextClassName, true);
 
             this.clearCatcher = appendClearCatcher(this.axisGraphicsContextScrollable);
 
-            var axisGroup: Selection<any> = showLinesOnX
-                ? axisGraphicsContextScrollable
+            var axisGroup: Selection<any> = this.scrollY
+                ? this.axisGraphicsContextScrollable
                 : axisGraphicsContext;
 
             this.backgroundGraphicsContext = axisGraphicsContext.append("svg:image");
 
-            this.xAxisGraphicsContext = showLinesOnX
-                ? axisGraphicsContext.append("g").attr("class", "x axis")
-                : axisGraphicsContextScrollable.append("g").attr("class", "x axis");
+            this.xAxisGraphicsContext = this.scrollY
+                ? axisGraphicsContext
+                    .append("g")
+                    .attr("class", "x axis")
+                : this.axisGraphicsContextScrollable
+                    .append("g")
+                    .attr("class", "x axis");
 
-            this.y1AxisGraphicsContext = axisGroup.append("g").attr("class", "y axis");
+            this.y1AxisGraphicsContext = axisGroup
+                .append("g")
+                .attr("class", "y axis");
 
-            this.xAxisGraphicsContext.classed("showLinesOnAxis", showLinesOnX);
-            this.y1AxisGraphicsContext.classed("showLinesOnAxis", showLinesOnY);
+            this.xAxisGraphicsContext.classed("showLinesOnAxis", this.scrollY);
+            this.y1AxisGraphicsContext.classed("showLinesOnAxis", this.scrollX);
 
-            this.xAxisGraphicsContext.classed("hideLinesOnAxis", !showLinesOnX);
-            this.y1AxisGraphicsContext.classed("hideLinesOnAxis", !showLinesOnY);
+            this.xAxisGraphicsContext.classed("hideLinesOnAxis", !this.scrollY);
+            this.y1AxisGraphicsContext.classed("hideLinesOnAxis", !this.scrollX);
             this.interactivityService = createInteractivityService(this.visualHost);
 
             this.legend = createLegend(
-                $(element),
-                //this.interactivity && this.interactivity.isInteractiveLegend,
+                $(this.element),
                 false,
                 this.interactivityService,
                 true);
@@ -766,7 +766,6 @@ module powerbi.extensibility.visual {
 
                 color = colorHelper.getColorForSeriesValue(
                     grouping.objects,
-                    /*dataValues.identityFields,*/
                     grouping.name);
 
                 selectionId = visualHost.createSelectionIdBuilder()
@@ -969,14 +968,16 @@ module powerbi.extensibility.visual {
                     yEnd = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureYEnd, categoryIdx);
 
                     if (hasDynamicSeries) {
-                        color = colorHelper.getColorForSeriesValue(grouping.objects, /*dataValues.identityFields,*/ grouping.name);
+                        color = colorHelper.getColorForSeriesValue(grouping.objects, grouping.name);
                     } else {
                         // If we have no Size measure then use a blank query name
                         var measureSource: string = (measureSize != null)
                             ? measureSize.source.queryName
                             : "";
 
-                        color = colorHelper.getColorForMeasure(categoryObjects && categoryObjects[categoryIdx], measureSource);
+                        color = colorHelper.getColorForMeasure(
+                            categoryObjects && categoryObjects[categoryIdx],
+                            measureSource);
                     }
 
                     var category: DataViewCategoryColumn = categories && categories.length > 0
@@ -989,74 +990,145 @@ module powerbi.extensibility.visual {
                         .createSelectionId();
 
                     // TODO: need to refactor these lines below.
-                    var seriesData: TooltipSeriesDataItem[] = [];
+                    var seriesData: tooltipBuilder.TooltipSeriesDataItem[] = [];
                     if (dataValueSource) {
                         // Dynamic series
-                        seriesData.push({ value: grouping.name, metadata: { source: dataValueSource, values: [] } });
+                        seriesData.push({
+                            value: grouping.name,
+                            metadata: {
+                                source: dataValueSource,
+                                values: []
+                            }
+                        });
                     }
 
                     if (measureX) {
-                        seriesData.push({ value: xVal, metadata: measureX });
+                        seriesData.push({
+                            value: xVal,
+                            metadata: measureX
+                        });
                     }
 
                     if (measureY) {
-                        seriesData.push({ value: yVal, metadata: measureY });
+                        seriesData.push({
+                            value: yVal,
+                            metadata: measureY
+                        });
                     }
 
-                    if (measureSize && measureSize.values && measureSize.values.length > 0) {
-                        seriesData.push({ value: measureSize.values[categoryIdx], metadata: measureSize });
+                    if (measureSize
+                        && measureSize.values
+                        && measureSize.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureSize.values[categoryIdx],
+                            metadata: measureSize
+                        });
                     }
 
-                    if (measureColorFill && measureColorFill.values && measureColorFill.values.length > 0) {
-                        seriesData.push({ value: measureColorFill.values[categoryIdx], metadata: measureColorFill });
+                    if (measureColorFill
+                        && measureColorFill.values
+                        && measureColorFill.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureColorFill.values[categoryIdx],
+                            metadata: measureColorFill
+                        });
                     }
 
-                    if (measureShape && measureShape.values && measureShape.values.length > 0) {
-                        seriesData.push({ value: measureShape.values[categoryIdx], metadata: measureShape });
+                    if (measureShape
+                        && measureShape.values
+                        && measureShape.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureShape.values[categoryIdx],
+                            metadata: measureShape
+                        });
                     }
 
-                    if (measureImage && measureImage.values && measureImage.values.length > 0) {
-                        seriesData.push({ value: measureImage.values[categoryIdx], metadata: measureImage });
+                    if (measureImage
+                        && measureImage.values
+                        && measureImage.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureImage.values[categoryIdx],
+                            metadata: measureImage
+                        });
                     }
 
-                    if (measureRotation && measureRotation.values && measureRotation.values.length > 0) {
-                        seriesData.push({ value: measureRotation.values[categoryIdx], metadata: measureRotation });
+                    if (measureRotation
+                        && measureRotation.values
+                        && measureRotation.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureRotation.values[categoryIdx],
+                            metadata: measureRotation
+                        });
                     }
 
-                    if (measureBackdrop && measureBackdrop.values && measureBackdrop.values.length > 0) {
-                        seriesData.push({ value: measureBackdrop.values[categoryIdx], metadata: measureBackdrop });
+                    if (measureBackdrop
+                        && measureBackdrop.values
+                        && measureBackdrop.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureBackdrop.values[categoryIdx],
+                            metadata: measureBackdrop
+                        });
                     }
 
-                    if (measureXStart && measureXStart.values && measureXStart.values.length > 0) {
-                        seriesData.push({ value: measureXStart.values[categoryIdx], metadata: measureXStart });
+                    if (measureXStart
+                        && measureXStart.values
+                        && measureXStart.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureXStart.values[categoryIdx],
+                            metadata: measureXStart
+                        });
                     }
 
-                    if (measureXEnd && measureXEnd.values && measureXEnd.values.length > 0) {
-                        seriesData.push({ value: measureXEnd.values[categoryIdx], metadata: measureXEnd });
+                    if (measureXEnd
+                        && measureXEnd.values
+                        && measureXEnd.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureXEnd.values[categoryIdx],
+                            metadata: measureXEnd
+                        });
                     }
 
-                    if (measureYStart && measureYStart.values && measureYStart.values.length > 0) {
-                        seriesData.push({ value: measureYStart.values[categoryIdx], metadata: measureYStart });
+                    if (measureYStart
+                        && measureYStart.values
+                        && measureYStart.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureYStart.values[categoryIdx],
+                            metadata: measureYStart
+                        });
                     }
 
-                    if (measureYEnd && measureYEnd.values && measureYEnd.values.length > 0) {
-                        seriesData.push({ value: measureYEnd.values[categoryIdx], metadata: measureYEnd });
+                    if (measureYEnd
+                        && measureYEnd.values
+                        && measureYEnd.values.length > 0) {
+
+                        seriesData.push({
+                            value: measureYEnd.values[categoryIdx],
+                            metadata: measureYEnd
+                        });
                     }
 
-                    var tooltipInfo: VisualTooltipDataItem[] = []/*TooltipBuilder.createTooltipInfo(*/
-                    // formatStringProp, /* formatStringProp */
-                    // undefined, /* dataViewCat */
-                    // categoryValue, /* categoryValue */
-                    // null, /* value */
-                    // category ? [category] : undefined, /* categories */
-                    // seriesData, /* seriesData */
-                    // undefined /* seriesIndex */);
+                    const tooltipInfo: VisualTooltipDataItem[] = tooltipBuilder.createTooltipInfo(
+                        categoryValue,
+                        category ? [category] : undefined,
+                        seriesData);
 
-                    var dataPoint: EnhancedScatterChartDataPoint = {
+                    dataPoints.push({
                         x: xVal,
                         y: yVal,
                         size: size,
-                        radius: { sizeMeasure: measureSize, index: categoryIdx },
+                        radius: {
+                            sizeMeasure: measureSize,
+                            index: categoryIdx
+                        },
                         fill: color,
                         formattedCategory: this.createLazyFormattedCategory(categoryFormatter, categoryValue),
                         selected: false,
@@ -1074,9 +1146,7 @@ module powerbi.extensibility.visual {
                         xEnd: xEnd,
                         yStart: yStart,
                         yEnd: yEnd
-                    };
-
-                    dataPoints.push(dataPoint);
+                    });
                 }
             }
 
@@ -1177,7 +1247,7 @@ module powerbi.extensibility.visual {
             this.renderLegend();
             //}
 
-            this.render(EnhancedScatterChart.SuppressAnimations);
+            this.render();
 
         }
 
@@ -1263,7 +1333,7 @@ module powerbi.extensibility.visual {
                 const imageElement: HTMLImageElement = this as HTMLImageElement;
 
                 if (that.oldBackdrop !== imageElement.src) {
-                    that.render(true);
+                    that.render();
                     that.oldBackdrop = imageElement.src;
                 }
             };
@@ -1279,7 +1349,7 @@ module powerbi.extensibility.visual {
             }
         }
 
-        public render(suppressAnimations: boolean): void {
+        public render(): void {
             this.viewport.height -= this.legendViewport.height;
             this.viewport.width -= this.legendViewport.width;
 
@@ -1472,8 +1542,7 @@ module powerbi.extensibility.visual {
                 this.yAxisProperties,
                 tickLabelMargins,
                 chartHasAxisLabels,
-                axisLabels,
-                suppressAnimations);
+                axisLabels);
 
             this.updateAxis();
 
@@ -1495,12 +1564,11 @@ module powerbi.extensibility.visual {
                     : 0;
             });
 
-            var /*duration: number = GetAnimationDuration(this.animator, suppressAnimations),*/
-                scatterMarkers: UpdateSelection<any> = this.drawScatterMarkers(
-                    sortedData,
-                    hasSelection,
-                    data.sizeRange,
-                    EnhancedScatterChart.AnimationDuration),
+            var scatterMarkers: UpdateSelection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
+                sortedData,
+                hasSelection,
+                data.sizeRange,
+                EnhancedScatterChart.AnimationDuration),
                 dataLabelsSettings: PointDataLabelsSettings = this.data.dataLabelsSettings;
 
             if (dataLabelsSettings.show) {
@@ -1512,9 +1580,9 @@ module powerbi.extensibility.visual {
 
                 clonedDataPoints = this.cloneDataPoints(dataPoints);
 
-                //fix bug 3863: drawDefaultLabelsForDataPointChart add to datapoints[xxx].size = object , which causes when
-                //category labels is on and Fill Points option off to fill the points when mouse click occures because of default size
-                //is set to datapoints.
+                // fix bug 3863: drawDefaultLabelsForDataPointChart add to datapoints[xxx].size = object, which causes when
+                // category labels is on and Fill Points option off to fill the points when mouse click occures because of default size
+                // is set to datapoints.
                 labels = dataLabelUtils.drawDefaultLabelsForDataPointChart(
                     clonedDataPoints,
                     this.mainGraphicsG,
@@ -1550,10 +1618,7 @@ module powerbi.extensibility.visual {
                 };
             }
 
-            // TODO: Add an ability
-            // addTooltip(scatterMarkers, (tooltipEvent: TooltipEvent) => tooltipEvent.data.tooltipInfo);
-
-            // svg.flushAllD3TransitionsIfNeeded(this.options);
+            this.bindTooltip(scatterMarkers);
 
             if (this.behavior) {
                 var layerBehaviorOptions: any[] = [behaviorOptions];
@@ -1567,6 +1632,14 @@ module powerbi.extensibility.visual {
                     this.interactivityService.bind(dataPoints, this.behavior, cbehaviorOptions);
                 }
             }
+        }
+
+        private bindTooltip(selection: Selection<TooltipEnabledDataPoint>): void {
+            this.tooltipServiceWrapper.addTooltip(
+                selection,
+                (tooltipEvent: TooltipEventArgs<TooltipEnabledDataPoint>) => {
+                    return tooltipEvent.data.tooltipInfo;
+                });
         }
 
         private cloneDataPoints(dataPoints: EnhancedScatterChartDataPoint[]): EnhancedScatterChartDataPoint[] {
@@ -1947,7 +2020,6 @@ module powerbi.extensibility.visual {
             tickLabelMargins: any,
             chartHasAxisLabels: boolean,
             axisLabels: ChartAxesLabels,
-            suppressAnimations: boolean,
             scrollScale?: any,
             extent?: number[]) {
 
@@ -2248,13 +2320,13 @@ module powerbi.extensibility.visual {
             scatterData: EnhancedScatterChartDataPoint[],
             hasSelection: boolean,
             sizeRange: NumberRange,
-            duration: number): UpdateSelection<any> {
+            duration: number): UpdateSelection<EnhancedScatterChartDataPoint> {
 
             var xScale = this.xAxisProperties.scale,
                 yScale = this.yAxisProperties.scale,
                 shouldEnableFill = (!sizeRange || !sizeRange.min) && this.data.fillPoint;
 
-            var markers: UpdateSelection<any>,
+            var markers: UpdateSelection<EnhancedScatterChartDataPoint>,
                 useCustomColor = this.data.useCustomColor;
 
             if (!this.data.useShape) {
@@ -2304,14 +2376,16 @@ module powerbi.extensibility.visual {
                         return d.shapeSymbolType(area);
                     })
                     .transition()
-                    .duration((d) => {
-                        if (this.keyArray.indexOf(d.identity.getKey()) >= 0) {
+                    .duration((dataPoint: EnhancedScatterChartDataPoint) => {
+                        if (this.keyArray.indexOf((dataPoint.identity as ISelectionId).getKey()) >= 0) {
                             return duration;
                         } else {
                             return 0;
                         }
                     })
-                    .attr("transform", function (d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ") rotate(" + d.rotation + ")"; });
+                    .attr("transform", function (d) {
+                        return "translate(" + xScale(d.x) + "," + yScale(d.y) + ") rotate(" + d.rotation + ")";
+                    });
             } else {
                 this.mainGraphicsContext
                     .selectAll(EnhancedScatterChart.DotClasses.selector)
@@ -2331,26 +2405,26 @@ module powerbi.extensibility.visual {
                     .attr("id", "markerimage");
 
                 markers
-                    .attr("xlink:href", (d) => {
-                        if (d.svgurl !== undefined && d.svgurl != null && d.svgurl !== "") {
-                            return d.svgurl;
-                        } else {
-                            return this.svgDefaultImage;
+                    .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        if (dataPoint.svgurl !== undefined && dataPoint.svgurl != null && dataPoint.svgurl !== "") {
+                            return dataPoint.svgurl;
                         }
+
+                        return this.svgDefaultImage;
                     })
-                    .attr("width", (d) => {
-                        return EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, this.viewport) * 2;
+                    .attr("width", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        return EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport) * 2;
                     })
-                    .attr("height", (d) => {
-                        return EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, this.viewport) * 2;
+                    .attr("height", (dataPoint: EnhancedScatterChartDataPoint) => {
+                        return EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport) * 2;
                     })
                     .transition()
-                    .duration((d) => {
-                        if (this.keyArray.indexOf(d.identity.getKey()) >= 0) {
+                    .duration((dataPoint: EnhancedScatterChartDataPoint) => {
+                        if (this.keyArray.indexOf((dataPoint.identity as ISelectionId).getKey()) >= 0) {
                             return duration;
-                        } else {
-                            return 0;
                         }
+
+                        return 0;
                     })
                     .attr("transform", (d) => {
                         var radius: number = EnhancedScatterChart.getBubbleRadius(d.radius, sizeRange, this.viewport);
@@ -2359,11 +2433,17 @@ module powerbi.extensibility.visual {
                     });
             }
 
-            markers.exit().remove();
-            this.keyArray = [];
-            for (var i = 0; i < scatterData.length; i++) {
-                this.keyArray.push((scatterData[i].identity as ISelectionId).getKey());
-            }
+            markers
+                .exit()
+                .remove();
+
+            this.keyArray = scatterData.map((dataPoint: EnhancedScatterChartDataPoint) => {
+                return (dataPoint.identity as ISelectionId).getKey();
+            });
+
+            // for (var i = 0; i < scatterData.length; i++) {
+            //     this.keyArray.push((scatterData[i].identity as ISelectionId).getKey());
+            // }
 
             return markers;
         }

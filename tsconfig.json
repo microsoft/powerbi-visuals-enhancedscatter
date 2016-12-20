@@ -21,6 +21,7 @@
     "node_modules/powerbi-visuals-utils-colorutils/lib/index.d.ts",
     "src/dataInterfaces.ts",
     "src/properties.ts",
+    "src/tooltipBuilder.ts",
     "src/gradientUtils.ts",
     "src/axisType.ts",
     "src/behavior.ts",
