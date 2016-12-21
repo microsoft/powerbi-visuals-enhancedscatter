@@ -187,6 +187,8 @@ module powerbi.extensibility.visual {
 
         private static MinAnimationDuration: number = 0;
 
+        private static DefaultPosition: number = 0;
+
         private static MinImageViewport: IViewport = {
             width: 0,
             height: 0
@@ -393,8 +395,6 @@ module powerbi.extensibility.visual {
             return this.legend.getMargins();
         }
 
-
-
         private static substractMargin(viewport: IViewport, margin: IMargin): IViewport {
             return {
                 width: Math.max(
@@ -514,6 +514,21 @@ module powerbi.extensibility.visual {
             return result
                 ? result.value
                 : defaultValue;
+        }
+
+        private static getDefinedNumberValue(value: any): number {
+            return isNaN(value) || value === null
+                ? EnhancedScatterChart.DefaultPosition
+                : value;
+        }
+
+        private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number): number {
+            return column
+                && column.values
+                && !(column.values[index] === null)
+                && !isNaN(column.values[index] as number)
+                ? Number(column.values[index])
+                : null;
         }
 
         constructor(options: VisualConstructorOptions) {
@@ -1157,13 +1172,13 @@ module powerbi.extensibility.visual {
                             seriesValues);
 
                     // TODO: need to update (refactor) these lines below.
-                    const xVal: PrimitiveValue = measureX && measureX.values && !isNaN(<number>measureX.values[categoryIdx])
-                        ? measureX.values[categoryIdx]
-                        : null;
+                    const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(
+                        measureX,
+                        categoryIdx);
 
-                    const yVal: PrimitiveValue = measureY && measureY.values && !isNaN(<number>measureY.values[categoryIdx])
-                        ? measureY.values[categoryIdx]
-                        : 0;
+                    const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(
+                        measureY,
+                        categoryIdx);
 
                     const hasNullValue: boolean = (xVal == null) || (yVal == null);
 
@@ -2029,7 +2044,9 @@ module powerbi.extensibility.visual {
                     });
                 },
                 labelLayout: {
-                    x: (dataPoint: EnhancedScatterChartDataPoint) => xScale(dataPoint.x),
+                    x: (dataPoint: EnhancedScatterChartDataPoint) => {
+                        return EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x));
+                    },
                     y: (dataPoint: EnhancedScatterChartDataPoint) => {
                         const margin = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport)
                             + EnhancedScatterChart.LabelMargin;
@@ -2872,7 +2889,11 @@ module powerbi.extensibility.visual {
                         }
                     })
                     .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return `translate(${xScale(dataPoint.x)},${yScale(dataPoint.y)}) rotate(${dataPoint.rotation})`;
+                        const x: number = EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x)),
+                            y: number = EnhancedScatterChart.getDefinedNumberValue(yScale(dataPoint.y)),
+                            rotation: number = dataPoint.rotation;
+
+                        return `translate(${x},${y}) rotate(${rotation})`;
                     });
             } else {
                 this.mainGraphicsContext
@@ -2929,7 +2950,10 @@ module powerbi.extensibility.visual {
                             sizeRange,
                             this.viewport);
 
-                        return `translate(${xScale(dataPoint.x) - radius},${yScale(dataPoint.y) - radius}) rotate(${dataPoint.rotation},${radius},${radius})`;
+                        const x: number = EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x) - radius),
+                            y: number = EnhancedScatterChart.getDefinedNumberValue(yScale(dataPoint.y) - radius);
+
+                        return `translate(${x},${y}) rotate(${dataPoint.rotation},${radius},${radius})`;
                     });
             }
 
