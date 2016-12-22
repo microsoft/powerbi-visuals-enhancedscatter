@@ -134,8 +134,8 @@ module powerbi.extensibility.visual.tooltipBuilder {
             const seriesData: TooltipSeriesDataItem = seriesValues[i];
 
             if (seriesData && seriesData.metadata) {
-                const seriesMetadataColumn = seriesData.metadata.source,
-                    value = seriesData.value;
+                const seriesMetadataColumn: DataViewMetadataColumn = seriesData.metadata.source,
+                    value: any = seriesData.value;
 
                 if (value || value === 0) {
                     let formattedValue: string = getFormattedValue(
@@ -153,7 +153,7 @@ module powerbi.extensibility.visual.tooltipBuilder {
         return items;
     }
 
-    export function getFormattedValue(column: DataViewMetadataColumn, value: any) {
+    export function getFormattedValue(column: DataViewMetadataColumn, value: any): any {
         const formatString: string = valueFormatter.getFormatStringByColumn(column);
 
         return valueFormatter.format(value, formatString);

@@ -50,7 +50,7 @@ module powerbi.extensibility.visual.test.helpers {
     export function getRandomUniqueIntegers(count: number, min: number = 0, max: number): number[] {
         let result: number[] = [];
 
-        for (let i = 0; i < count; i++) {
+        for (let i: number = 0; i < count; i++) {
             result.push(getRandomNumber(min, max, result, Math.floor));
         }
 
@@ -64,7 +64,7 @@ module powerbi.extensibility.visual.test.helpers {
             MaxColorValue).map(getHexColorFromNumber);
     }
 
-    export function getHexColorFromNumber(value: number) {
+    export function getHexColorFromNumber(value: number): string {
         return `#${value.toString(16).toUpperCase()}`;
     }
 }

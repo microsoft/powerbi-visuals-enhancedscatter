@@ -96,7 +96,7 @@ module powerbi.extensibility.visual {
             registerStandardSelectionHandler(this.bubbles, selectionHandler);
         }
 
-        public renderSelection(hasSelection: boolean) {
+        public renderSelection(hasSelection: boolean): void {
             const shouldEnableFill: boolean = this.shouldEnableFill,
                 colorBorder: boolean = this.colorBorder;
 

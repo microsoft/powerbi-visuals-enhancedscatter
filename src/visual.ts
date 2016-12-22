@@ -408,46 +408,46 @@ module powerbi.extensibility.visual {
 
         private static getCustomSymbolType(shape: any): ShapeFunction {
             const customSymbolTypes = d3.map<ShapeFunction>({
-                "circle": (size) => {
+                "circle": (size: number) => {
                     const r: number = Math.sqrt(size / Math.PI);
 
                     return `M0,${r}A${r},${r} 0 1,1 0,${-r}A${r},${r} 0 1,1 0,${r}Z`;
                 },
 
-                "cross": (size) => {
+                "cross": (size: number) => {
                     const r: number = Math.sqrt(size / EnhancedScatterChart.R5) / EnhancedScatterChart.R2;
 
                     return `M${-EnhancedScatterChart.R3 * r},${-r}H${-r}V${-EnhancedScatterChart.R3 * r}H${r}V${-r}H${EnhancedScatterChart.R3 * r}V${r}H${r}V${EnhancedScatterChart.R3 * r}H${-r}V${r}H${-EnhancedScatterChart.R3 * r}Z`;
                 },
 
-                "diamond": (size) => {
+                "diamond": (size: number) => {
                     const ry: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.tan(Math.PI / EnhancedScatterChart.R6))),
                         rx: number = ry * Math.tan(Math.PI / EnhancedScatterChart.R6);
 
                     return `M0,${-ry}L${rx},0 0,${ry} ${-rx},0Z`;
                 },
 
-                "square": (size) => {
+                "square": (size: number) => {
                     const r: number = Math.sqrt(size) / EnhancedScatterChart.R2;
 
                     return `M${-r},${-r}L${r},${-r} ${r},${r} ${-r},${r}Z`;
                 },
 
-                "triangle-up": (size) => {
+                "triangle-up": (size: number) => {
                     const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                         ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                     return `M0,${-ry}L${rx},${ry} ${-rx},${ry}Z`;
                 },
 
-                "triangle-down": (size) => {
+                "triangle-down": (size: number) => {
                     const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                         ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                     return `M0,${ry}L${rx},${-ry} ${-rx},${-ry}Z`;
                 },
 
-                "star": (size) => {
+                "star": (size: number) => {
                     const outerRadius: number = Math.sqrt(size / EnhancedScatterChart.R2),
                         innerRadius: number = Math.sqrt(size / EnhancedScatterChart.R10),
                         angle: number = Math.PI / EnhancedScatterChart.R5;
@@ -475,26 +475,26 @@ module powerbi.extensibility.visual {
                     return `${results}Z`;
                 },
 
-                "hexagon": (size) => {
+                "hexagon": (size: number) => {
                     const r: number = Math.sqrt(size / (EnhancedScatterChart.R6 * Math.sqrt(EnhancedScatterChart.R3))),
                         r2: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.sqrt(EnhancedScatterChart.R3)));
 
                     return `M0,${EnhancedScatterChart.R2 * r}L${-r2},${r} ${-r2},${-r} 0,${-EnhancedScatterChart.R2 * r} ${r2},${-r} ${r2},${r}Z`;
                 },
 
-                "x": (size) => {
+                "x": (size: number) => {
                     const r: number = Math.sqrt(size / EnhancedScatterChart.R10);
 
                     return `M0,${r}L${-r},${EnhancedScatterChart.R2 * r} ${-EnhancedScatterChart.R2 * r},${r} ${-r},0 ${-EnhancedScatterChart.R2 * r},${-r} ${-r},${-EnhancedScatterChart.R2 * r} 0,${-r} ${r},${-EnhancedScatterChart.R2 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},0 ${EnhancedScatterChart.R2 * r},${r} ${r},${EnhancedScatterChart.R2 * r}Z`;
                 },
 
-                "uparrow": (size) => {
+                "uparrow": (size: number) => {
                     const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                     return `M${r},${EnhancedScatterChart.R3 * r}L${-r},${EnhancedScatterChart.R3 * r} ${-r},${-r} ${-EnhancedScatterChart.R2 * r},${-r} 0,${-EnhancedScatterChart.R3 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},${-r}Z`;
                 },
 
-                "downarrow": (size) => {
+                "downarrow": (size: number) => {
                     const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                     return `M0,${EnhancedScatterChart.R3 * r}L${(-EnhancedScatterChart.R2 * r)},${r} ${-r},${r} ${-r},${-EnhancedScatterChart.R3 * r} ${r},${-EnhancedScatterChart.R3 * r} ${r},${r} ${EnhancedScatterChart.R2 * r},${r}Z`;
@@ -1552,7 +1552,7 @@ module powerbi.extensibility.visual {
             if (legendProperties) {
                 legendDataModule.update(legendData, legendProperties);
 
-                const position = legendProperties[legendProps.position] as string;
+                const position: string = legendProperties[legendProps.position] as string;
 
                 if (position) {
                     legend.changeOrientation(LegendPosition[position]);
@@ -2582,11 +2582,11 @@ module powerbi.extensibility.visual {
 
         private removeAxisLabels(): void {
             this.axisGraphicsContext
-                .selectAll(".xAxisLabel")
+                .selectAll(EnhancedScatterChart.XAxisLabelSelector.selector)
                 .remove();
 
             this.axisGraphicsContext
-                .selectAll(".yAxisLabel")
+                .selectAll(EnhancedScatterChart.YAxisLabelSelector.selector)
                 .remove();
         }
 
@@ -2732,12 +2732,11 @@ module powerbi.extensibility.visual {
 
             if (this.isXScrollBarVisible) {
                 this.svgScrollable.attr({
-                    "x": left
+                    "x": left,
+                    "width": this.viewportIn.width
                 });
 
                 this.axisGraphicsContextScrollable.attr("transform", svg.translate(0, top));
-
-                this.svgScrollable.attr("width", this.viewportIn.width);
 
                 this.svg.attr({
                     "width": this.viewport.width,
@@ -2914,27 +2913,28 @@ module powerbi.extensibility.visual {
                     .attr("id", EnhancedScatterChart.MarkerImageSelector.class);
 
                 markers
-                    .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        if (dataPoint.svgurl !== undefined
-                            && dataPoint.svgurl != null
-                            && dataPoint.svgurl !== "") {
+                    .attr({
+                        "xlink:href": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            if (dataPoint.svgurl !== undefined
+                                && dataPoint.svgurl != null
+                                && dataPoint.svgurl !== "") {
 
-                            return dataPoint.svgurl;
+                                return dataPoint.svgurl;
+                            }
+
+                            return this.svgDefaultImage;
                         }
+                    })
+                    .each(function (dataPoint: EnhancedScatterChartDataPoint): void {
+                        const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
+                            dataPoint.radius,
+                            sizeRange,
+                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                        return this.svgDefaultImage;
-                    })
-                    .attr("width", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return EnhancedScatterChart.getBubbleRadius(
-                            dataPoint.radius,
-                            sizeRange,
-                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
-                    })
-                    .attr("height", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return EnhancedScatterChart.getBubbleRadius(
-                            dataPoint.radius,
-                            sizeRange,
-                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
+                        d3.select(this).attr({
+                            "width": bubbleRadius,
+                            "height": bubbleRadius
+                        });
                     })
                     .transition()
                     .duration((dataPoint: EnhancedScatterChartDataPoint) => {
