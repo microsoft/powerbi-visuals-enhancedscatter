@@ -1,0 +1,698 @@
+{
+    "dataRoles": [
+        {
+            "name": "Category",
+            "kind": "Grouping",
+            "displayName": "Details"
+        },
+        {
+            "name": "Series",
+            "kind": "Grouping",
+            "displayName": "Legend"
+        },
+        {
+            "name": "X",
+            "kind": "Measure",
+            "displayName": "X Axis"
+        },
+        {
+            "name": "Y",
+            "kind": "Measure",
+            "displayName": "Y Axis"
+        },
+        {
+            "name": "Size",
+            "kind": "Measure",
+            "displayName": "Size"
+        },
+        {
+            "name": "Gradient",
+            "kind": "Measure",
+            "displayName": "Color saturation"
+        },
+        {
+            "name": "ColorFill",
+            "kind": "Grouping",
+            "displayName": "Customized Color"
+        },
+        {
+            "name": "Shape",
+            "kind": "Measure",
+            "displayName": "Shape"
+        },
+        {
+            "name": "Image",
+            "kind": "Grouping",
+            "displayName": "Image"
+        },
+        {
+            "name": "Rotation",
+            "kind": "Measure",
+            "displayName": "Rotation"
+        },
+        {
+            "name": "Backdrop",
+            "kind": "Grouping",
+            "displayName": "Backdrop"
+        },
+        {
+            "name": "X Start",
+            "kind": "Measure",
+            "displayName": "X Start"
+        },
+        {
+            "name": "X End",
+            "kind": "Measure",
+            "displayName": "X End"
+        },
+        {
+            "name": "Y Start",
+            "kind": "Measure",
+            "displayName": "Y Start"
+        },
+        {
+            "name": "Y End",
+            "kind": "Measure",
+            "displayName": "Y End"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Series": {
+                        "max": 0
+                    },
+                    "X": {
+                        "max": 1
+                    },
+                    "Y": {
+                        "max": 1
+                    },
+                    "Size": {
+                        "max": 1
+                    },
+                    "Gradient": {
+                        "max": 1
+                    },
+                    "ColorFill": {
+                        "max": 0
+                    },
+                    "Shape": {
+                        "max": 1
+                    },
+                    "Image": {
+                        "max": 0
+                    },
+                    "Rotation": {
+                        "max": 1
+                    },
+                    "Backdrop": {
+                        "max": 1
+                    },
+                    "XStart": {
+                        "max": 1
+                    },
+                    "XEnd": {
+                        "max": 1
+                    },
+                    "YStart": {
+                        "max": 1
+                    },
+                    "YEnd": {
+                        "max": 1
+                    }
+                },
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Series": {
+                        "max": 0
+                    },
+                    "X": {
+                        "max": 1
+                    },
+                    "Y": {
+                        "max": 1
+                    },
+                    "Size": {
+                        "max": 1
+                    },
+                    "Gradient": {
+                        "max": 0
+                    },
+                    "ColorFill": {
+                        "max": 1
+                    },
+                    "Shape": {
+                        "max": 1
+                    },
+                    "Image": {
+                        "max": 0
+                    },
+                    "Rotation": {
+                        "max": 1
+                    },
+                    "Backdrop": {
+                        "max": 1
+                    },
+                    "XStart": {
+                        "max": 1
+                    },
+                    "XEnd": {
+                        "max": 1
+                    },
+                    "YStart": {
+                        "max": 1
+                    },
+                    "YEnd": {
+                        "max": 1
+                    }
+                },
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Series": {
+                        "max": 0
+                    },
+                    "X": {
+                        "max": 1
+                    },
+                    "Y": {
+                        "max": 1
+                    },
+                    "Size": {
+                        "max": 1
+                    },
+                    "Gradient": {
+                        "max": 0
+                    },
+                    "ColorFill": {
+                        "max": 0
+                    },
+                    "Shape": {
+                        "max": 0
+                    },
+                    "Image": {
+                        "max": 1
+                    },
+                    "Rotation": {
+                        "max": 1
+                    },
+                    "Backdrop": {
+                        "max": 1
+                    },
+                    "XStart": {
+                        "max": 1
+                    },
+                    "XEnd": {
+                        "max": 1
+                    },
+                    "YStart": {
+                        "max": 1
+                    },
+                    "YEnd": {
+                        "max": 1
+                    }
+                },
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Series": {
+                        "max": 1
+                    },
+                    "X": {
+                        "max": 1
+                    },
+                    "Y": {
+                        "max": 1
+                    },
+                    "Size": {
+                        "max": 1
+                    },
+                    "Gradient": {
+                        "max": 0
+                    },
+                    "ColorFill": {
+                        "max": 1
+                    },
+                    "Shape": {
+                        "max": 1
+                    },
+                    "Image": {
+                        "max": 0
+                    },
+                    "Rotation": {
+                        "max": 1
+                    },
+                    "Backdrop": {
+                        "max": 1
+                    },
+                    "XStart": {
+                        "max": 1
+                    },
+                    "XEnd": {
+                        "max": 1
+                    },
+                    "YStart": {
+                        "max": 1
+                    },
+                    "YEnd": {
+                        "max": 1
+                    }
+                },
+                {
+                    "Category": {
+                        "max": 1
+                    },
+                    "Series": {
+                        "max": 1
+                    },
+                    "X": {
+                        "max": 1
+                    },
+                    "Y": {
+                        "max": 1
+                    },
+                    "Size": {
+                        "max": 1
+                    },
+                    "Gradient": {
+                        "max": 0
+                    },
+                    "ColorFill": {
+                        "max": 0
+                    },
+                    "Shape": {
+                        "max": 0
+                    },
+                    "Image": {
+                        "max": 1
+                    },
+                    "Rotation": {
+                        "max": 1
+                    },
+                    "Backdrop": {
+                        "max": 1
+                    },
+                    "XStart": {
+                        "max": 1
+                    },
+                    "XEnd": {
+                        "max": 1
+                    },
+                    "YStart": {
+                        "max": 1
+                    },
+                    "YEnd": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "Category"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "ColorFill"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Image"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "Backdrop"
+                            }
+                        }
+                    ],
+                    "dataReductionAlgorithm": {
+                        "sample": {}
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "Series",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "X"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Y"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Size"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Gradient"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Shape"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Rotation"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "X Start"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "X End"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Y Start"
+                                }
+                            },
+                            {
+                                "bind": {
+                                    "to": "Y End"
+                                }
+                            }
+                        ],
+                        "dataReductionAlgorithm": {
+                            "top": {}
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "dataPoint": {
+            "displayName": "Data colors",
+            "properties": {
+                "defaultColor": {
+                    "displayName": "Default color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "showAllDataPoints": {
+                    "displayName": "Show all",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "fill": {
+                    "displayName": "Fill",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "categoryAxis": {
+            "displayName": "X-Axis",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "start": {
+                    "displayName": "Start",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "end": {
+                    "displayName": "End",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "showAxisTitle": {
+                    "displayName": "Title",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "axisColor": {
+                    "displayName": "Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "labelDisplayUnits": {
+                    "displayName": "Display Units",
+                    "type": {
+                        "formatting": {
+                            "labelDisplayUnits": true
+                        }
+                    }
+                }
+            }
+        },
+        "valueAxis": {
+            "displayName": "Y-Axis",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "start": {
+                    "displayName": "Start",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "end": {
+                    "displayName": "End",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "showAxisTitle": {
+                    "displayName": "Title",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "axisColor": {
+                    "displayName": "Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "labelDisplayUnits": {
+                    "displayName": "Display Units",
+                    "type": {
+                        "formatting": {
+                            "labelDisplayUnits": true
+                        }
+                    }
+                }
+            }
+        },
+        "legend": {
+            "displayName": "Legend",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "position": {
+                    "displayName": "Position",
+                    "description": "Select the location for the legend",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "Top",
+                                "displayName": "Top"
+                            },
+                            {
+                                "value": "Bottom",
+                                "displayName": "Bottom"
+                            },
+                            {
+                                "value": "Left",
+                                "displayName": "Left"
+                            },
+                            {
+                                "value": "Right",
+                                "displayName": "Right"
+                            },
+                            {
+                                "value": "TopCenter",
+                                "displayName": "Top Center"
+                            },
+                            {
+                                "value": "BottomCenter",
+                                "displayName": "Bottom Center"
+                            },
+                            {
+                                "value": "LeftCenter",
+                                "displayName": "Left Center"
+                            },
+                            {
+                                "value": "RightCenter",
+                                "displayName": "Right center"
+                            }
+                        ]
+                    }
+                },
+                "showTitle": {
+                    "displayName": "Title",
+                    "description": "Display a title for legend symbols",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "titleText": {
+                    "displayName": "Legend Name",
+                    "description": "Title text",
+                    "type": {
+                        "text": true
+                    }
+                },
+                "labelColor": {
+                    "displayName": "Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "fontSize": {
+                    "displayName": "Text Size",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                }
+            }
+        },
+        "categoryLabels": {
+            "displayName": "Category labels",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "color": {
+                    "displayName": "Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "fontSize": {
+                    "displayName": "Text Size",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                }
+            }
+        },
+        "fillPoint": {
+            "displayName": "Fill point",
+            "properties": {
+                "show": {
+                    "displayName": "Fill",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        },
+        "backdrop": {
+            "displayName": "Backdrop",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "url": {
+                    "displayName": "Image URL",
+                    "type": {
+                        "text": true
+                    }
+                }
+            }
+        },
+        "crosshair": {
+            "displayName": "Crosshair",
+            "properties": {
+                "show": {
+                    "displayName": "Crosshair",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        },
+        "outline": {
+            "displayName": "Outline",
+            "properties": {
+                "show": {
+                    "displayName": "Outline",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
+    }
+}
