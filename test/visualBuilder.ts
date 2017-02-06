@@ -32,9 +32,12 @@ module powerbi.extensibility.visual.test {
 
     // EnhancedScatterChart1443994985041
     import VisualClass = powerbi.extensibility.visual.EnhancedScatterChart1443994985041.EnhancedScatterChart;
-    import VisualPlugin = powerbi.visuals.plugins.EnhancedScatterChart1443994985041;
 
     export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
+        constructor(width: number, height: number) {
+            super(width, height, "EnhancedScatterChart1443994985041");
+        }
+
         protected build(options: VisualConstructorOptions) {
             return new VisualClass(options);
         }
