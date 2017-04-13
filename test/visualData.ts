@@ -38,8 +38,8 @@ module powerbi.extensibility.visual.test {
     import TestDataViewBuilder = powerbi.extensibility.utils.test.dataViewBuilder.TestDataViewBuilder;
 
     export class EnhancedScatterChartData extends TestDataViewBuilder {
-        private static NumberFormatWithPrecision: string = '#,0.00';
-        private static NumberFormatWithoutPrecision: string = '#,0';
+        private static NumberFormatWithPrecision: string = "#,0.00";
+        private static NumberFormatWithoutPrecision: string = "#,0";
 
         public static ColumnCategory: string = EnhancedScatterChart.ColumnCategory;
         public static ColumnSeries: string = EnhancedScatterChart.ColumnSeries;

@@ -25,6 +25,6 @@
  */
 
 module powerbi.extensibility.visual.yAxisPosition {
-    export const left: string = 'Left';
-    export const right: string = 'Right';
+    export const left: string = "Left";
+    export const right: string = "Right";
 }

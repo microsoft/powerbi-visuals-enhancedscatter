@@ -60,8 +60,6 @@ module.exports = (config) => {
         files: [
             srcCssRecursivePath,
             srcRecursivePath,
-            '.tmp/drop/visual.css',
-            '.tmp/drop/visual.js',
             'node_modules/jasmine-jquery/lib/jasmine-jquery.js',
             'node_modules/powerbi-visuals-utils-testutils/lib/index.js',
             recursivePathToTests,
