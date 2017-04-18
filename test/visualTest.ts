@@ -242,16 +242,16 @@ module powerbi.extensibility.visual.test {
                     visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(new Event("mouseover"));
                     visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(event);
 
-                    expect(visualBuilder.crosshair.css('display')).not.toBe("none");
+                    expect(visualBuilder.crosshair.css("display")).not.toBe("none");
 
                     visualBuilder.crosshair.children("line").toArray().map($).forEach((element: JQuery) => {
-                        expect(parseFloat(element.attr('x2'))).toBeGreaterThan(0);
-                        expect(parseFloat(element.attr('y2'))).toBeGreaterThan(0);
+                        expect(parseFloat(element.attr("x2"))).toBeGreaterThan(0);
+                        expect(parseFloat(element.attr("y2"))).toBeGreaterThan(0);
                     });
 
                     visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(new Event("mouseout"));
 
-                    expect(visualBuilder.crosshair.css('display')).toBe("none");
+                    expect(visualBuilder.crosshair.css("display")).toBe("none");
                 });
             });
         });
@@ -391,7 +391,7 @@ module powerbi.extensibility.visual.test {
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
                     visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
-                        expect(element.css('font-size')).toBe(expectedFontSize);
+                        expect(element.css("font-size")).toBe(expectedFontSize);
                     });
                 });
 
@@ -402,7 +402,7 @@ module powerbi.extensibility.visual.test {
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
                     visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
-                        assertColorsMatch(element.css('fill'), color);
+                        assertColorsMatch(element.css("fill"), color);
                     });
                 });
 
@@ -549,7 +549,7 @@ module powerbi.extensibility.visual.test {
 
                     colors.forEach((color: string) => {
                         expect(dots.some((dot: JQuery) => {
-                            return areColorsEqual(dot.css('fill'), color);
+                            return areColorsEqual(dot.css("fill"), color);
                         })).toBeTruthy();
                     });
                 });
@@ -607,10 +607,10 @@ module powerbi.extensibility.visual.test {
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                    assertColorsMatch(visualBuilder.legendTitle.css('fill'), color);
+                    assertColorsMatch(visualBuilder.legendTitle.css("fill"), color);
 
                     visualBuilder.legendItemText.toArray().map($).forEach((element: JQuery) => {
-                        assertColorsMatch(element.css('fill'), color);
+                        assertColorsMatch(element.css("fill"), color);
                     });
                 });
 
@@ -623,10 +623,10 @@ module powerbi.extensibility.visual.test {
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                    expect(visualBuilder.legendTitle.css('font-size')).toBe(expectedFontSize);
+                    expect(visualBuilder.legendTitle.css("font-size")).toBe(expectedFontSize);
 
                     visualBuilder.legendItemText.toArray().map($).forEach((element: JQuery) => {
-                        expect(element.css('font-size')).toBe(expectedFontSize);
+                        expect(element.css("font-size")).toBe(expectedFontSize);
                     });
                 });
             });

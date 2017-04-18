@@ -25,7 +25,7 @@
  */
 
 module powerbi.extensibility.visual.axisType {
-    export const scalar: string = 'Scalar';
-    export const categorical: string = 'Categorical';
-    export const both: string = 'Both';
+    export const scalar: string = "Scalar";
+    export const categorical: string = "Categorical";
+    export const both: string = "Both";
 }
