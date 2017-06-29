@@ -31,7 +31,7 @@ module powerbi.extensibility.visual.tooltipBuilder {
     export interface TooltipSeriesDataItem {
         value?: any;
         highlightedValue?: any;
-        metadata: DataViewValueColumn;
+        metadata: DataViewCategoryColumn | DataViewValueColumn;
     }
 
     export interface TooltipCategoryDataItem {
