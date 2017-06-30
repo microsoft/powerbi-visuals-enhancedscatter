@@ -1137,9 +1137,9 @@ module powerbi.extensibility.visual {
                 const categoryValue: any = categoryValues[categoryIdx];
 
                 for (let seriesIdx: number = 0, len: number = grouped.length; seriesIdx < len; seriesIdx++) {
-                    const measureColorFill: DataViewCategoricalColumn = categories[indicies.colorFill],
-                        measureImage: DataViewCategoricalColumn = categories[indicies.image],
-                        measureBackdrop: DataViewCategoricalColumn = categories[indicies.backdrop];
+                    const measureColorFill: DataViewCategoryColumn = categories[indicies.colorFill],
+                        measureImage: DataViewCategoryColumn = categories[indicies.image],
+                        measureBackdrop: DataViewCategoryColumn = categories[indicies.backdrop];
 
                     const grouping: DataViewValueColumnGroup = grouped[seriesIdx],
                         seriesValues: DataViewValueColumn[] = grouping.values,
@@ -1413,7 +1413,7 @@ module powerbi.extensibility.visual {
         }
 
         private static getNumberFromDataViewValueColumnById(
-            dataViewValueColumn: DataViewCategoricalColumn,
+            dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
             index: number): number {
 
             const value: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(
@@ -1426,7 +1426,7 @@ module powerbi.extensibility.visual {
         }
 
         private static getValueFromDataViewValueColumnById(
-            dataViewValueColumn: DataViewCategoricalColumn,
+            dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
             index: number): any {
 
             return dataViewValueColumn && dataViewValueColumn.values
