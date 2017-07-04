@@ -899,7 +899,7 @@ module powerbi.extensibility.visual.test {
                     visualHost);
 
                 enhancedScatterChartData.dataPoints.forEach(checkerCallback);
-            };
+            }
 
             function valueToBeDefinedAndNumber(value: number): void {
                 expect(value).toBeDefined();
