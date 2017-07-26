@@ -454,6 +454,21 @@
                             }
                         }
                     }
+                },
+                "fillRule": {
+                    "displayName": "Color saturation",
+                    "type": {
+                        "fillRule": {}
+                    },
+                    "rule": {
+                        "inputRole": "Gradient",
+                        "output": {
+                            "property": "fill",
+                            "selector": [
+                                "Category"
+                            ]
+                        }
+                    }
                 }
             }
         },
