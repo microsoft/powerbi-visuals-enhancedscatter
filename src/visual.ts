@@ -2822,6 +2822,7 @@ module powerbi.extensibility.visual {
 
             const xScale: any = this.xAxisProperties.scale,
                 yScale: any = this.yAxisProperties.scale,
+                viewport = this.viewport,
                 shouldEnableFill: boolean = (!sizeRange || !sizeRange.min) && this.data.fillPoint;
 
             let markers: UpdateSelection<EnhancedScatterChartDataPoint>,
@@ -2874,7 +2875,7 @@ module powerbi.extensibility.visual {
                         }
                     })
                     .attr("d", (dataPoint: EnhancedScatterChartDataPoint) => {
-                        const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport),
+                        const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport),
                             area: number = EnhancedScatterChart.RadiusMultiplexer * r * r;
 
                         return dataPoint.shapeSymbolType(area);
@@ -2929,7 +2930,7 @@ module powerbi.extensibility.visual {
                         const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
                             dataPoint.radius,
                             sizeRange,
-                            this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
+                            viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
                         d3.select(this).attr({
                             "width": bubbleRadius,
@@ -2948,7 +2949,7 @@ module powerbi.extensibility.visual {
                         const radius: number = EnhancedScatterChart.getBubbleRadius(
                             dataPoint.radius,
                             sizeRange,
-                            this.viewport);
+                            viewport);
 
                         const x: number = EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x) - radius),
                             y: number = EnhancedScatterChart.getDefinedNumberValue(yScale(dataPoint.y) - radius);
