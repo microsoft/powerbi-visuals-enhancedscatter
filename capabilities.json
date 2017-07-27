@@ -457,6 +457,7 @@
                 },
                 "fillRule": {
                     "displayName": "Color saturation",
+                    "displayNameKey": "Visual_ColorSaturation",
                     "type": {
                         "fillRule": {}
                     },

@@ -46,5 +46,6 @@
     "Visual_Backdrop": "Backdrop",
     "Visual_Backdrop_ImageURL": "Image URL",
     "Visual_Crosshair": "Crosshair",
-    "Visual_Outline": "Outline"
+    "Visual_Outline": "Outline",
+    "Visual_ColorSaturation": "Color saturation"
 }
