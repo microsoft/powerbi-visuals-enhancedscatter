@@ -1,6 +1,6 @@
 {
   "name": "powerbi-visuals-enhancedscatter",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A few more properties were added to the existing scatter chart visual, including shapes as markers, background image support, and developer crosshairs for positioning elements onto an image background.",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
     "powerbi-visuals"
   ],
   "scripts": {
-    "postinstall": "pbiviz update 1.7.0",
+    "postinstall": "pbiviz update 1.8.0",
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
