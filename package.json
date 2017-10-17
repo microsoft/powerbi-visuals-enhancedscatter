@@ -1,6 +1,6 @@
 {
   "name": "powerbi-visuals-enhancedscatter",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "A few more properties were added to the existing scatter chart visual, including shapes as markers, background image support, and developer crosshairs for positioning elements onto an image background.",
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
     "@types/jquery": "2.0.41",
     "coveralls": "2.13.1",
     "jasmine": "2.5.3",
+    "jasmine-core": "2.5.2",
     "jasmine-jquery": "2.1.1",
     "karma": "1.6.0",
     "karma-chrome-launcher": "2.0.0",
@@ -44,8 +45,9 @@
     "karma-sourcemap-loader": "0.3.7",
     "karma-typescript-preprocessor": "0.3.1",
     "lodash": "4.16.2",
-    "powerbi-visuals-tools": "1.7.1",
+    "powerbi-visuals-tools": "1.8.0",
     "powerbi-visuals-utils-chartutils": "0.3.0",
+    "powerbi-visuals-utils-formattingutils": "0.2.2",
     "powerbi-visuals-utils-colorutils": "0.2.2",
     "powerbi-visuals-utils-dataviewutils": "1.1.1",
     "powerbi-visuals-utils-interactivityutils": "0.3.1",
