@@ -457,7 +457,7 @@ module powerbi.extensibility.visual.test {
                 });
 
                 it("show", () => {
-                    (dataView.metadata.objects as any).backdrop.url = "https://test.url";
+                    (dataView.metadata.objects as any).backdrop.url = "https://test.url.jpg";
                     (dataView.metadata.objects as any).backdrop.show = true;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
@@ -472,12 +472,21 @@ module powerbi.extensibility.visual.test {
                 });
 
                 it("url", () => {
-                    const url: string = "https://test.url";
+                    const url: string = "https://test.url.gif";
 
                     (dataView.metadata.objects as any).backdrop.url = url;
                     visualBuilder.updateFlushAllD3Transitions(dataView);
 
                     expect(visualBuilder.backdropImage.attr("href")).toBe(url);
+                });
+
+                it("invalid url", () => {
+                    const url: string = "https://test.url";
+
+                    (dataView.metadata.objects as any).backdrop.url = url;
+                    visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                    expect(visualBuilder.backdropImage.attr("href")).toBeUndefined();
                 });
             });
 
@@ -835,6 +844,24 @@ module powerbi.extensibility.visual.test {
                     checkDataPointProperty(
                         (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
                             expect(dataPoint.svgurl).toBe(defaultDataViewBuilder.imageValues[index]);
+                        },
+                        defaultDataViewBuilder,
+                        colorPalette,
+                        visualHost,
+                        [EnhancedScatterChartData.ColumnImage]);
+                });
+
+                it("invalid images", () => {
+
+                    defaultDataViewBuilder.imageValues = [
+                        "Microsoft_Access.png",
+                        "Microsoft_OneNote.png",
+                        "Microsoft_Outlook.png"
+                    ];
+
+                    checkDataPointProperty(
+                        (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
+                            expect(dataPoint.svgurl).toBeNull();
                         },
                         defaultDataViewBuilder,
                         colorPalette,

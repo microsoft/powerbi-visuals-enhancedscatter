@@ -77,9 +77,9 @@ module powerbi.extensibility.visual.test {
         public colorValues: string[] = ["red", "green", "blue"];
 
         public imageValues: string[] = [
-            "Microsoft_Access.png",
-            "Microsoft_OneNote.png",
-            "Microsoft_Outlook.png"
+            "https://somehost.someroothost/Microsoft_Access.png",
+            "https://somehost.someroothost/Microsoft_OneNote.png",
+            "https://somehost.someroothost/Microsoft_Outlook.png"
         ];
 
         public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);

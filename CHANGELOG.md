@@ -1,3 +1,6 @@
+## 1.2.3
+* UPD: images checking -- security improvement
+
 ## 1.2.2
 * UPD: package-lock was updated
 * UPD: was added new packages

@@ -38,6 +38,7 @@ module powerbi.extensibility.visual {
     import DataViewObjects = powerbi.extensibility.utils.dataview.DataViewObjects;
     import getMeasureIndexOfRole = powerbi.extensibility.utils.dataview.DataRoleHelper.getMeasureIndexOfRole;
     import getCategoryIndexOfRole = powerbi.extensibility.utils.dataview.DataRoleHelper.getCategoryIndexOfRole;
+    import ValidationHelper = powerbi.extensibility.utils.dataview.validationHelper;
 
     // powerbi.extensibility.utils.svg
     import svg = powerbi.extensibility.utils.svg;
@@ -1207,6 +1208,11 @@ module powerbi.extensibility.visual {
                         EnhancedScatterChart.getValueFromDataViewValueColumnById(measureShape, categoryIdx));
 
                     image = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureImage, categoryIdx);
+
+                    if (image && !ValidationHelper.isImageUrlAllowed(image)) {
+                        image = null;
+                    }
+
                     rotation = EnhancedScatterChart.getNumberFromDataViewValueColumnById(measureRotation, categoryIdx);
                     backdrop = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureBackdrop, categoryIdx);
                     xStart = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureXStart, categoryIdx);
@@ -1607,7 +1613,6 @@ module powerbi.extensibility.visual {
             img.src = this.data.backdrop.url;
             img.onload = function () {
                 const imageElement: HTMLImageElement = this as HTMLImageElement;
-
                 if (that.oldBackdrop !== imageElement.src) {
                     that.render();
                     that.oldBackdrop = imageElement.src;
@@ -1787,10 +1792,16 @@ module powerbi.extensibility.visual {
                 }
             }
 
+            let isImageValid: boolean = false;
+            if (ValidationHelper.isImageUrlAllowed(this.data.backdrop.url)) {
+                isImageValid = true;
+            }
+
             // we have to do the above process again since changes are made to viewport.
             if (this.data.backdrop
                 && this.data.backdrop.show
-                && (this.data.backdrop.url !== undefined)) {
+                && (this.data.backdrop.url !== undefined)
+                && isImageValid) {
 
                 this.adjustViewportbyBackdrop();
 
@@ -1890,7 +1901,8 @@ module powerbi.extensibility.visual {
                 this.yAxisProperties,
                 tickLabelMargins,
                 chartHasAxisLabels,
-                axisLabels);
+                axisLabels,
+                isImageValid);
 
             this.updateAxis();
 
@@ -2420,10 +2432,11 @@ module powerbi.extensibility.visual {
             return elementUpdateSelection;
         }
 
-        private renderBackground(): void {
+        private renderBackground(isImageValid: boolean): void {
             if (this.data.backdrop
                 && this.data.backdrop.show
-                && (this.data.backdrop.url !== undefined)) {
+                && (this.data.backdrop.url !== undefined)
+                && isImageValid) {
 
                 this.backgroundGraphicsContext.attr({
                     "xlink:href": this.data.backdrop.url,
@@ -2445,13 +2458,15 @@ module powerbi.extensibility.visual {
             yAxis: IAxisProperties,
             tickLabelMargins: any,
             chartHasAxisLabels: boolean,
-            axisLabels: ChartAxesLabels): void {
+            axisLabels: ChartAxesLabels,
+            isImageValid: boolean): void {
 
             let bottomMarginLimit: number = this.bottomMarginLimit,
                 leftRightMarginLimit: number = this.leftRightMarginLimit,
                 duration: number = EnhancedScatterChart.AnimationDuration;
 
-            this.renderBackground();
+            this.renderBackground(isImageValid);
+
 
             // hide show x-axis here
             if (this.shouldRenderAxis(xAxis)) {
