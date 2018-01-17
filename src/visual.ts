@@ -1792,10 +1792,7 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            let isImageValid: boolean = false;
-            if (ValidationHelper.isImageUrlAllowed(this.data.backdrop.url)) {
-                isImageValid = true;
-            }
+            let isImageValid: boolean = ValidationHelper.isImageUrlAllowed(this.data.backdrop.url);
 
             // we have to do the above process again since changes are made to viewport.
             if (this.data.backdrop
