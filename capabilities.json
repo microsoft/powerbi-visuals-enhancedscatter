@@ -594,8 +594,9 @@
                 },
                 "position": {
                     "displayName": "Position",
-                    "description": "Select the location for the legend",
                     "displayNameKey": "Visual_LegendPosition",
+                    "description": "Select the location for the legend",
+                    "descriptionKey": "Visual_Description_LegendPosition",
                     "type": {
                         "enumeration": [
                             {
@@ -643,16 +644,18 @@
                 },
                 "showTitle": {
                     "displayName": "Title",
-                    "description": "Display a title for legend symbols",
                     "displayNameKey": "Visual_LegendShowTitle",
+                    "description": "Display a title for legend symbols",
+                    "descriptionKey": "Visual_Description_LegendShowTitle",
                     "type": {
                         "bool": true
                     }
                 },
                 "titleText": {
                     "displayName": "Legend Name",
-                    "description": "Title text",
                     "displayNameKey": "Visual_LegendName",
+                    "description": "Title text",
+                    "descriptionKey": "Visual_Description_LegendName",
                     "type": {
                         "text": true
                     }

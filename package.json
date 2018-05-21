@@ -1,6 +1,6 @@
 {
   "name": "powerbi-visuals-enhancedscatter",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "A few more properties were added to the existing scatter chart visual, including shapes as markers, background image support, and developer crosshairs for positioning elements onto an image background.",
   "repository": {
     "type": "git",
@@ -10,13 +10,14 @@
     "powerbi-visuals"
   ],
   "scripts": {
-    "postinstall": "pbiviz update 1.8.0",
+    "postinstall": "pbiviz update 1.11.0",
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
     "lint": "tslint -r \"node_modules/tslint-microsoft-contrib\" \"+(src|test)/**/*.ts\"",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz --no-plugin",
-    "test": "karma start"
+    "test": "karma start",
+    "cert": "pbiviz --create-cert"
   },
   "author": {
     "name": "Microsoft",
@@ -45,13 +46,14 @@
     "karma-sourcemap-loader": "0.3.7",
     "karma-typescript-preprocessor": "0.3.1",
     "lodash": "4.16.2",
-    "powerbi-visuals-tools": "1.8.0",
+    "powerbi-models": "^1.0.2",
+    "powerbi-visuals-tools": "1.11.2",
     "powerbi-visuals-utils-chartutils": "0.3.0",
     "powerbi-visuals-utils-formattingutils": "0.2.2",
     "powerbi-visuals-utils-colorutils": "0.2.2",
     "powerbi-visuals-utils-dataviewutils": "1.1.1",
-    "powerbi-visuals-utils-interactivityutils": "0.3.1",
-    "powerbi-visuals-utils-testutils": "1.0.0",
+    "powerbi-visuals-utils-interactivityutils": "3.1.0",
+    "powerbi-visuals-utils-testutils": "1.2.1",
     "powerbi-visuals-utils-tooltiputils": "0.3.2",
     "tslint": "5.4.3",
     "tslint-microsoft-contrib": "4.0.1",
