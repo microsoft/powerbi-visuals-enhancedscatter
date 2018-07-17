@@ -32,7 +32,7 @@ module powerbi.extensibility.visual {
     import LegendPosition = powerbi.extensibility.utils.chart.legend.LegendPosition;
 
     export class DataPointSettings {
-        public defaultColor: string = "#374649";
+        public defaultColor: string = "#01B8AA";
         public showAllDataPoints: boolean = false;
     }
 

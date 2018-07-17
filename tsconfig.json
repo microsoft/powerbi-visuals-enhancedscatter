@@ -21,7 +21,6 @@
     "node_modules/powerbi-models/dist/models-noexports.d.ts",
     "src/settings.ts",
     "src/dataInterfaces.ts",
-    "src/properties.ts",
     "src/yAxisPosition.ts",
     "src/tooltipBuilder.ts",
     "src/gradientUtils.ts",

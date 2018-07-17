@@ -34,19 +34,19 @@ module powerbi.extensibility.visual {
     import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
     import registerStandardSelectionHandler = powerbi.extensibility.utils.interactivity.interactivityUtils.registerStandardSelectionHandler;
 
-    export interface CustomVisualBehaviorOptions {
+    export interface BehaviorOptions {
         layerOptions: any[];
         clearCatcher: Selection<any>;
     }
 
-    export class CustomVisualBehavior implements IInteractiveBehavior {
+    export class VisualBehavior implements IInteractiveBehavior {
         private behaviors: IInteractiveBehavior[];
 
         constructor(behaviors: IInteractiveBehavior[]) {
             this.behaviors = behaviors || [];
         }
 
-        public bindEvents(options: CustomVisualBehaviorOptions, selectionHandler: ISelectionHandler): void {
+        public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
             this.behaviors.forEach((behavior: IInteractiveBehavior, index: number) => {
                 behavior.bindEvents(options.layerOptions[index], selectionHandler);
             });
@@ -63,7 +63,7 @@ module powerbi.extensibility.visual {
         }
     }
 
-    export interface EnhancedScatterBehaviorOptions {
+    export interface LayerBehaviorOptions {
         dataPointsSelection: Selection<SelectableDataPoint>;
         data: EnhancedScatterChartData;
         plotContext: Selection<any>;
@@ -85,12 +85,12 @@ module powerbi.extensibility.visual {
             this.defaultBubbleOpacity = defaultBubbleOpacity;
         }
 
-        public bindEvents(options: EnhancedScatterBehaviorOptions, selectionHandler: ISelectionHandler): void {
+        public bindEvents(options: LayerBehaviorOptions, selectionHandler: ISelectionHandler): void {
             const data: EnhancedScatterChartData = options.data;
 
             this.bubbles = options.dataPointsSelection;
 
-            this.shouldEnableFill = (!data.sizeRange || !data.sizeRange.min) && data.fillPoint;
+            this.shouldEnableFill = (!data.sizeRange || !data.sizeRange.min) && data.settings.fillPoint.show;
             this.colorBorder = data.colorBorder;
 
             registerStandardSelectionHandler(this.bubbles, selectionHandler);

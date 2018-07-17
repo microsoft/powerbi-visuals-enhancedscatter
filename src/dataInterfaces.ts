@@ -36,7 +36,6 @@ module powerbi.extensibility.visual {
 
     // powerbi.extensibility.utils.chart
     import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
-    import PointDataLabelsSettings = powerbi.extensibility.utils.chart.dataLabel.PointDataLabelsSettings;
 
     // powerbi.extensibility.utils.svg
     import IRect = powerbi.extensibility.utils.svg.IRect;
@@ -170,8 +169,6 @@ module powerbi.extensibility.visual {
         size: number | ISize;
         radius: EnhancedScatterChartRadiusData;
         fill: string;
-        labelFill?: string;
-        labelFontSize: any;
         contentPosition: ContentPositions;
         formattedCategory: () => string;
         colorFill?: string;
@@ -185,11 +182,6 @@ module powerbi.extensibility.visual {
         yEnd?: number;
     }
 
-    export interface EnhancedScatterChartBackdrop {
-        show: boolean;
-        url: string;
-    }
-
     export interface EnhancedScatterChartAxesLabels {
         x: string;
         y: string;
@@ -199,9 +191,6 @@ module powerbi.extensibility.visual {
     export interface EnhancedScatterChartData {
         useShape: boolean;
         useCustomColor: boolean;
-        backdrop?: EnhancedScatterChartBackdrop;
-        outline?: boolean;
-        crosshair?: boolean;
         xCol: DataViewMetadataColumn;
         yCol: DataViewMetadataColumn;
         dataPoints: EnhancedScatterChartDataPoint[];
@@ -209,11 +198,8 @@ module powerbi.extensibility.visual {
         axesLabels: EnhancedScatterChartAxesLabels;
         size?: DataViewMetadataColumn;
         sizeRange: NumberRange;
-        dataLabelsSettings: PointDataLabelsSettings;
-        defaultDataPointColor?: string;
-        showAllDataPoints?: boolean;
         hasDynamicSeries?: boolean;
-        fillPoint?: boolean;
+        hasGradientRole?: boolean;
         colorBorder?: boolean;
         colorByCategory?: boolean;
         selectedIds: ISelectionId[];
