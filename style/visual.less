@@ -44,7 +44,7 @@
 
     path {
         &.dot {
-            fill: none;
+            fill: transparent;
             stroke-width: 3px;
         }
     }
@@ -69,18 +69,13 @@
         path, line {
             fill: none;
             stroke: @enhancedScatterChartColor;
-            shape-rendering: crispEdges;
+            shape-rendering: auto;
         }
     }
 
     .crosshairCanvas {
         display: none;
         pointer-events: none;
-
-        .crosshairLine,
-        .crosshairText {
-            stroke: gray;
-        }
 
         .crosshairLine {
             stroke-width: 1px;

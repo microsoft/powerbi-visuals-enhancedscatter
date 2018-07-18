@@ -169,9 +169,10 @@ module powerbi.extensibility.visual {
         size: number | ISize;
         radius: EnhancedScatterChartRadiusData;
         fill: string;
+        stroke: string;
+        strokeWidth: number;
         contentPosition: ContentPositions;
         formattedCategory: () => string;
-        colorFill?: string;
         svgurl?: string;
         shapeSymbolType?: (value: number) => string;
         rotation: number;
@@ -180,6 +181,7 @@ module powerbi.extensibility.visual {
         xEnd?: number;
         yStart?: number;
         yEnd?: number;
+        highlight?: boolean;
     }
 
     export interface EnhancedScatterChartAxesLabels {

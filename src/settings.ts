@@ -34,6 +34,7 @@ module powerbi.extensibility.visual {
     export class DataPointSettings {
         public defaultColor: string = "#01B8AA";
         public showAllDataPoints: boolean = false;
+        public strokeWidth: number = 1;
     }
 
     export class AxisSettings {
@@ -41,8 +42,11 @@ module powerbi.extensibility.visual {
         public start: number = undefined;
         public end: number = undefined;
         public labelDisplayUnits: number = 0;
-        public axisColor: string = "#333";
+        public axisColor: string = "#777777";
         public showAxisTitle: boolean = true;
+        public zeroLineColor: string = "#333";
+        public zeroLineStrokeWidth: number = 2;
+        public lineColor: string = "#777777";
     }
 
     export class LegendSettings {
@@ -71,6 +75,7 @@ module powerbi.extensibility.visual {
 
     export class CrosshairSettings {
         public show: boolean = false;
+        public color: string = "#808080";
     }
 
     export class OutlineSettings {
