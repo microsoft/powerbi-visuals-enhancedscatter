@@ -55,9 +55,9 @@ module powerbi.extensibility.visual.test {
     type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
     describe("EnhancedScatterChart", () => {
-        let dataView: DataView,
-            visualBuilder: EnhancedScatterChartBuilder,
-            defaultDataViewBuilder: EnhancedScatterChartData;
+        let dataView: DataView;
+        let visualBuilder: EnhancedScatterChartBuilder;
+        let defaultDataViewBuilder: EnhancedScatterChartData;
 
         beforeEach(() => {
             let selectionIdIndex: number = 0;
@@ -946,6 +946,46 @@ module powerbi.extensibility.visual.test {
                 expect(value).not.toBeNull();
                 expect(value).not.toBeNaN();
             }
+        });
+
+        describe("Accessibility", () => {
+            describe("High contrast mode", () => {
+                const backgroundColor: string = "#000000";
+                const foregroundColor: string = "#ffff00";
+
+                beforeEach(() => {
+                    visualBuilder.visualHost.colorPalette.isHighContrast = true;
+
+                    visualBuilder.visualHost.colorPalette.background = { value: backgroundColor };
+                    visualBuilder.visualHost.colorPalette.foreground = { value: foregroundColor };
+                });
+
+                it("dots should use fill style", (done) => {
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        const dots: JQuery[] = visualBuilder.dots.toArray().map($);
+
+                        expect(isColorAppliedToElements(dots, null, "fill"));
+
+                        done();
+                    });
+                });
+
+                function isColorAppliedToElements(
+                    elements: JQuery[],
+                    color?: string,
+                    colorStyleName: string = "fill"
+                ): boolean {
+                    return elements.some((element: JQuery) => {
+                        const currentColor: string = element.css(colorStyleName);
+
+                        if (!currentColor || !color) {
+                            return currentColor === color;
+                        }
+
+                        return areColorsEqual(currentColor, color);
+                    });
+                }
+            });
         });
     });
 }

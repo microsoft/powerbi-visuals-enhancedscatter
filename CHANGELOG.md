@@ -1,3 +1,10 @@
+## 1.5.0
+* High contrast mode
+* API 1.13.0
+* Migrating to DataViewObjectsParser
+* Code refactoring
+* Images change its opacity on user's selection
+
 ## 1.4.0
 * Added localization for all supported languages
 
