@@ -204,8 +204,6 @@ module powerbi.extensibility.visual {
         colorByCategory?: boolean;
         selectedIds: ISelectionId[];
         settings: Settings;
-        categoryAxisProperties?: DataViewObject;
-        valueAxisProperties?: DataViewObject;
     }
 
     export interface EnhancedScatterDataRange {

@@ -24,7 +24,6 @@
     "src/yAxisPosition.ts",
     "src/tooltipBuilder.ts",
     "src/gradientUtils.ts",
-    "src/axisType.ts",
     "src/behavior.ts",
     "src/visual.ts"
   ]

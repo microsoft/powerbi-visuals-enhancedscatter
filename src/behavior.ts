@@ -105,7 +105,8 @@ module powerbi.extensibility.visual {
                     dataPoint.size != null,
                     shouldEnableFill,
                     hasSelection,
-                    dataPoint.selected);
+                    dataPoint.selected
+                );
             });
 
             this.bubbles.style("stroke-opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
@@ -113,7 +114,8 @@ module powerbi.extensibility.visual {
                     dataPoint.size != null,
                     colorBorder,
                     hasSelection,
-                    dataPoint.selected);
+                    dataPoint.selected
+                );
             });
         }
 
