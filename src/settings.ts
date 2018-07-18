@@ -66,6 +66,7 @@ module powerbi.extensibility.visual {
 
     export class FillPointSettings {
         public show: boolean = false;
+        public isHidden: boolean = true;
     }
 
     export class BackdropSettings {

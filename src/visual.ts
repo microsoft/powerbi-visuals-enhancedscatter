@@ -675,6 +675,13 @@ module powerbi.extensibility.visual {
                 categoryFormatter = valueFormatter.createDefaultFormatter(null);
             }
 
+            const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
+                grouped,
+                scatterMetadata.idx.size
+            );
+
+            settings.fillPoint.isHidden = !!(sizeRange && sizeRange.min);
+
             const colorHelper: ColorHelper = new ColorHelper(
                 colorPalette,
                 {
@@ -703,12 +710,12 @@ module powerbi.extensibility.visual {
                 interactivityService.applySelectionStateToData(dataPoints);
             }
 
-            let legendItems: LegendDataPoint[] = [];
+            let legendDataPoints: LegendDataPoint[] = [];
 
             if (hasDynamicSeries) {
                 const formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
 
-                legendItems = EnhancedScatterChart.createSeriesLegend(
+                legendDataPoints = EnhancedScatterChart.createSeriesLegend(
                     visualHost,
                     dataValues,
                     formatString,
@@ -729,15 +736,7 @@ module powerbi.extensibility.visual {
                     : EnhancedScatterChart.EmptyString;
             }
 
-            const legendData: LegendData = {
-                title: legendTitle,
-                dataPoints: legendItems
-            };
-
-            const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
-                grouped,
-                scatterMetadata.idx.size
-            );
+            settings.legend.titleText = settings.legend.titleText || legendTitle;
 
             if (!settings.categoryAxis.showAxisTitle) {
                 scatterMetadata.axesLabels.x = null;
@@ -777,7 +776,7 @@ module powerbi.extensibility.visual {
             return {
                 settings,
                 dataPoints,
-                legendData,
+                legendDataPoints,
                 sizeRange,
                 hasGradientRole,
                 hasDynamicSeries,
@@ -1269,7 +1268,7 @@ module powerbi.extensibility.visual {
                         ? d3.rgb(currentFill).darker().toString()
                         : currentFill;
 
-                    const fill: string = settings.fillPoint.show
+                    const fill: string = settings.fillPoint.show || settings.fillPoint.isHidden
                         ? currentFill
                         : null;
 
@@ -1345,9 +1344,7 @@ module powerbi.extensibility.visual {
                 xCol: undefined,
                 yCol: undefined,
                 dataPoints: [],
-                legendData: {
-                    dataPoints: []
-                },
+                legendDataPoints: [],
                 axesLabels: {
                     x: EnhancedScatterChart.EmptyString,
                     y: EnhancedScatterChart.EmptyString
@@ -1383,23 +1380,17 @@ module powerbi.extensibility.visual {
         private renderLegend(): void {
             const legendSettings: LegendSettings = this.data.settings.legend;
 
-            const layerLegendData = this.data.legendData;
-
-            const grouped: boolean = !!layerLegendData.grouped;
+            const legendDataPoints = this.data.legendDataPoints;
 
             const isLegendShown: boolean = legendSettings.show
-                && layerLegendData.dataPoints.length > EnhancedScatterChart.MinAmountOfDataPointsInTheLegend
-                && !grouped;
+                && legendDataPoints.length > EnhancedScatterChart.MinAmountOfDataPointsInTheLegend;
 
             const legendData: LegendData = {
-                grouped,
                 title: legendSettings.showTitle
                     ? legendSettings.titleText
-                    || layerLegendData.title
-                    || EnhancedScatterChart.EmptyString
                     : undefined,
                 dataPoints: isLegendShown
-                    ? layerLegendData.dataPoints
+                    ? legendDataPoints
                     : [],
                 fontSize: legendSettings.fontSize,
                 labelColor: legendSettings.labelColor,
@@ -2920,7 +2911,7 @@ module powerbi.extensibility.visual {
             }
 
             if (this.data.hasDynamicSeries) {
-                return this.data.legendData.dataPoints.map((legendDataPoint: legendModule.LegendDataPoint) => {
+                return this.data.legendDataPoints.map((legendDataPoint: legendModule.LegendDataPoint) => {
                     return {
                         objectName: "dataPoint",
                         displayName: legendDataPoint.label,
@@ -2973,10 +2964,7 @@ module powerbi.extensibility.visual {
                     return this.enumerateDataPoints(instances, settings.dataPoint);
                 }
                 case "fillPoint": {
-                    const sizeRange: ValueRange<number> = this.data.sizeRange;
-
-                    // Check if the card should be shown or not
-                    if (sizeRange && sizeRange.min) {
+                    if (settings.fillPoint.isHidden) {
                         return [];
                     }
 

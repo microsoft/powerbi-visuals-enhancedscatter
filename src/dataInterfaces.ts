@@ -35,7 +35,7 @@ module powerbi.extensibility.visual {
     import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
 
     // powerbi.extensibility.utils.chart
-    import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
+    import LegendDataPoint = powerbi.extensibility.utils.chart.legend.LegendDataPoint;
 
     // powerbi.extensibility.utils.svg
     import IRect = powerbi.extensibility.utils.svg.IRect;
@@ -196,7 +196,7 @@ module powerbi.extensibility.visual {
         xCol: DataViewMetadataColumn;
         yCol: DataViewMetadataColumn;
         dataPoints: EnhancedScatterChartDataPoint[];
-        legendData: LegendData;
+        legendDataPoints: LegendDataPoint[];
         axesLabels: EnhancedScatterChartAxesLabels;
         size?: DataViewMetadataColumn;
         sizeRange: NumberRange;

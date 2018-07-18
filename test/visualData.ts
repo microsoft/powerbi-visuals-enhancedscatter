@@ -74,7 +74,7 @@ module powerbi.extensibility.visual.test {
         public valuesY: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
         public valuesSize: number[] = getRandomNumbers(this.valuesCategory.length, 10, 20);
 
-        public colorValues: string[] = ["red", "green", "blue"];
+        public colorValues: string[] = ["#ff0000", "#008000", "#0000ff"];
 
         public imageValues: string[] = [
             "Microsoft_Access.png",
