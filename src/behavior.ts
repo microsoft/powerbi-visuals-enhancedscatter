@@ -32,24 +32,42 @@ module powerbi.extensibility.visual {
     import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
     import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
     import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
+    import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
     import registerStandardSelectionHandler = powerbi.extensibility.utils.interactivity.interactivityUtils.registerStandardSelectionHandler;
 
-    export interface CustomVisualBehaviorOptions {
-        layerOptions: any[];
+    export interface BehaviorOptions {
         clearCatcher: Selection<any>;
+        dataPointsSelection: Selection<EnhancedScatterChartDataPoint>;
+        interactivityService: IInteractivityService;
     }
 
-    export class CustomVisualBehavior implements IInteractiveBehavior {
-        private behaviors: IInteractiveBehavior[];
+    export const DefaultOpacity: number = 0.85;
+    export const DimmedOpacity: number = 0.4;
 
-        constructor(behaviors: IInteractiveBehavior[]) {
-            this.behaviors = behaviors || [];
+    export function getFillOpacity(
+        selected: boolean,
+        highlight: boolean,
+        hasSelection: boolean,
+        hasPartialHighlights: boolean
+    ): number {
+        if ((hasPartialHighlights && !highlight) || (hasSelection && !selected)) {
+            return DimmedOpacity;
         }
 
-        public bindEvents(options: CustomVisualBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            this.behaviors.forEach((behavior: IInteractiveBehavior, index: number) => {
-                behavior.bindEvents(options.layerOptions[index], selectionHandler);
-            });
+        return DefaultOpacity;
+    }
+
+    export class VisualBehavior implements IInteractiveBehavior {
+        public options: BehaviorOptions;
+
+        public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
+            this.options = options;
+
+            const {
+                dataPointsSelection,
+            } = options;
+
+            registerStandardSelectionHandler(dataPointsSelection, selectionHandler);
 
             options.clearCatcher.on("click", () => {
                 selectionHandler.handleClearSelection();
@@ -57,98 +75,21 @@ module powerbi.extensibility.visual {
         }
 
         public renderSelection(hasSelection: boolean) {
-            for (let behavior of this.behaviors) {
-                behavior.renderSelection(hasSelection);
-            }
-        }
-    }
+            const {
+                dataPointsSelection,
+                interactivityService,
+            } = this.options;
 
-    export interface EnhancedScatterBehaviorOptions {
-        dataPointsSelection: Selection<SelectableDataPoint>;
-        data: EnhancedScatterChartData;
-        plotContext: Selection<any>;
-    }
+            const hasHighlights: boolean = interactivityService.hasSelection();
 
-    export class EnhancedScatterChartWebBehavior implements IInteractiveBehavior {
-        private static MinOpacity: number = 0;
-        private static MaxOpacity: number = 1;
-
-        private dimmedBubbleOpacity: number;
-        private defaultBubbleOpacity: number;
-
-        private bubbles: Selection<any>;
-        private shouldEnableFill: boolean;
-        private colorBorder: boolean;
-
-        constructor(dimmedBubbleOpacity: number, defaultBubbleOpacity: number) {
-            this.dimmedBubbleOpacity = dimmedBubbleOpacity;
-            this.defaultBubbleOpacity = defaultBubbleOpacity;
-        }
-
-        public bindEvents(options: EnhancedScatterBehaviorOptions, selectionHandler: ISelectionHandler): void {
-            const data: EnhancedScatterChartData = options.data;
-
-            this.bubbles = options.dataPointsSelection;
-
-            this.shouldEnableFill = (!data.sizeRange || !data.sizeRange.min) && data.fillPoint;
-            this.colorBorder = data.colorBorder;
-
-            registerStandardSelectionHandler(this.bubbles, selectionHandler);
-        }
-
-        public renderSelection(hasSelection: boolean): void {
-            const shouldEnableFill: boolean = this.shouldEnableFill,
-                colorBorder: boolean = this.colorBorder;
-
-            this.bubbles.style("fill-opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
-                return this.getMarkerFillOpacity(
-                    dataPoint.size != null,
-                    shouldEnableFill,
-                    hasSelection,
-                    dataPoint.selected);
+            dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
+                return getFillOpacity(
+                    dataPoint.selected,
+                    dataPoint.highlight,
+                    !dataPoint.highlight && hasSelection,
+                    !dataPoint.selected && hasHighlights
+                );
             });
-
-            this.bubbles.style("stroke-opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
-                return this.getMarkerStrokeOpacity(
-                    dataPoint.size != null,
-                    colorBorder,
-                    hasSelection,
-                    dataPoint.selected);
-            });
-        }
-
-        private getMarkerFillOpacity(
-            hasSize: boolean,
-            shouldEnableFill: boolean,
-            hasSelection: boolean,
-            isSelected: boolean): number {
-
-            if (hasSize || shouldEnableFill) {
-                if (hasSelection && !isSelected) {
-                    return this.dimmedBubbleOpacity;
-                }
-
-                return this.defaultBubbleOpacity;
-            }
-
-            return EnhancedScatterChartWebBehavior.MinOpacity;
-        }
-
-        public getMarkerStrokeOpacity(
-            hasSize: boolean,
-            colorBorder: boolean,
-            hasSelection: boolean,
-            isSelected: boolean): number {
-
-            if (hasSize && colorBorder) {
-                return EnhancedScatterChartWebBehavior.MaxOpacity;
-            }
-
-            if (hasSelection && !isSelected) {
-                return this.dimmedBubbleOpacity;
-            }
-
-            return this.defaultBubbleOpacity;
         }
     }
 }

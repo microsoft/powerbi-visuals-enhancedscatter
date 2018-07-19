@@ -35,8 +35,7 @@ module powerbi.extensibility.visual {
     import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
 
     // powerbi.extensibility.utils.chart
-    import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
-    import PointDataLabelsSettings = powerbi.extensibility.utils.chart.dataLabel.PointDataLabelsSettings;
+    import LegendDataPoint = powerbi.extensibility.utils.chart.legend.LegendDataPoint;
 
     // powerbi.extensibility.utils.svg
     import IRect = powerbi.extensibility.utils.svg.IRect;
@@ -170,11 +169,10 @@ module powerbi.extensibility.visual {
         size: number | ISize;
         radius: EnhancedScatterChartRadiusData;
         fill: string;
-        labelFill?: string;
-        labelFontSize: any;
+        stroke: string;
+        strokeWidth: number;
         contentPosition: ContentPositions;
         formattedCategory: () => string;
-        colorFill?: string;
         svgurl?: string;
         shapeSymbolType?: (value: number) => string;
         rotation: number;
@@ -183,11 +181,7 @@ module powerbi.extensibility.visual {
         xEnd?: number;
         yStart?: number;
         yEnd?: number;
-    }
-
-    export interface EnhancedScatterChartBackdrop {
-        show: boolean;
-        url: string;
+        highlight?: boolean;
     }
 
     export interface EnhancedScatterChartAxesLabels {
@@ -199,24 +193,19 @@ module powerbi.extensibility.visual {
     export interface EnhancedScatterChartData {
         useShape: boolean;
         useCustomColor: boolean;
-        backdrop?: EnhancedScatterChartBackdrop;
-        outline?: boolean;
-        crosshair?: boolean;
         xCol: DataViewMetadataColumn;
         yCol: DataViewMetadataColumn;
         dataPoints: EnhancedScatterChartDataPoint[];
-        legendData: LegendData;
+        legendDataPoints: LegendDataPoint[];
         axesLabels: EnhancedScatterChartAxesLabels;
         size?: DataViewMetadataColumn;
         sizeRange: NumberRange;
-        dataLabelsSettings: PointDataLabelsSettings;
-        defaultDataPointColor?: string;
-        showAllDataPoints?: boolean;
         hasDynamicSeries?: boolean;
-        fillPoint?: boolean;
+        hasGradientRole?: boolean;
         colorBorder?: boolean;
         colorByCategory?: boolean;
         selectedIds: ISelectionId[];
+        settings: Settings;
     }
 
     export interface EnhancedScatterDataRange {

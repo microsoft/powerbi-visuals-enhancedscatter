@@ -55,9 +55,9 @@ module powerbi.extensibility.visual.test {
     type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
     describe("EnhancedScatterChart", () => {
-        let dataView: DataView,
-            visualBuilder: EnhancedScatterChartBuilder,
-            defaultDataViewBuilder: EnhancedScatterChartData;
+        let dataView: DataView;
+        let visualBuilder: EnhancedScatterChartBuilder;
+        let defaultDataViewBuilder: EnhancedScatterChartData;
 
         beforeEach(() => {
             let selectionIdIndex: number = 0;
@@ -103,10 +103,10 @@ module powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     let selector: string = ".enhancedScatterChart .mainGraphicsContext .ScatterMarkers .dot";
 
-                    $(selector).each((index, elem) => {
-                        let opacity: string = $(elem).css("fill-opacity");
+                    $(selector).each((_, elem) => {
+                        let fill: string = $(elem).css("fill");
 
-                        expect(opacity).toBe("0");
+                        expect(fill).toBe("rgba(0, 0, 0, 0)");
                     });
 
                     done();
@@ -134,9 +134,9 @@ module powerbi.extensibility.visual.test {
                 };
 
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const labels: Element[] = visualBuilder.dataLabelsText.get();
+                    const labels: HTMLElement[] = visualBuilder.dataLabelsText.get() as any[];
 
-                    labels.forEach((label: Element) => {
+                    labels.forEach((label: HTMLElement) => {
                         let jqueryLabel: JQuery = $(label),
                             x: number = Number(jqueryLabel.attr("x")),
                             y: number = Number(jqueryLabel.attr("y"));
@@ -169,7 +169,7 @@ module powerbi.extensibility.visual.test {
                 let rootElement: Selection<any>;
 
                 beforeEach(() => {
-                    rootElement = d3.select(visualBuilder.element.get(0));
+                    rootElement = d3.select(visualBuilder.element.get(0) as any);
                 });
 
                 it("arguments are null", () => {
@@ -435,14 +435,14 @@ module powerbi.extensibility.visual.test {
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        expect(parseFloat(element.css("fill-opacity"))).toBeGreaterThan(0);
+                        expect(element.css("fill")).not.toBe("rgba(0, 0, 0, 0)");
                     });
 
                     (dataView.metadata.objects as any).fillPoint.show = false;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                        expect(parseFloat(element.css("fill-opacity"))).toBe(0);
+                        expect(element.css("fill")).toBe("rgba(0, 0, 0, 0)");
                     });
                 });
             });
@@ -775,43 +775,48 @@ module powerbi.extensibility.visual.test {
             });
 
             it("arguments are null", () => {
-                callConverterAndExpectExceptions(null, null, null, null, null);
+                callParseDataAndExpectExceptions(visualBuilder.instance, null, null, null, null);
             });
 
             it("arguments are undefined", () => {
-                callConverterAndExpectExceptions(undefined, undefined, undefined, undefined, undefined);
+                callParseDataAndExpectExceptions(visualBuilder.instance, undefined, undefined, undefined, undefined);
             });
 
             it("arguments are correct", () => {
-                callConverterAndExpectExceptions(dataView, colorPalette, visualHost);
+                callParseDataAndExpectExceptions(visualBuilder.instance, dataView, colorPalette, visualHost);
             });
 
             it("backdrop", () => {
                 let enhancedScatterChartData: IEnhancedScatterChartData = callConverterWithAdditionalColumns(
+                    visualBuilder.instance,
                     colorPalette,
                     visualHost,
-                    [EnhancedScatterChartData.ColumnBackdrop]);
+                    [EnhancedScatterChartData.ColumnBackdrop]
+                );
 
-                expect(enhancedScatterChartData.backdrop).toBeDefined();
-                expect(enhancedScatterChartData.backdrop).not.toBeNull();
+                expect(enhancedScatterChartData.settings.backdrop.url).toBeDefined();
+                expect(enhancedScatterChartData.settings.backdrop.url).not.toBeNull();
 
-                expect(enhancedScatterChartData.backdrop.url).toBe(defaultDataViewBuilder.imageValues[0]);
-                expect(enhancedScatterChartData.backdrop.show).toBeTruthy();
+                expect(enhancedScatterChartData.settings.backdrop.url).toBe(defaultDataViewBuilder.imageValues[0]);
+                expect(enhancedScatterChartData.settings.backdrop.show).toBeTruthy();
             });
 
             describe("dataPoints", () => {
                 it("x should be defined", () => {
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint) => {
                             valueToBeDefinedAndNumber(dataPoint.x);
                         },
                         defaultDataViewBuilder,
                         colorPalette,
-                        visualHost);
+                        visualHost
+                    );
                 });
 
                 it("y should be defined", () => {
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint) => {
                             valueToBeDefinedAndNumber(dataPoint.y);
                         },
@@ -822,17 +827,20 @@ module powerbi.extensibility.visual.test {
 
                 it("color fill", () => {
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
-                            expect(dataPoint.colorFill).toBe(defaultDataViewBuilder.colorValues[index]);
+                            expect(dataPoint.fill).toBe(defaultDataViewBuilder.colorValues[index]);
                         },
                         defaultDataViewBuilder,
                         colorPalette,
                         visualHost,
-                        [EnhancedScatterChartData.ColumnColorFill]);
+                        [EnhancedScatterChartData.ColumnColorFill]
+                    );
                 });
 
                 it("images", () => {
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
                             expect(dataPoint.svgurl).toBe(defaultDataViewBuilder.imageValues[index]);
                         },
@@ -844,6 +852,7 @@ module powerbi.extensibility.visual.test {
 
                 it("rotate should be defined", () => {
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint, index) => {
                             valueToBeDefinedAndNumber(dataPoint.rotation);
                         },
@@ -859,6 +868,7 @@ module powerbi.extensibility.visual.test {
                     });
 
                     checkDataPointProperty(
+                        visualBuilder.instance,
                         (dataPoint: EnhancedScatterChartDataPoint) => {
                             let rotation: number = dataPoint.rotation;
 
@@ -874,53 +884,59 @@ module powerbi.extensibility.visual.test {
             });
 
             function callConverterWithAdditionalColumns(
+                instance: VisualClass,
                 colorPalette: IColorPalette,
                 visualHost: IVisualHost,
-                columns: string[]): IEnhancedScatterChartData {
+                columns: string[]
+            )
+                : IEnhancedScatterChartData {
 
                 let dataView = defaultDataViewBuilder.getDataView(
                     EnhancedScatterChartData.DefaultSetOfColumns.concat(columns));
 
-                return callConverterAndExpectExceptions(dataView, colorPalette, visualHost);
+                return callParseDataAndExpectExceptions(instance, dataView, colorPalette, visualHost);
             }
 
-            function callConverterAndExpectExceptions(
+            function callParseDataAndExpectExceptions(
+                instance: VisualClass,
                 dataView: DataView,
                 colorPalette: IColorPalette,
                 visualHost: IVisualHost,
-                interactivityService?: IInteractivityService,
-                categoryAxisProperties?: DataViewObject,
-                valueAxisProperties?: DataViewObject): IEnhancedScatterChartData {
+                interactivityService?: IInteractivityService
+            ): IEnhancedScatterChartData {
 
                 let enhancedScatterChartData: IEnhancedScatterChartData;
 
                 expect(() => {
-                    enhancedScatterChartData = VisualClass.converter(
+                    enhancedScatterChartData = instance.parseData(
                         dataView,
                         colorPalette,
                         visualHost,
                         interactivityService,
-                        categoryAxisProperties,
-                        valueAxisProperties);
+                    );
                 }).not.toThrow();
 
                 return enhancedScatterChartData;
             }
 
             function checkDataPointProperty(
+                instance: VisualClass,
                 checkerCallback: CheckerCallback,
                 dataViewBuilder: EnhancedScatterChartData,
                 colorPalette: IColorPalette,
                 visualHost: IVisualHost,
-                columnNames: string[] = []): void {
+                columnNames: string[] = []
+            ): void {
 
                 const dataView: DataView = dataViewBuilder.getDataView(
                     EnhancedScatterChartData.DefaultSetOfColumns.concat(columnNames));
 
-                let enhancedScatterChartData: IEnhancedScatterChartData = VisualClass.converter(
+                let enhancedScatterChartData: IEnhancedScatterChartData = instance.parseData(
                     dataView,
                     colorPalette,
-                    visualHost);
+                    visualHost,
+                    null,
+                );
 
                 enhancedScatterChartData.dataPoints.forEach(checkerCallback);
             }
@@ -930,6 +946,46 @@ module powerbi.extensibility.visual.test {
                 expect(value).not.toBeNull();
                 expect(value).not.toBeNaN();
             }
+        });
+
+        describe("Accessibility", () => {
+            describe("High contrast mode", () => {
+                const backgroundColor: string = "#000000";
+                const foregroundColor: string = "#ffff00";
+
+                beforeEach(() => {
+                    visualBuilder.visualHost.colorPalette.isHighContrast = true;
+
+                    visualBuilder.visualHost.colorPalette.background = { value: backgroundColor };
+                    visualBuilder.visualHost.colorPalette.foreground = { value: foregroundColor };
+                });
+
+                it("dots should use fill style", (done) => {
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        const dots: JQuery[] = visualBuilder.dots.toArray().map($);
+
+                        expect(isColorAppliedToElements(dots, null, "fill"));
+
+                        done();
+                    });
+                });
+
+                function isColorAppliedToElements(
+                    elements: JQuery[],
+                    color?: string,
+                    colorStyleName: string = "fill"
+                ): boolean {
+                    return elements.some((element: JQuery) => {
+                        const currentColor: string = element.css(colorStyleName);
+
+                        if (!currentColor || !color) {
+                            return currentColor === color;
+                        }
+
+                        return areColorsEqual(currentColor, color);
+                    });
+                }
+            });
         });
     });
 }

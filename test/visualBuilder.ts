@@ -98,7 +98,7 @@ module powerbi.extensibility.visual.test {
                 .children(".labels");
         }
 
-        public get dataLabelsText(): JQuery {
+        public get dataLabelsText(): JQuery<HTMLElement> {
             return this.dataLabels
                 .children("text.data-labels");
         }
