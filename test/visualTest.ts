@@ -949,6 +949,29 @@ module powerbi.extensibility.visual.test {
         });
 
         describe("Accessibility", () => {
+            it("title attribute should be filled for all of images for screen readers", (done) => {
+                const dataView: DataView = defaultDataViewBuilder.getDataView([
+                    EnhancedScatterChartData.ColumnCategory,
+                    EnhancedScatterChartData.ColumnSeries,
+                    EnhancedScatterChartData.ColumnX,
+                    EnhancedScatterChartData.ColumnY,
+                    EnhancedScatterChartData.ColumnSize,
+                    EnhancedScatterChartData.ColumnImage,
+                ]);
+
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    const images: JQuery[] = visualBuilder.images.toArray().map($);
+
+                    images.forEach((image: JQuery) => {
+                        const altText: string = image.attr("title");
+
+                        expect(altText).toBeDefined();
+                    });
+
+                    done();
+                });
+            });
+
             describe("High contrast mode", () => {
                 const backgroundColor: string = "#000000";
                 const foregroundColor: string = "#ffff00";

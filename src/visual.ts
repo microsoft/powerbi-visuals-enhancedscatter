@@ -794,7 +794,7 @@ module powerbi.extensibility.visual {
             return !!(dataView && dataView.metadata);
         }
 
-        private parseSettings(dataView, colorHelper: ColorHelper): Settings {
+        private parseSettings(dataView: DataView, colorHelper: ColorHelper): Settings {
             const settings: Settings = Settings.parse(dataView) as Settings;
 
             settings.dataPoint.defaultColor = colorHelper.getHighContrastColor(
@@ -810,6 +810,8 @@ module powerbi.extensibility.visual {
                 "foreground",
                 settings.legend.labelColor
             );
+
+            settings.categoryLabels.show = settings.categoryLabels.show || colorHelper.isHighContrast;
 
             settings.categoryLabels.color = colorHelper.getHighContrastColor(
                 "foreground",
@@ -831,6 +833,8 @@ module powerbi.extensibility.visual {
 
             this.parseAxisSettings(settings.categoryAxis, colorHelper);
             this.parseAxisSettings(settings.valueAxis, colorHelper);
+
+            settings.backdrop.show = settings.backdrop.show && !colorHelper.isHighContrast;
 
             return settings;
         }
@@ -2678,7 +2682,12 @@ module powerbi.extensibility.visual {
                             }
 
                             return this.svgDefaultImage;
-                        }
+                        },
+                        "title": (dataPoint: EnhancedScatterChartDataPoint) => {
+                            return dataPoint.formattedCategory
+                                ? dataPoint.formattedCategory()
+                                : null;
+                        },
                     })
                     .each(function (dataPoint: EnhancedScatterChartDataPoint): void {
                         const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
