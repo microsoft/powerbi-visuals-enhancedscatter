@@ -98,7 +98,7 @@ module powerbi.extensibility.visual.test {
                 .children(".labels");
         }
 
-        public get dataLabelsText(): JQuery<HTMLElement> {
+        public get dataLabelsText(): JQuery {
             return this.dataLabels
                 .children("text.data-labels");
         }
@@ -114,6 +114,13 @@ module powerbi.extensibility.visual.test {
                 .children("svg")
                 .children("g.ScatterMarkers")
                 .children("path.dot");
+        }
+
+        public get images(): JQuery {
+            return this.mainGraphicsContext
+                .children("svg")
+                .children("g.ScatterMarkers")
+                .children("image.img");
         }
 
         public get legendGroup(): JQuery {
