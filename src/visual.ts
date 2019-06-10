@@ -622,6 +622,30 @@ module powerbi.extensibility.visual {
             }
         }
 
+        private static getXGrouping(
+            categories: DataViewCategoryColumn[]
+        ): DataViewCategoryColumn {
+            const xGrouping: DataViewCategoryColumn = categories.reduce(
+                (previousValue: DataViewCategoryColumn, currentValue: DataViewCategoryColumn) => {
+                    if (!previousValue
+                        && currentValue.source.roles.X
+                        && currentValue.source.roles["X as Grouping"]
+                    ) {
+                        return currentValue;
+                    } else {
+                        return previousValue;
+                    }
+                },
+                undefined
+            );
+            return xGrouping;
+        }
+
+        private static isXGroupingExists(categories: DataViewCategoryColumn[]): boolean {
+            const xGrouping = EnhancedScatterChart.getXGrouping(categories);
+            return typeof xGrouping !== "undefined" && !!xGrouping.values;
+        }
+
         public parseData(
             dataView: DataView,
             colorPalette: IColorPalette,
@@ -992,6 +1016,24 @@ module powerbi.extensibility.visual {
             return () => formatter.format(value);
         }
 
+        public static displayTimestamp = (
+            timestamp: number
+        ): string => {
+            const value = new Date(timestamp);
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const year = value.getFullYear();
+            const month = months[value.getMonth()];
+            const date = value.getDate();
+            const displayValue = date + " " + month + " " + year;
+            return displayValue;
+        }
+
+        public static isDateTypeColumn(
+            source: DataViewMetadataColumn
+        ): boolean {
+            return (source && source.type && source.type.dateTime);
+        }
+
         private createDataPoints(
             visualHost: IVisualHost,
             dataValues: DataViewValueColumns,
@@ -1148,14 +1190,18 @@ module powerbi.extensibility.visual {
 
                     if (measureX) {
                         seriesData.push({
-                            value: xVal,
+                            value: EnhancedScatterChart.isDateTypeColumn(measureX.source)
+                                ? EnhancedScatterChart.displayTimestamp(xVal)
+                                : xVal,
                             metadata: measureX
                         });
                     }
 
                     if (measureY) {
                         seriesData.push({
-                            value: yVal,
+                            value: EnhancedScatterChart.isDateTypeColumn(measureY.source)
+                                ? EnhancedScatterChart.displayTimestamp(yVal)
+                                : yVal,
                             metadata: measureY
                         });
                     }
@@ -1378,6 +1424,7 @@ module powerbi.extensibility.visual {
             );
 
             this.renderLegend();
+
             this.render();
         }
 
@@ -2834,6 +2881,7 @@ module powerbi.extensibility.visual {
                 outerPadding: EnhancedScatterChart.OuterPadding,
                 isScalar: true,
                 isVertical: false,
+                getValueFn: (index, dataType) => dataType.dateTime ? EnhancedScatterChart.displayTimestamp(index) : index,
                 forcedTickCount: options.forcedTickCount,
                 useTickIntervalForDisplayUnits: true,
                 isCategoryAxis: true, // scatter doesn"t have a categorical axis, but this is needed for the pane to react correctly to the x-axis toggle one/off
@@ -2862,6 +2910,7 @@ module powerbi.extensibility.visual {
                 outerPadding: EnhancedScatterChart.OuterPadding,
                 isScalar: true,
                 isVertical: true,
+                getValueFn: (index, dataType) => dataType.dateTime ? EnhancedScatterChart.displayTimestamp(index) : index,
                 forcedTickCount: options.forcedTickCount,
                 useTickIntervalForDisplayUnits: true,
                 isCategoryAxis: false,
