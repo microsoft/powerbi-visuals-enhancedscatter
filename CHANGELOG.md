@@ -1,3 +1,6 @@
+## 1.5.1
+* Date formatting for X and Y Axis
+
 ## 1.5.0
 * High contrast mode
 * API 1.13.0
