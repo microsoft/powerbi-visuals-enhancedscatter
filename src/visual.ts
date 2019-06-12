@@ -1020,12 +1020,7 @@ module powerbi.extensibility.visual {
             timestamp: number
         ): string => {
             const value = new Date(timestamp);
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const year = value.getFullYear();
-            const month = months[value.getMonth()];
-            const date = value.getDate();
-            const displayValue = date + " " + month + " " + year;
-            return displayValue;
+            return valueFormatter.format(value, "dd MMM yyyy");
         }
 
         public static isDateTypeColumn(
