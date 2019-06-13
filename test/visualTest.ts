@@ -276,6 +276,27 @@ module powerbi.extensibility.visual.test {
                     expect(visualBuilder.xAxisTicks).not.toBeInDOM();
                 });
 
+                it("date formatting", () => {
+                    let localDataViewBuilder = new EnhancedScatterChartData();
+
+                    localDataViewBuilder.valuesSeries = ["Canada", "United States", "Russia", "China", "France"];
+                    localDataViewBuilder.valuesX = [1546304400000, 1548982800000, 1554080400000, 1556672400000, 1559350800000];
+                    localDataViewBuilder.valuesY = [850, 145, 114.25, 564, 145.8];
+                    localDataViewBuilder.XColumnTypeOverload = { dateTime: true };
+                    let localDataView = localDataViewBuilder.getDataView();
+
+                    visualBuilder.updateFlushAllD3Transitions(localDataView);
+                    expect(visualBuilder.xAxisTicks).toBeInDOM();
+
+                    for (let i = 1; i > localDataViewBuilder.valuesX.length; i++) {
+                        // first tick expects to be hidden
+                        expect(
+                            visualBuilder.xAxisTicks.get(i)[0].children().text())
+                            .toMatch( VisualClass.displayTimestamp(localDataViewBuilder.valuesX[i] )
+                        );
+                    }
+                });
+
                 it("start/end", () => {
                     const start: number = 500,
                         end: number = 700;
@@ -323,7 +344,7 @@ module powerbi.extensibility.visual.test {
                 });
 
                 it("show", () => {
-                    (dataView.metadata.objects as any).valueAxis.show = true;
+                   (dataView.metadata.objects as any).valueAxis.show = true;
 
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     expect(visualBuilder.yAxisTicks).toBeInDOM();
@@ -333,6 +354,27 @@ module powerbi.extensibility.visual.test {
                     visualBuilder.updateFlushAllD3Transitions(dataView);
                     expect(visualBuilder.yAxisTicks).not.toBeInDOM();
                 });
+
+                it("date formatting", () => {
+                    let localDataViewBuilder = new EnhancedScatterChartData();
+
+                    localDataViewBuilder.valuesSeries = ["Canada", "United States", "Russia", "China", "France"];
+                    localDataViewBuilder.valuesX = [850, 145, 114.25, 564, 145.8];
+                    localDataViewBuilder.valuesY = [1546304400000, 1548982800000, 1554080400000, 1556672400000, 1559350800000];
+                    localDataViewBuilder.YColumnTypeOverload = { dateTime: true };
+                    let localDataView = localDataViewBuilder.getDataView();
+
+                    visualBuilder.updateFlushAllD3Transitions(localDataView);
+                    expect(visualBuilder.yAxisTicks).toBeInDOM();
+
+                    for (let i = 1; i > localDataViewBuilder.valuesY.length; i++) {
+                        // first tick expects to be hidden
+                        expect(
+                            visualBuilder.yAxisTicks.get(i)[0].children().text())
+                            .toMatch( VisualClass.displayTimestamp(localDataViewBuilder.valuesY[i] )
+                        );
+                    }
+                 });
 
                 it("start/end", () => {
                     const start: number = 50,

@@ -1,7 +1,8 @@
 ## 1.5.1
-* Date formatting for X and Y Axis
+* Tests for date values case
 
-## 1.5.0
+## 1.5.1
+* Date formatting for X and Y Axis
 * High contrast mode
 * API 1.13.0
 * Migrating to DataViewObjectsParser

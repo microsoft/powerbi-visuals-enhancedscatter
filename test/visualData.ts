@@ -51,6 +51,9 @@ module powerbi.extensibility.visual.test {
         public static ColumnBackdrop: string = EnhancedScatterChart.ColumnBackdrop;
         public static ColumnRotation: string = EnhancedScatterChart.ColumnRotation;
 
+        public XColumnTypeOverload: ValueTypeDescriptor;
+        public YColumnTypeOverload: ValueTypeDescriptor;
+
         public static DefaultSetOfColumns: string[] = [
             EnhancedScatterChartData.ColumnCategory,
             EnhancedScatterChartData.ColumnSeries,
@@ -139,6 +142,11 @@ module powerbi.extensibility.visual.test {
                             format: EnhancedScatterChartData.NumberFormatWithPrecision,
                             isMeasure: true,
                             roles: { [EnhancedScatterChartData.ColumnX]: true },
+                            ...(
+                                this.XColumnTypeOverload
+                                ? { type: ValueType.fromDescriptor(this.XColumnTypeOverload) }
+                                : {}
+                            )
                         },
                         values: this.valuesX
                     },
@@ -148,6 +156,11 @@ module powerbi.extensibility.visual.test {
                             format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
                             isMeasure: true,
                             roles: { [EnhancedScatterChartData.ColumnY]: true },
+                            ...(
+                                this.YColumnTypeOverload
+                                ? { type: ValueType.fromDescriptor(this.YColumnTypeOverload) }
+                                : {}
+                            )
                         },
                         values: this.valuesY
                     },
@@ -156,7 +169,7 @@ module powerbi.extensibility.visual.test {
                             displayName: EnhancedScatterChartData.ColumnSize,
                             format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
                             isMeasure: true,
-                            roles: { [EnhancedScatterChartData.ColumnSize]: true },
+                            roles: { [EnhancedScatterChartData.ColumnSize]: true }
                         },
                         values: this.valuesSize
                     },
