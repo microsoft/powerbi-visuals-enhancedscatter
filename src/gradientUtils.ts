@@ -24,8 +24,12 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual.gradientUtils {
-    import DataRoleHelper = powerbi.extensibility.utils.dataview.DataRoleHelper;
+import powerbi from "powerbi-visuals-api";
+
+import DataViewCategorical = powerbi.DataViewCategorical;
+
+export module gradientUtils {
+    import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
 
     const GradientCategoryName: string = "Gradient";
 

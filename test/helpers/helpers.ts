@@ -24,12 +24,9 @@
  *  THE SOFTWARE.
  */
 
-/// <reference path="../_references.ts"/>
-
-module powerbi.extensibility.visual.test.helpers {
-    import RgbColor = powerbi.extensibility.utils.test.helpers.color.RgbColor;
-    import getRandomNumber = powerbi.extensibility.utils.test.helpers.getRandomNumber;
-    import parseColorString = powerbi.extensibility.utils.test.helpers.color.parseColorString;
+export module helpers {
+    import { RgbColor, parseColorString } from "powerbi-visuals-utils-colorutils";
+    import { getRandomNumber } from "powerbi-visuals-utils-testutils";
 
     const MinColorValue: number = 0;
     const MaxColorValue: number = 16777216;

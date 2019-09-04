@@ -24,9 +24,16 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual.tooltipBuilder {
+import powerbi from "powerbi-visuals-api";
+
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+
+export module tooltipBuilder {
     // powerbi.extensibility.utils.formatting
-    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+    import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
 
     export interface TooltipSeriesDataItem {
         value?: any;
