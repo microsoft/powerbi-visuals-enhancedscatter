@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual.yAxisPosition {
+export module yAxisPosition {
     export const left: string = "Left";
     export const right: string = "Right";
 }

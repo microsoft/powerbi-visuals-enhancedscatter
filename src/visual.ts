@@ -34,9 +34,38 @@ import powerbi from "powerbi-visuals-api";
 type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
 import ScaleLinear = d3.ScaleLinear;
 
+// powerbi
+import Fill = powerbi.Fill;
+import DataView = powerbi.DataView;
+import IViewport = powerbi.IViewport;
+import ValueRange = powerbi.ValueRange;
+import NumberRange = powerbi.NumberRange;
+import DataViewObject = powerbi.DataViewObject;
+import DataViewObjects = powerbi.DataViewObjects;
+import DataViewCategorical = powerbi.DataViewCategorical;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import DataViewValueColumns = powerbi.DataViewValueColumns;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
+import PrimitiveValue = powerbi.PrimitiveValue;
+import VisualObjectInstance = powerbi.VisualObjectInstance;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
+import VisualObjectInstanceEnumeration = powerbi.VisualObjectInstanceEnumeration;
+import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
+import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
+
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+
 // powerbi.visuals
 import ISelectionId = powerbi.visuals.ISelectionId;
+import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
+
 import IVisual = powerbi.extensibility.IVisual;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.dataview
 import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
@@ -49,54 +78,66 @@ import IMargin = SVGUtil.IMargin;
 import ISize = SVGUtil.shapesInterfaces.ISize;
 import ClassAndSelector = SVGUtil.CssConstants.ClassAndSelector;
 import createClassAndSelector = SVGUtil.CssConstants.createClassAndSelector;
+import SVGManipulations = SVGUtil.manipulation;
 
 // powerbi.extensibility.utils.chart
-import ILegend = powerbi.extensibility.utils.chart.legend.ILegend;
-import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
-import legendModule = powerbi.extensibility.utils.chart.legend;
-import LegendPosition = powerbi.extensibility.utils.chart.legend.LegendPosition;
-import LegendIcon = powerbi.extensibility.utils.chart.legend.LegendIcon;
-import createLegend = powerbi.extensibility.utils.chart.legend.createLegend;
-import LegendDataPoint = powerbi.extensibility.utils.chart.legend.LegendDataPoint;
-import axis = powerbi.extensibility.utils.chart.axis;
-import IAxisProperties = powerbi.extensibility.utils.chart.axis.IAxisProperties;
-import dataLabelUtils = powerbi.extensibility.utils.chart.dataLabel.utils;
-import ILabelLayout = powerbi.extensibility.utils.chart.dataLabel.ILabelLayout;
-import LabelTextProperties = powerbi.extensibility.utils.chart.dataLabel.utils.LabelTextProperties;
-import getLabelFormattedText = powerbi.extensibility.utils.chart.dataLabel.utils.getLabelFormattedText;
-import LegendBehavior = powerbi.extensibility.utils.chart.legend.LegendBehavior;
-import OpacityLegendBehavior = powerbi.extensibility.utils.chart.legend.OpacityLegendBehavior;
+import { legend as legendModule, legendInterfaces, OpacityLegendBehavior, legendBehavior, axisInterfaces, axis, dataLabelInterfaces, dataLabelUtils } from "powerbi-visuals-utils-chartutils";
+import ILegend = legendInterfaces.ILegend;
+import LegendPosition = legendInterfaces.LegendPosition;
+import LegendData = legendInterfaces.LegendData;
+import LegendDataPoint = legendInterfaces.LegendDataPoint;
+import IAxisProperties = axisInterfaces.IAxisProperties;
+import ILabelLayout = dataLabelInterfaces.ILabelLayout;
+import LabelTextProperties = dataLabelUtils.LabelTextProperties;
+import getLabelFormattedText = dataLabelUtils.getLabelFormattedText;
+import LegendBehavior = legendBehavior.LegendBehavior;
+import createLegend = legendModule.createLegend;
 
 // powerbi.extensibility.utils.type
-import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
-import equalWithPrecision = powerbi.extensibility.utils.type.Double.equalWithPrecision;
-
-// powerbi.extensibility.utils.formatting
-import TextProperties = powerbi.extensibility.utils.formatting.TextProperties;
+import { pixelConverter as PixelConverter, valueType, double } from "powerbi-visuals-utils-typeutils";
+import equalWithPrecision = double.equalWithPrecision;
 
 // powerbi.extensibility.utils.interactivity
-import appendClearCatcher = powerbi.extensibility.utils.interactivity.appendClearCatcher;
-import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-import createInteractivityService = powerbi.extensibility.utils.interactivity.createInteractivityService;
+import { interactivityBaseService as interactivityService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import appendClearCatcher = interactivityService.appendClearCatcher;
+import IInteractiveBehavior = interactivityService.IInteractiveBehavior;
+import IInteractivityService = interactivityService.IInteractivityService;
+import createInteractivityService = interactivitySelectionService.createInteractivitySelectionService;
 
 // powerbi.extensibility.utils.formatting
-import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-import IValueFormatter = powerbi.extensibility.utils.formatting.IValueFormatter;
-import svgEllipsis = powerbi.extensibility.utils.formatting.textMeasurementService.svgEllipsis;
-import measureSvgTextWidth = powerbi.extensibility.utils.formatting.textMeasurementService.measureSvgTextWidth;
-import measureSvgTextHeight = powerbi.extensibility.utils.formatting.textMeasurementService.measureSvgTextHeight;
-import estimateSvgTextHeight = powerbi.extensibility.utils.formatting.textMeasurementService.estimateSvgTextHeight;
-import getTailoredTextOrDefault = powerbi.extensibility.utils.formatting.textMeasurementService.getTailoredTextOrDefault;
+import { textMeasurementService as tms, valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import TextProperties = tms.TextProperties;
+import IValueFormatter = valueFormatter.IValueFormatter;
+import textMeasurementService = tms.textMeasurementService;
+import svgEllipsis = textMeasurementService.svgEllipsis;
+import measureSvgTextWidth = textMeasurementService.measureSvgTextWidth;
+import measureSvgTextHeight = textMeasurementService.measureSvgTextHeight;
+import estimateSvgTextHeight = textMeasurementService.estimateSvgTextHeight;
+import getTailoredTextOrDefault = textMeasurementService.getTailoredTextOrDefault;
 
 // powerbi.extensibility.utils.color
-import ColorHelper = powerbi.extensibility.utils.color.ColorHelper;
+import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 
 // powerbi.extensibility.utils.tooltip
-import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
-import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
-import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
-import createTooltipServiceWrapper = powerbi.extensibility.utils.tooltip.createTooltipServiceWrapper;
+import { createTooltipServiceWrapper, TooltipEventArgs, ITooltipServiceWrapper, TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
+
+import { BehaviorOptions, VisualBehavior } from "./behavior";
+import { AxisSettings, DataPointSettings, LegendSettings, CategoryLabelsSettings, Settings } from "./settings";
+import {
+    EnhancedScatterChartData,
+    EnhancedScatterChartDataPoint,
+    EnhancedScatterChartMeasureMetadata,
+    EnhancedScatterChartMeasureMetadataIndexes,
+    EnhancedScatterDataRange,
+    EnhancedScatterChartRadiusData,
+    CalculateScaleAndDomainOptions,
+    ChartAxesLabels,
+    ElementProperties
+} from "./dataInterfaces";
+import * as gradientUtils from "./gradientUtils";
+import { tooltipBuilder } from "./tooltipBuilder";
+import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
+import { yAxisPosition } from "./yAxisPosition";
 
 interface ShapeFunction {
     (value: any): string;
@@ -319,7 +360,7 @@ export class EnhancedScatterChart implements IVisual {
     private yAxisProperties: IAxisProperties;
     private colorPalette: ISandboxExtendedColorPalette;
 
-    private interactivityService: IInteractivityService;
+    private interactivityService: IInteractivityService<BaseDataPoint>;
     private yAxisOrientation: string;
 
     private scrollY: boolean = true;
@@ -656,7 +697,7 @@ export class EnhancedScatterChart implements IVisual {
         dataView: DataView,
         colorPalette: IColorPalette,
         visualHost: IVisualHost,
-        interactivityService: IInteractivityService,
+        interactivityService: IInteractivityService<BaseDataPoint>,
     ): EnhancedScatterChartData {
         const settings: Settings = this.parseSettings(dataView, new ColorHelper(colorPalette));
 
@@ -911,7 +952,6 @@ export class EnhancedScatterChart implements IVisual {
 
             legendItems.push({
                 color,
-                icon: LegendIcon.Circle,
                 label: valueFormatter.format(grouping.name, formatString),
                 identity: selectionId,
                 selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint
@@ -1777,10 +1817,9 @@ export class EnhancedScatterChart implements IVisual {
         const data: EnhancedScatterChartData = this.data;
         const dataPoints: EnhancedScatterChartDataPoint[] = this.data.dataPoints;
 
-        this.mainGraphicsSVGSelection.attr({
-            "width": this.viewportIn.width,
-            "height": this.viewportIn.height
-        });
+        this.mainGraphicsSVGSelection
+            .attr("width", this.viewportIn.width)
+            .attr("height", this.viewportIn.height);
 
         const sortedData: EnhancedScatterChartDataPoint[] = dataPoints.sort(
             (firstDataPoint: EnhancedScatterChartDataPoint, secondDataPoint: EnhancedScatterChartDataPoint) => {
@@ -1790,7 +1829,7 @@ export class EnhancedScatterChart implements IVisual {
                     : EnhancedScatterChart.DefaultSizeMeasure;
             });
 
-        const scatterMarkers: UpdateSelection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
+        const scatterMarkers: Selection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
             sortedData,
             data.sizeRange,
             EnhancedScatterChart.AnimationDuration
@@ -1804,7 +1843,7 @@ export class EnhancedScatterChart implements IVisual {
             // fix bug 3863: drawDefaultLabelsForDataPointChart add to datapoints[xxx].size = object, which causes when
             // category labels is on and Fill Points option off to fill the points when mouse click occures because of default size
             // is set to datapoints.
-            const labels: UpdateSelection<EnhancedScatterChartDataPoint> = dataLabelUtils.drawDefaultLabelsForDataPointChart(
+            const labels: Selection<EnhancedScatterChartDataPoint> = dataLabelUtils.drawDefaultLabelsForDataPointChart(
                 clonedDataPoints,
                 this.mainGraphicsG,
                 layout,
@@ -1820,7 +1859,7 @@ export class EnhancedScatterChart implements IVisual {
                     dx = size.width / EnhancedScatterChart.DataLabelXOffset;
                     dy = size.height / EnhancedScatterChart.DataLabelYOffset;
 
-                    return svg.translate(dx, dy);
+                    return SVGManipulations.translate(dx, dy);
                 });
             }
         }
@@ -2223,19 +2262,17 @@ export class EnhancedScatterChart implements IVisual {
             xFormated: number,
             yFormated: number;
 
-        this.crosshairHorizontalLineSelection.attr({
-            x1: EnhancedScatterChart.CrosshairStartPosition,
-            y1: y,
-            x2: this.viewportIn.width,
-            y2: y
-        });
+        this.crosshairHorizontalLineSelection
+            .attr("x1", EnhancedScatterChart.CrosshairStartPosition)
+            .attr("y1", y)
+            .attr("x2", this.viewportIn.width)
+            .attr("y2", y);
 
-        this.crosshairVerticalLineSelection.attr({
-            x1: x,
-            y1: EnhancedScatterChart.CrosshairStartPosition,
-            x2: x,
-            y2: this.viewportIn.height
-        });
+        this.crosshairVerticalLineSelection
+            .attr("x1", x)
+            .attr("y1", EnhancedScatterChart.CrosshairStartPosition)
+            .attr("x2", x)
+            .attr("y2", this.viewportIn.height);
 
         xFormated = Math.round(xScale.invert(x) * EnhancedScatterChart.CrosshairScaleFactor)
             / EnhancedScatterChart.CrosshairScaleFactor;
@@ -2244,10 +2281,8 @@ export class EnhancedScatterChart implements IVisual {
             / EnhancedScatterChart.CrosshairScaleFactor;
 
         this.crosshairTextSelection
-            .attr({
-                x: x + crosshairTextMargin,
-                y: y - crosshairTextMargin
-            })
+            .attr("x", x + crosshairTextMargin)
+            .attr("y", y - crosshairTextMargin)
             .text(`(${xFormated}, ${yFormated})`);
     }
 
@@ -2264,7 +2299,7 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         let elementSelection: Selection<any>,
-            elementUpdateSelection: UpdateSelection<any>;
+            elementUpdateSelection: Selection<any>;
 
         elementSelection = rootElement.selectAll(properties.selector);
 
@@ -2287,18 +2322,16 @@ export class EnhancedScatterChart implements IVisual {
     private renderBackground(): void {
         if (this.data.settings.backdrop.show && this.data.settings.backdrop.url !== undefined) {
 
-            this.backgroundGraphicsContext.attr({
-                "xlink:href": this.data.settings.backdrop.url,
-                "x": EnhancedScatterChart.DefaultBackgroundPosition,
-                "y": EnhancedScatterChart.DefaultBackgroundPosition,
-                "width": this.viewportIn.width,
-                "height": this.viewportIn.height
-            });
+            this.backgroundGraphicsContext
+                .attr("xlink:href", this.data.settings.backdrop.url)
+                .attr("x", EnhancedScatterChart.DefaultBackgroundPosition)
+                .attr("y", EnhancedScatterChart.DefaultBackgroundPosition)
+                .attr("width", this.viewportIn.width)
+                .attr("height", this.viewportIn.height);
         } else {
-            this.backgroundGraphicsContext.attr({
-                "width": EnhancedScatterChart.DefaultBackgroundPosition,
-                "height": EnhancedScatterChart.DefaultBackgroundPosition
-            });
+            this.backgroundGraphicsContext
+                .attr("width", EnhancedScatterChart.DefaultBackgroundPosition)
+                .attr("height", EnhancedScatterChart.DefaultBackgroundPosition);
         }
     }
 
@@ -2422,19 +2455,15 @@ export class EnhancedScatterChart implements IVisual {
         }
     }
 
-    private applyAxisColor(selection: d3.Selection<any>, axisSettings: AxisSettings): void {
+    private applyAxisColor(selection: Selection<any>, axisSettings: AxisSettings): void {
         selection
             .selectAll("line")
-            .style({
-                "stroke": axisSettings.lineColor,
-                "stroke-width": null,
-            });
+            .style("stroke", axisSettings.lineColor)
+            .style("stroke-width", null);
 
         selection
             .selectAll("path")
-            .style({
-                "stroke": axisSettings.lineColor,
-            });
+            .style("stroke", axisSettings.lineColor);
 
         selection
             .selectAll("text")
@@ -2450,10 +2479,8 @@ export class EnhancedScatterChart implements IVisual {
             if (xZeroColor) {
                 xZeroTick
                     .selectAll("line")
-                    .style({
-                        "stroke": axisSettings.zeroLineColor,
-                        "stroke-width": PixelConverter.toString(axisSettings.zeroLineStrokeWidth),
-                    });
+                    .style("stroke", axisSettings.zeroLineColor)
+                    .style("stroke-width", PixelConverter.toString(axisSettings.zeroLineStrokeWidth));
             }
         }
 
@@ -2495,22 +2522,20 @@ export class EnhancedScatterChart implements IVisual {
         if (!hideXAxisTitle) {
             const xAxisLabel: Selection<any> = this.axisGraphicsContext
                 .append("text")
-                .style({
-                    "text-anchor": EnhancedScatterChart.TextAnchor,
-                    fill: xAxisSettings.axisColor,
-                })
+                .style("text-anchor", EnhancedScatterChart.TextAnchor)
+                .style("fill", xAxisSettings.axisColor)
                 .text(axisLabels.x)
                 .call((text: Selection<any>) => {
                     text.each(function () {
                         const textSelection: Selection<any> = d3.select(this);
 
-                        textSelection.attr({
-                            "class": EnhancedScatterChart.XAxisLabelSelector.className,
-                            "transform": svg.translate(
+                        textSelection
+                            .attr("class", EnhancedScatterChart.XAxisLabelSelector.className)
+                            .attr("transform", SVGManipulations.translate(
                                 width / EnhancedScatterChart.AxisLabelOffset,
                                 height - fontSize - EnhancedScatterChart.AxisLabelOffset
                             ),
-                        });
+                            );
                     });
                 });
 
@@ -2524,27 +2549,21 @@ export class EnhancedScatterChart implements IVisual {
         if (!hideYAxisTitle) {
             const yAxisLabel: Selection<any> = this.axisGraphicsContext
                 .append("text")
-                .style({
-                    "text-anchor": EnhancedScatterChart.TextAnchor,
-                    fill: yAxisSettings.axisColor,
-                })
+                .style("text-anchor", EnhancedScatterChart.TextAnchor)
+                .style("fill", yAxisSettings.axisColor)
                 .text(axisLabels.y)
                 .call((text: Selection<any>) => {
                     text.each(function () {
                         const text: Selection<any> = d3.select(this);
 
-                        text.attr({
-                            "class": EnhancedScatterChart.YAxisLabelSelector.className,
-                            "transform": EnhancedScatterChart.YAxisLabelTransformRotate,
-                            "y": showY1OnRight
-                                ? width + margin.right - fontSize
-                                : -margin.left,
-                            "x": -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset),
-                            "dy": EnhancedScatterChart.DefaultDY
-                        });
+                        text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
+                            .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
+                            .attr("y", showY1OnRight ? width + margin.right - fontSize : -margin.left)
+                            .attr("x", -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset))
+                            .attr("dy", EnhancedScatterChart.DefaultDY);
                     });
-                });
 
+                });
             yAxisLabel.call(
                 axis.LabelLayoutStrategy.clip,
                 height - (margin.bottom + margin.top),
@@ -2561,15 +2580,11 @@ export class EnhancedScatterChart implements IVisual {
                     text.each(function () {
                         const text: Selection<any> = d3.select(this);
 
-                        text.attr({
-                            "class": EnhancedScatterChart.YAxisLabelSelector.className,
-                            "transform": EnhancedScatterChart.YAxisLabelTransformRotate,
-                            "y": showY1OnRight
-                                ? -margin.left
-                                : width + margin.right - fontSize,
-                            "x": -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset),
-                            "dy": EnhancedScatterChart.DefaultDY
-                        });
+                        text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
+                            .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
+                            .attr("y", showY1OnRight ? -margin.left : width + margin.right - fontSize)
+                            .attr("x", -((height - margin.top - legendMargin) / EnhancedScatterChart.AxisLabelOffset))
+                            .attr("dy", EnhancedScatterChart.DefaultDY);
                     });
                 });
 
@@ -2588,59 +2603,47 @@ export class EnhancedScatterChart implements IVisual {
 
         this.xAxisGraphicsContext.attr(
             "transform",
-            svg.translate(
+            SVGManipulations.translate(
                 EnhancedScatterChart.DefaultAxisOffset,
                 this.viewportIn.height));
 
         this.yAxisGraphicsContext.attr(
             "transform",
-            svg.translate(
+            SVGManipulations.translate(
                 showY1OnRight
                     ? this.viewportIn.width
                     : EnhancedScatterChart.DefaultAxisOffset,
                 EnhancedScatterChart.DefaultAxisOffset));
 
-        this.svg.attr({
-            "width": this.viewport.width,
-            "height": this.viewport.height
-        });
+        this.svg.attr("width", this.viewport.width)
+            .attr("height", this.viewport.height);
 
-        this.svgScrollable.attr({
-            "width": this.viewport.width,
-            "height": this.viewport.height
-        });
+        this.svgScrollable.attr("width", this.viewport.width)
+            .attr("height", this.viewport.height);
 
-        this.svgScrollable.attr({
-            "x": EnhancedScatterChart.DefaultAxisOffset
-        });
+        this.svgScrollable.attr("x", EnhancedScatterChart.DefaultAxisOffset);
 
         const left: number = this.margin.left,
             top: number = this.margin.top;
 
-        this.axisGraphicsContext.attr("transform", svg.translate(left, top));
-        this.axisGraphicsContextScrollable.attr("transform", svg.translate(left, top));
-        this.clearCatcher.attr("transform", svg.translate(-left, -top));
+        this.axisGraphicsContext.attr("transform", SVGManipulations.translate(left, top));
+        this.axisGraphicsContextScrollable.attr("transform", SVGManipulations.translate(left, top));
+        this.clearCatcher.attr("transform", SVGManipulations.translate(-left, -top));
 
         if (this.isXScrollBarVisible) {
-            this.svgScrollable.attr({
-                "x": left,
-                "width": this.viewportIn.width
-            });
+            this.svgScrollable.attr("x", left)
+                .attr("width", this.viewportIn.width);
 
-            this.axisGraphicsContextScrollable.attr("transform", svg.translate(0, top));
+            this.axisGraphicsContextScrollable.attr("transform", SVGManipulations.translate(0, top));
 
-            this.svg.attr({
-                "width": this.viewport.width,
-                "height": this.viewport.height + this.ScrollBarWidth
-            });
+            this.svg.attr("width", this.viewport.width)
+                .attr("height", this.viewport.height + this.ScrollBarWidth);
         }
         else if (this.isYScrollBarVisible) {
             this.svgScrollable.attr("height", this.viewportIn.height + top);
 
-            this.svg.attr({
-                "width": this.viewport.width + this.ScrollBarWidth,
-                "height": this.viewport.height
-            });
+            this.svg.attr("width", this.viewport.width + this.ScrollBarWidth)
+                .attr("height", this.viewport.height);
         }
     }
 
@@ -2648,13 +2651,13 @@ export class EnhancedScatterChart implements IVisual {
         scatterData: EnhancedScatterChartDataPoint[],
         sizeRange: NumberRange,
         duration: number
-    ): UpdateSelection<EnhancedScatterChartDataPoint> {
+    ): Selection<EnhancedScatterChartDataPoint> {
 
         const xScale: any = this.xAxisProperties.scale,
             yScale: any = this.yAxisProperties.scale,
             viewport = this.viewport;
 
-        let markers: UpdateSelection<EnhancedScatterChartDataPoint>;
+        let markers: Selection<EnhancedScatterChartDataPoint>;
 
         if (!this.data.useShape) {
             this.mainGraphicsContext
@@ -2675,11 +2678,9 @@ export class EnhancedScatterChart implements IVisual {
                 .attr("id", EnhancedScatterChart.MarkerShapeSelector.className);
 
             markers
-                .style({
-                    "stroke-width": (dataPoint: EnhancedScatterChartDataPoint) => PixelConverter.toString(dataPoint.strokeWidth),
-                    "stroke": (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.stroke,
-                    "fill": (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.fill,
-                })
+                .style("stroke-width", (dataPoint: EnhancedScatterChartDataPoint) => PixelConverter.toString(dataPoint.strokeWidth))
+                .style("stroke", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.stroke)
+                .style("fill", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.fill)
                 .attr("d", (dataPoint: EnhancedScatterChartDataPoint) => {
                     const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport),
                         area: number = EnhancedScatterChart.RadiusMultiplexer * r * r;
@@ -2720,22 +2721,20 @@ export class EnhancedScatterChart implements IVisual {
                 .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
 
             markers
-                .attr({
-                    "xlink:href": (dataPoint: EnhancedScatterChartDataPoint) => {
-                        if (dataPoint.svgurl !== undefined
-                            && dataPoint.svgurl != null
-                            && dataPoint.svgurl !== "") {
+                .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
+                    if (dataPoint.svgurl !== undefined
+                        && dataPoint.svgurl != null
+                        && dataPoint.svgurl !== "") {
 
-                            return dataPoint.svgurl;
-                        }
+                        return dataPoint.svgurl;
+                    }
 
-                        return this.svgDefaultImage;
-                    },
-                    "title": (dataPoint: EnhancedScatterChartDataPoint) => {
-                        return dataPoint.formattedCategory
-                            ? dataPoint.formattedCategory()
-                            : null;
-                    },
+                    return this.svgDefaultImage;
+                })
+                .attr("title", (dataPoint: EnhancedScatterChartDataPoint) => {
+                    return dataPoint.formattedCategory
+                        ? dataPoint.formattedCategory()
+                        : null;
                 })
                 .each(function (dataPoint: EnhancedScatterChartDataPoint): void {
                     const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
@@ -2743,10 +2742,8 @@ export class EnhancedScatterChart implements IVisual {
                         sizeRange,
                         viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                    d3.select(this).attr({
-                        "width": bubbleRadius,
-                        "height": bubbleRadius
-                    });
+                    d3.select(this).attr("width", bubbleRadius)
+                        .attr("height", bubbleRadius);
                 })
                 .transition()
                 .duration((dataPoint: EnhancedScatterChartDataPoint) => {
@@ -2970,7 +2967,7 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         if (this.data.hasDynamicSeries) {
-            return this.data.legendDataPoints.map((legendDataPoint: legendModule.LegendDataPoint) => {
+            return this.data.legendDataPoints.map((legendDataPoint: LegendDataPoint) => {
                 return {
                     objectName: "dataPoint",
                     displayName: legendDataPoint.label,

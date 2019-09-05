@@ -24,10 +24,10 @@
  *  THE SOFTWARE.
  */
 
-export module helpers {
-    import { RgbColor, parseColorString } from "powerbi-visuals-utils-colorutils";
-    import { getRandomNumber } from "powerbi-visuals-utils-testutils";
+import { RgbColor, parseColorString } from "powerbi-visuals-utils-colorutils";
+import { getRandomNumber } from "powerbi-visuals-utils-testutils";
 
+export module helpers {
     const MinColorValue: number = 0;
     const MaxColorValue: number = 16777216;
 

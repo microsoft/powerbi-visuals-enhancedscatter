@@ -28,25 +28,23 @@ import powerbi from "powerbi-visuals-api";
 
 import DataViewCategorical = powerbi.DataViewCategorical;
 
-export module gradientUtils {
-    import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
+import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
 
-    const GradientCategoryName: string = "Gradient";
+const GradientCategoryName: string = "Gradient";
 
-    export function getGradientMeasureIndex(dataViewCategorical: DataViewCategorical): number {
-        if (dataViewCategorical
-            && dataViewCategorical.values
-            && dataViewCategorical.values.grouped) {
+export function getGradientMeasureIndex(dataViewCategorical: DataViewCategorical): number {
+    if (dataViewCategorical
+        && dataViewCategorical.values
+        && dataViewCategorical.values.grouped) {
 
-            return DataRoleHelper.getMeasureIndexOfRole(
-                dataViewCategorical.values.grouped(),
-                GradientCategoryName);
-        }
-
-        return -1;
+        return DataRoleHelper.getMeasureIndexOfRole(
+            dataViewCategorical.values.grouped(),
+            GradientCategoryName);
     }
 
-    export function hasGradientRole(dataViewCategorical: DataViewCategorical): boolean {
-        return getGradientMeasureIndex(dataViewCategorical) >= 0;
-    }
+    return -1;
+}
+
+export function hasGradientRole(dataViewCategorical: DataViewCategorical): boolean {
+    return getGradientMeasureIndex(dataViewCategorical) >= 0;
 }

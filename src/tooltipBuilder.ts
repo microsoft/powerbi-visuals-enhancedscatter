@@ -31,10 +31,10 @@ import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
 import DataViewValueColumn = powerbi.DataViewValueColumn;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 
-export module tooltipBuilder {
-    // powerbi.extensibility.utils.formatting
-    import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+// powerbi.extensibility.utils.formatting
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
 
+export module tooltipBuilder {
     export interface TooltipSeriesDataItem {
         value?: any;
         highlightedValue?: any;

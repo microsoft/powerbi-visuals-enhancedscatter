@@ -25,13 +25,20 @@
  */
 
 import powerbi from "powerbi-visuals-api";
+import * as d3 from "d3";
 import * as _ from "lodash";
 
 // d3
-import Selection = d3.Selection;
+type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+
+// powerbi
+import DataView = powerbi.DataView;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
 
 // powerbi.extensibility.visual
-import { EnhancedScatterChart as VisualClass, EnhancedScatterChartDataPoint, ElementProperties } from "../src/visual";
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import { EnhancedScatterChart as VisualClass } from "../src/visual";
 
 // powerbi.extensibility.visual.test
 import { helpers } from "./helpers/helpers";
@@ -47,7 +54,10 @@ import { interactivityBaseService as interactivityService } from "powerbi-visual
 import IInteractivityService = interactivityService.IInteractivityService;
 
 // powerbi.extensibility.utils.test
-import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette } from "powerbi-visuals-utils-testutils";
+import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder } from "powerbi-visuals-utils-testutils";
+
+import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
+import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -57,11 +67,24 @@ describe("EnhancedScatterChart", () => {
     let defaultDataViewBuilder: EnhancedScatterChartData;
 
     beforeEach(() => {
-        let selectionIdIndex: number = 0;
+        const selectionIds: MockISelectionId[] = [];
+        let selectionIndex: number = -1;
 
-        powerbi.extensibility.utils.test.mocks.createSelectionId = () => {
-            return new MockISelectionId((selectionIdIndex++).toString());
+        const customMockISelectionIdBuilder = new MockISelectionIdBuilder();
+        customMockISelectionIdBuilder.createSelectionId = () => {
+            selectionIndex++;
+
+            if (selectionIds[selectionIndex]) {
+                return selectionIds[selectionIndex];
+            }
+
+            const selectionId: MockISelectionId = new MockISelectionId(`${selectionIndex}`);
+            selectionIds.push(selectionId);
+
+            return selectionId;
         };
+
+        visualBuilder.visualHost.createSelectionIdBuilder = () => customMockISelectionIdBuilder;
 
         visualBuilder = new EnhancedScatterChartBuilder(1000, 500);
         defaultDataViewBuilder = new EnhancedScatterChartData();
@@ -584,7 +607,7 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                const dots: JQuery[] = visualBuilder.dots.toArray().map($);
+                const dots: JQuery<any>[] = visualBuilder.dots.toArray().map($);
 
                 colors.forEach((color: string) => {
                     expect(dots.some((dot: JQuery) => {
@@ -941,7 +964,7 @@ describe("EnhancedScatterChart", () => {
             dataView: DataView,
             colorPalette: IColorPalette,
             visualHost: IVisualHost,
-            interactivityService?: IInteractivityService
+            interactivityService?: IInteractivityService<BaseDataPoint>
         ): IEnhancedScatterChartData {
 
             let enhancedScatterChartData: IEnhancedScatterChartData;
@@ -999,7 +1022,7 @@ describe("EnhancedScatterChart", () => {
             ]);
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                const images: JQuery[] = visualBuilder.images.toArray().map($);
+                const images: JQuery<any>[] = visualBuilder.images.toArray().map($);
 
                 images.forEach((image: JQuery) => {
                     const altText: string = image.attr("title");
@@ -1024,7 +1047,7 @@ describe("EnhancedScatterChart", () => {
 
             it("dots should use fill style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const dots: JQuery[] = visualBuilder.dots.toArray().map($);
+                    const dots: JQuery<any>[] = visualBuilder.dots.toArray().map($);
 
                     expect(isColorAppliedToElements(dots, null, "fill"));
 
