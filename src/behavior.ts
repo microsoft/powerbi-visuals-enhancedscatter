@@ -34,10 +34,11 @@ import IInteractivityService = interactivityService.IInteractivityService;
 import ISelectionHandler = interactivityService.ISelectionHandler;
 import registerStandardSelectionHandler = interactivityUtils.registerStandardSelectionHandler;
 import BaseDataPoint = interactivityService.BaseDataPoint;
+import IBehaviorOptions = interactivityService.IBehaviorOptions;
 
 import { EnhancedScatterChartDataPoint } from "./dataInterfaces";
 
-export interface BehaviorOptions {
+export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
     clearCatcher: Selection<any>;
     dataPointsSelection: Selection<EnhancedScatterChartDataPoint>;
     interactivityService: IInteractivityService<BaseDataPoint>;

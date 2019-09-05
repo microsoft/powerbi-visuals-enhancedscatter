@@ -1897,9 +1897,11 @@ export class EnhancedScatterChart implements IVisual {
             dataPointsSelection,
             clearCatcher: this.clearCatcher,
             interactivityService: this.interactivityService,
+            behavior: this.behavior,
+            dataPoints
         };
 
-        this.interactivityService.bind(dataPoints, this.behavior, behaviorOptions);
+        this.interactivityService.bind(behaviorOptions);
 
         this.behavior.renderSelection(false);
     }
@@ -2257,8 +2259,8 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         let crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
-            xScale = <LinearScale<number, number>>this.xAxisProperties.scale,
-            yScale = <LinearScale<number, number>>this.yAxisProperties.scale,
+            xScale = <ScaleLinear<number, number>>this.xAxisProperties.scale,
+            yScale = <ScaleLinear<number, number>>this.yAxisProperties.scale,
             xFormated: number,
             yFormated: number;
 
