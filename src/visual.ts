@@ -87,6 +87,7 @@ import LegendPosition = legendInterfaces.LegendPosition;
 import LegendData = legendInterfaces.LegendData;
 import LegendDataPoint = legendInterfaces.LegendDataPoint;
 import IAxisProperties = axisInterfaces.IAxisProperties;
+import TickLabelMargins = axisInterfaces.TickLabelMargins;
 import ILabelLayout = dataLabelInterfaces.ILabelLayout;
 import LabelTextProperties = dataLabelUtils.LabelTextProperties;
 import getLabelFormattedText = dataLabelUtils.getLabelFormattedText;
@@ -94,7 +95,7 @@ import LegendBehavior = legendBehavior.LegendBehavior;
 import createLegend = legendModule.createLegend;
 
 // powerbi.extensibility.utils.type
-import { pixelConverter as PixelConverter, valueType, double } from "powerbi-visuals-utils-typeutils";
+import { pixelConverter as PixelConverter, double } from "powerbi-visuals-utils-typeutils";
 import equalWithPrecision = double.equalWithPrecision;
 
 // powerbi.extensibility.utils.interactivity
@@ -213,7 +214,6 @@ export class EnhancedScatterChart implements IVisual {
 
     private static RadiusMultiplexer: number = 4;
 
-    private static DefaultXAxisOrientation: string = "bottom";
     private static DefaultAxisXTickPadding: number = 5;
     private static DefaultAxisYTickPadding: number = 10;
 
@@ -1594,7 +1594,7 @@ export class EnhancedScatterChart implements IVisual {
         this.isXScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
         this.isYScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
 
-        let tickLabelMargins: axis.TickLabelMargins;
+        let tickLabelMargins: TickLabelMargins;
         let axisLabels: ChartAxesLabels;
         let chartHasAxisLabels: boolean;
 
@@ -2207,7 +2207,7 @@ export class EnhancedScatterChart implements IVisual {
 
         this.axisGraphicsContextScrollable
             .on("mousemove", () => {
-                let currentTarget: SVGElement = (d3.event as MouseEvent).currentTarget as SVGElement,
+                let currentTarget = (d3.event as MouseEvent).currentTarget as SVGAElement,
                     coordinates: number[] = d3.mouse(currentTarget),
                     svgNode: SVGElement = currentTarget.viewportElement,
                     scaledRect: ClientRect = svgNode.getBoundingClientRect(),
@@ -2309,9 +2309,17 @@ export class EnhancedScatterChart implements IVisual {
 
         elementUpdateSelection
             .enter()
-            .append(properties.name)
-            .attr(properties.attributes)
-            .style(properties.styles)
+            .append(properties.name);
+
+        for (let propKey in properties.attributes) {
+            elementUpdateSelection.attr(propKey, properties.attributes[propKey]);
+        }
+
+        for (let propKey in properties.styles) {
+            elementUpdateSelection.attr(propKey, properties.styles[propKey]);
+        }
+
+        elementUpdateSelection
             .classed(properties.className, true);
 
         elementUpdateSelection
@@ -2354,7 +2362,13 @@ export class EnhancedScatterChart implements IVisual {
 
         // hide show x-axis heres
         if (this.shouldRenderAxis(xAxis, xAxisSettings)) {
-            xAxis.axis.orient(EnhancedScatterChart.DefaultXAxisOrientation);
+            const axisProperties = xAxis;
+            const scale: any = axisProperties.scale;
+            let newAxis = d3.axisBottom(scale);
+            xAxis.axis = newAxis;
+            // const ticksCount: number = axisProperties.values.length;
+            // const format: any = (domainValue: d3.AxisDomain, value: any) => axisProperties.values[value];
+            // this.xAxisGraphicsContext.call(axis.tickArguments([ticksCount]).tickFormat(format));
 
             if (!xAxis.willLabelsFit) {
                 xAxis.axis.tickPadding(EnhancedScatterChart.DefaultAxisXTickPadding);
@@ -2401,10 +2415,13 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         if (this.shouldRenderAxis(yAxis, yAxisSettings)) {
+            const scale: any = yAxis.scale;
+            const oldAxis = yAxis.axis;
+            let newAxis = this.yAxisOrientation.toLowerCase() === yAxisPosition.left ? d3.axisLeft(scale) : d3.axisRight(scale);
+            yAxis.axis = newAxis;
             yAxis.axis
                 .tickSize(-this.viewportIn.width)
-                .tickPadding(EnhancedScatterChart.DefaultAxisYTickPadding)
-                .orient(this.yAxisOrientation.toLowerCase());
+                .tickPadding(EnhancedScatterChart.DefaultAxisYTickPadding);
 
             if (duration) {
                 this.yAxisGraphicsContext
@@ -2822,7 +2839,7 @@ export class EnhancedScatterChart implements IVisual {
 
         const width: number = this.viewport.width - (this.margin.left + this.margin.right);
 
-        const axes: axis.IAxisProperties[] = this.calculateAxesProperties(visualOptions);
+        const axes: IAxisProperties[] = this.calculateAxesProperties(visualOptions);
 
         axes[0].willLabelsFit = axis.LabelLayoutStrategy.willLabelsFit(
             axes[0],
@@ -2889,9 +2906,9 @@ export class EnhancedScatterChart implements IVisual {
             axisDisplayUnits: options.categoryAxisDisplayUnits
         });
 
-        this.xAxisProperties.axis.tickSize(
-            -this.viewportIn.height,
-            EnhancedScatterChart.OuterPadding);
+        this.xAxisProperties.axis
+            .tickSize(-this.viewportIn.height)
+            .tickSizeOuter(EnhancedScatterChart.OuterPadding);
 
         this.xAxisProperties.axisLabel = this.data.axesLabels.x;
 
