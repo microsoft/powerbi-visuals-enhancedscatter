@@ -27,6 +27,7 @@
 import powerbi from "powerbi-visuals-api";
 import * as d3 from "d3";
 import * as _ from "lodash";
+import * as $ from "jquery";
 
 // d3
 type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
@@ -54,7 +55,7 @@ import { interactivityBaseService as interactivityService } from "powerbi-visual
 import IInteractivityService = interactivityService.IInteractivityService;
 
 // powerbi.extensibility.utils.test
-import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder } from "powerbi-visuals-utils-testutils";
+import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId } from "powerbi-visuals-utils-testutils";
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
@@ -65,30 +66,23 @@ describe("EnhancedScatterChart", () => {
     let dataView: DataView;
     let visualBuilder: EnhancedScatterChartBuilder;
     let defaultDataViewBuilder: EnhancedScatterChartData;
+    let previousCreateSelectionId: any;
+    let customMockISelectionIdBuilder = new MockISelectionIdBuilder();
 
     beforeEach(() => {
-        const selectionIds: MockISelectionId[] = [];
-        let selectionIndex: number = -1;
-
-        const customMockISelectionIdBuilder = new MockISelectionIdBuilder();
+        let selectionIdIndex: number = 0;
+        previousCreateSelectionId = createSelectionId;
         customMockISelectionIdBuilder.createSelectionId = () => {
-            selectionIndex++;
-
-            if (selectionIds[selectionIndex]) {
-                return selectionIds[selectionIndex];
-            }
-
-            const selectionId: MockISelectionId = new MockISelectionId(`${selectionIndex}`);
-            selectionIds.push(selectionId);
-
-            return selectionId;
+            return new MockISelectionId((selectionIdIndex++).toString());
         };
-
-        visualBuilder.visualHost.createSelectionIdBuilder = () => customMockISelectionIdBuilder;
 
         visualBuilder = new EnhancedScatterChartBuilder(1000, 500);
         defaultDataViewBuilder = new EnhancedScatterChartData();
         dataView = defaultDataViewBuilder.getDataView();
+    });
+
+    afterEach(() => {
+        customMockISelectionIdBuilder.createSelectionId = previousCreateSelectionId;
     });
 
     describe("DOM tests", () => {

@@ -28,6 +28,8 @@ import "./../style/visual.less";
 
 import * as d3 from "d3";
 import * as _ from "lodash";
+import * as $ from "jquery";
+
 import powerbi from "powerbi-visuals-api";
 
 // d3
@@ -1449,6 +1451,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        debugger;
         const dataView: DataView = options
             && options.dataViews
             && options.dataViews[0];
@@ -2307,26 +2310,27 @@ export class EnhancedScatterChart implements IVisual {
 
         elementUpdateSelection = elementSelection.data(properties.data || [[]]);
 
-        elementUpdateSelection
+        const elementUpdateSelectionMerged = elementUpdateSelection
             .enter()
-            .append(properties.name);
+            .append(properties.name)
+            .merge(elementUpdateSelection);
 
         for (let propKey in properties.attributes) {
-            elementUpdateSelection.attr(propKey, properties.attributes[propKey]);
+            elementUpdateSelectionMerged.attr(propKey, properties.attributes[propKey]);
         }
 
         for (let propKey in properties.styles) {
-            elementUpdateSelection.attr(propKey, properties.styles[propKey]);
+            elementUpdateSelectionMerged.attr(propKey, properties.styles[propKey]);
         }
 
-        elementUpdateSelection
+        elementUpdateSelectionMerged
             .classed(properties.className, true);
 
         elementUpdateSelection
             .exit()
             .remove();
 
-        return elementUpdateSelection;
+        return elementUpdateSelectionMerged;
     }
 
     private renderBackground(): void {
@@ -2364,11 +2368,18 @@ export class EnhancedScatterChart implements IVisual {
         if (this.shouldRenderAxis(xAxis, xAxisSettings)) {
             const axisProperties = xAxis;
             const scale: any = axisProperties.scale;
+            const ticksCount: number = axisProperties.values.length;
+            const format: any = (domainValue: d3.AxisDomain, value: any) => axisProperties.values[value];
+            const tickSize = axisProperties.axis.tickSize;
+            const ticksOuter = axisProperties.axis.tickSizeOuter();
+
             let newAxis = d3.axisBottom(scale);
+            newAxis.tickSize = tickSize;
+            newAxis.tickSizeInner = axisProperties.axis.tickSizeInner;
+            newAxis.tickSizeOuter = axisProperties.axis.tickSizeOuter;
+
             xAxis.axis = newAxis;
-            // const ticksCount: number = axisProperties.values.length;
-            // const format: any = (domainValue: d3.AxisDomain, value: any) => axisProperties.values[value];
-            // this.xAxisGraphicsContext.call(axis.tickArguments([ticksCount]).tickFormat(format));
+            this.xAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
             if (!xAxis.willLabelsFit) {
                 xAxis.axis.tickPadding(EnhancedScatterChart.DefaultAxisXTickPadding);
@@ -2416,9 +2427,14 @@ export class EnhancedScatterChart implements IVisual {
 
         if (this.shouldRenderAxis(yAxis, yAxisSettings)) {
             const scale: any = yAxis.scale;
-            const oldAxis = yAxis.axis;
-            let newAxis = this.yAxisOrientation.toLowerCase() === yAxisPosition.left ? d3.axisLeft(scale) : d3.axisRight(scale);
+            const ticksCount: number = yAxis.values.length;
+            const format: any = (domainValue: d3.AxisDomain, value: any) => yAxis.values[value];
+
+            let newAxis = this.yAxisOrientation == yAxisPosition.left ? d3.axisLeft(scale) : d3.axisRight(scale);
             yAxis.axis = newAxis;
+
+            this.yAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
+
             yAxis.axis
                 .tickSize(-this.viewportIn.width)
                 .tickPadding(EnhancedScatterChart.DefaultAxisYTickPadding);
@@ -2677,6 +2693,7 @@ export class EnhancedScatterChart implements IVisual {
             viewport = this.viewport;
 
         let markers: Selection<EnhancedScatterChartDataPoint>;
+        let markersMerged: Selection<EnhancedScatterChartDataPoint>;
 
         if (!this.data.useShape) {
             this.mainGraphicsContext
@@ -2690,13 +2707,16 @@ export class EnhancedScatterChart implements IVisual {
                     return (dataPoint.identity as ISelectionId).getKey();
                 });
 
-            markers
+            markersMerged = markers
                 .enter()
                 .append("path")
+                .merge(markers);
+
+            markersMerged
                 .classed(EnhancedScatterChart.DotSelector.className, true)
                 .attr("id", EnhancedScatterChart.MarkerShapeSelector.className);
 
-            markers
+            markersMerged
                 .style("stroke-width", (dataPoint: EnhancedScatterChartDataPoint) => PixelConverter.toString(dataPoint.strokeWidth))
                 .style("stroke", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.stroke)
                 .style("fill", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.fill)
@@ -2733,13 +2753,16 @@ export class EnhancedScatterChart implements IVisual {
                     return (dataPoint.identity as ISelectionId).getKey();
                 });
 
-            markers
+            markersMerged = markers
                 .enter()
                 .append("svg:image")
+                .merge(markers);
+
+            markersMerged
                 .classed(EnhancedScatterChart.ImageSelector.className, true)
                 .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
 
-            markers
+            markersMerged
                 .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
                     if (dataPoint.svgurl !== undefined
                         && dataPoint.svgurl != null
@@ -2793,7 +2816,7 @@ export class EnhancedScatterChart implements IVisual {
             return (dataPoint.identity as ISelectionId).getKey();
         });
 
-        return markers;
+        return markersMerged;
     }
 
     public static getBubbleOpacity(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
