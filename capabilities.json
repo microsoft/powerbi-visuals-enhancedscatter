@@ -774,5 +774,6 @@
                 }
             }
         }
-    }
+    },
+    "supportsMultiVisualSelection": true
 }

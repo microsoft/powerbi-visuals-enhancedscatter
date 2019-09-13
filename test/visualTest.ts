@@ -885,7 +885,9 @@ describe("EnhancedScatterChart", () => {
                 checkDataPointProperty(
                     visualBuilder.instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
-                        expect(dataPoint.fill).toBe(defaultDataViewBuilder.colorValues[index]);
+                        debugger;
+                        const areColorsEqualResult = areColorsEqual(dataPoint.fill, defaultDataViewBuilder.colorValues[index]);
+                        expect(areColorsEqualResult).toBeTruthy();
                     },
                     defaultDataViewBuilder,
                     colorPalette,

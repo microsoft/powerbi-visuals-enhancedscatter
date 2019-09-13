@@ -59,6 +59,7 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import IColorPalette = powerbi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
 
 // powerbi.visuals
 import ISelectionId = powerbi.visuals.ISelectionId;
@@ -363,6 +364,7 @@ export class EnhancedScatterChart implements IVisual {
     private colorPalette: ISandboxExtendedColorPalette;
 
     private interactivityService: IInteractivityService<BaseDataPoint>;
+    private eventService: IVisualEventService;
     private yAxisOrientation: string;
 
     private scrollY: boolean = true;
@@ -561,6 +563,8 @@ export class EnhancedScatterChart implements IVisual {
             this.visualHost.tooltipService,
             this.element
         );
+
+        this.eventService = options.host.eventService;
 
         this.margin = {
             top: EnhancedScatterChart.DefaultMarginValue,
@@ -1451,7 +1455,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-        debugger;
+        //debugger;
         const dataView: DataView = options
             && options.dataViews
             && options.dataViews[0];
@@ -1467,9 +1471,23 @@ export class EnhancedScatterChart implements IVisual {
             this.interactivityService,
         );
 
+        this.eventService.renderingStarted(options);
         this.renderLegend();
 
         this.render();
+
+        this.svg.on("contextmenu", () => {
+            const mouseEvent: MouseEvent = d3.event as MouseEvent;
+            const eventTarget: EventTarget = mouseEvent.target;
+            let dataPoint = d3.select(eventTarget).datum();
+            this.selectionManager.showContextMenu(dataPoint? dataPoint.selectionId : {}, {
+                x: mouseEvent.clientX,
+                y: mouseEvent.clientY
+            });
+            mouseEvent.preventDefault();
+        });
+
+        this.eventService.renderingFinished(options);
     }
 
     private renderLegend(): void {
