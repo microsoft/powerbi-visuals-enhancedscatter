@@ -104,55 +104,55 @@ export interface EnhancedScatterChartRadiusData {
     index: number;
 }
 
-/** Defines possible content positions.  */
+// Defines possible content positions.
 export const enum ContentPositions {
 
-    /** Content position is not defined. */
+    // Content position is not defined.
     None = 0,
 
-    /** Content aligned top left. */
+    // Content aligned top left.
     TopLeft = 1,
 
-    /** Content aligned top center. */
+    // Content aligned top center.
     TopCenter = 2,
 
-    /** Content aligned top right. */
+    // Content aligned top right.
     TopRight = 4,
 
-    /** Content aligned middle left. */
+    // Content aligned middle left.
     MiddleLeft = 8,
 
-    /** Content aligned middle center. */
+    // Content aligned middle center.
     MiddleCenter = 16,
 
-    /** Content aligned middle right. */
+    // Content aligned middle right.
     MiddleRight = 32,
 
-    /** Content aligned bottom left. */
+    // Content aligned bottom left.
     BottomLeft = 64,
 
-    /** Content aligned bottom center. */
+    // Content aligned bottom center.
     BottomCenter = 128,
 
-    /** Content aligned bottom right. */
+    // Content aligned bottom right.
     BottomRight = 256,
 
-    /** Content is placed inside the bounding rectangle in the center. */
+    // Content is placed inside the bounding rectangle in the center.
     InsideCenter = 512,
 
-    /** Content is placed inside the bounding rectangle at the base. */
+    // Content is placed inside the bounding rectangle at the base.
     InsideBase = 1024,
 
-    /** Content is placed inside the bounding rectangle at the end. */
+    // Content is placed inside the bounding rectangle at the end.
     InsideEnd = 2048,
 
-    /** Content is placed outside the bounding rectangle at the base. */
+    // Content is placed outside the bounding rectangle at the base.
     OutsideBase = 4096,
 
-    /** Content is placed outside the bounding rectangle at the end. */
+    // Content is placed outside the bounding rectangle at the end.
     OutsideEnd = 8192,
 
-    /** Content supports all possible positions. */
+    // Content supports all possible positions.
     All =
     TopLeft |
     TopCenter |

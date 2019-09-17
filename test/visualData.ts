@@ -31,7 +31,7 @@ import DataView = powerbi.DataView;
 import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
 // powerbi.extensibility.visual
-import { EnhancedScatterChart } from "../src/visual";
+import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
 
 // powerbi.extensibility.utils.type
 import { valueType } from "powerbi-visuals-utils-typeutils";

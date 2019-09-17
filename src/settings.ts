@@ -37,7 +37,9 @@ export class DataPointSettings {
 
 export class AxisSettings {
     public show: boolean = true;
+    // tslint:disable-next-line
     public start: number = undefined;
+    // tslint:disable-next-line
     public end: number = undefined;
     public labelDisplayUnits: number = 0;
     public axisColor: string = "#777777";
@@ -51,6 +53,7 @@ export class LegendSettings {
     public show: boolean = true;
     public position: string = LegendPosition[LegendPosition.top];
     public showTitle: boolean = true;
+    // tslint:disable-next-line
     public titleText: string = undefined;
     public labelColor: string = "#666666";
     public fontSize: number = 9;
@@ -69,6 +72,7 @@ export class FillPointSettings {
 
 export class BackdropSettings {
     public show: boolean = false;
+    // tslint:disable-next-line
     public url: string = undefined;
 }
 

@@ -14,7 +14,6 @@
     "start": "pbiviz start",
     "package": "pbiviz package",
     "lint": "tslint -c tslint.json -p tsconfig.json",
-    "pretest": "pbiviz package --resources --no-minify --no-pbiviz --no-plugin",
     "test": "karma start",
     "cert": "pbiviz --install-cert"
   },

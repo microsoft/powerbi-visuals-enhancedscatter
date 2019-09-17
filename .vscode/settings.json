@@ -7,9 +7,6 @@
     "**/node_modules/**": true,
     ".tmp": true
   },
-  "files.exclude": {
-    ".tmp": true
-  },
   "search.exclude": {
     ".tmp": true,
     "typings": true

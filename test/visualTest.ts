@@ -39,7 +39,7 @@ import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
 // powerbi.extensibility.visual
 import IColorPalette = powerbi.extensibility.IColorPalette;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import { EnhancedScatterChart as VisualClass } from "../src/visual";
+import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
 
 // powerbi.extensibility.visual.test
 import { helpers } from "./helpers/helpers";
@@ -885,7 +885,6 @@ describe("EnhancedScatterChart", () => {
                 checkDataPointProperty(
                     visualBuilder.instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
-                        debugger;
                         const areColorsEqualResult = areColorsEqual(dataPoint.fill, defaultDataViewBuilder.colorValues[index]);
                         expect(areColorsEqualResult).toBeTruthy();
                     },

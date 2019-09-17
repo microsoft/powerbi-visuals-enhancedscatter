@@ -31,7 +31,7 @@ import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructor
 import { VisualBuilderBase } from "powerbi-visuals-utils-testutils";
 
 // EnhancedScatterChart1443994985041
-import { EnhancedScatterChart as VisualClass } from "../src/visual";
+import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
 
 export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
     constructor(width: number, height: number) {
