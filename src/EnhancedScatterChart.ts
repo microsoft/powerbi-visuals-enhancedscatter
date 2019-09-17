@@ -476,18 +476,11 @@ export class EnhancedScatterChart implements IVisual {
                     angle: number = Math.PI / EnhancedScatterChart.R5;
 
                 let results: string = "";
-
                 for (let i: number = 0; i < EnhancedScatterChart.R10; i++) {
                     // Use outer or inner radius depending on what iteration we are in.
-                    const r: number = (i & EnhancedScatterChart.RMask) === EnhancedScatterChart.RMaskResult
-                        ? outerRadius
-                        : innerRadius;
-
-                    const currX: number = Math.cos(i * angle) * r,
-                        currY: number = Math.sin(i * angle) * r;
-
-                    // Our first time we simply append the coordinates, subsequet times
-                    // we append a ", " to distinguish each coordinate pair.
+                    const r: number = (i & EnhancedScatterChart.RMask) === EnhancedScatterChart.RMaskResult ? outerRadius : innerRadius;
+                    const currX: number = Math.cos(i * angle) * r, currY: number = Math.sin(i * angle) * r;
+                    // Our first time we simply append the coordinates, subsequet times we append a ", " to distinguish each coordinate pair.
                     if (i === 0) {
                         results = `M${currX},${currY}L`;
                     } else {
@@ -525,18 +518,14 @@ export class EnhancedScatterChart implements IVisual {
         });
 
         const defaultValue: ShapeFunction = customSymbolTypes.entries()[0].value;
-
         if (!shape) {
             return defaultValue;
         } else if (isNaN(shape)) {
             return customSymbolTypes[shape && shape.toString().toLowerCase()] || defaultValue;
         }
-
         const result: ShapeEntry = customSymbolTypes.entries()[Math.floor(shape)];
 
-        return result
-            ? result.value
-            : defaultValue;
+        return result ? result.value : defaultValue;
     }
 
     private static getDefinedNumberValue(value: any): number {
@@ -560,7 +549,6 @@ export class EnhancedScatterChart implements IVisual {
 
     public init(options: VisualConstructorOptions): void {
         this.element = options.element;
-
         this.visualHost = options.host;
         this.colorPalette = options.host.colorPalette;
 
@@ -569,7 +557,7 @@ export class EnhancedScatterChart implements IVisual {
             this.element
         );
 
-        //this.selectionManager = this.visualHost.createSelectionManager();
+        this.selectionManager = this.visualHost.createSelectionManager();
         this.eventService = options.host.eventService;
 
         this.margin = {
@@ -1480,17 +1468,6 @@ export class EnhancedScatterChart implements IVisual {
 
         this.render();
 
-        this.svg.on("contextmenu", () => {
-            const mouseEvent: MouseEvent = getEvent();
-            const eventTarget: EventTarget = mouseEvent.target;
-            let dataPoint: any = d3.select(<BaseType>eventTarget).datum();
-            this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
-                x: mouseEvent.clientX,
-                y: mouseEvent.clientY
-            });
-            mouseEvent.preventDefault();
-        });
-
         this.eventService.renderingFinished(options);
     }
 
@@ -2337,21 +2314,13 @@ export class EnhancedScatterChart implements IVisual {
             .append(properties.name)
             .merge(elementUpdateSelection);
 
-        // const propertiesAttributes = Object.keys(properties.attributes);
-        // for (let propKey of propertiesAttributes) {
-        //     elementUpdateSelectionMerged.attr(propKey, properties.attributes[propKey]);
-        // }
-
-        // const propertiesStyles = Object.keys(properties.styles);
-        // for (let propKey of propertiesStyles) {
-        //     elementUpdateSelectionMerged.attr(propKey, properties.styles[propKey]);
-        // }
-
-        for (let propKey in properties.attributes) {
+        const propertiesAttributes = properties.attributes ? Object.keys(properties.attributes) : [];
+        for (let propKey of propertiesAttributes) {
             elementUpdateSelectionMerged.attr(propKey, properties.attributes[propKey]);
         }
 
-        for (let propKey in properties.styles) {
+        const propertiesStyles = properties.styles ? Object.keys(properties.styles) : [];
+        for (let propKey of propertiesStyles) {
             elementUpdateSelectionMerged.attr(propKey, properties.styles[propKey]);
         }
 
@@ -2381,21 +2350,11 @@ export class EnhancedScatterChart implements IVisual {
         }
     }
 
-    private renderChart(
+    private renderXAxis(
         xAxis: IAxisProperties,
         xAxisSettings: AxisSettings,
-        yAxis: IAxisProperties,
-        yAxisSettings: AxisSettings,
         tickLabelMargins: any,
-        chartHasAxisLabels: boolean,
-        axisLabels: ChartAxesLabels
-    ): void {
-        let bottomMarginLimit: number = this.bottomMarginLimit,
-            leftRightMarginLimit: number = this.leftRightMarginLimit,
-            duration: number = EnhancedScatterChart.AnimationDuration;
-
-        this.renderBackground();
-
+        duration: number): void {
         // hide show x-axis heres
         if (this.shouldRenderAxis(xAxis, xAxisSettings)) {
             const axisProperties = xAxis;
@@ -2425,27 +2384,25 @@ export class EnhancedScatterChart implements IVisual {
             }
 
             const xAxisTextNodes: Selection<any> = this.xAxisGraphicsContext.selectAll("text");
-
             if (xAxis.willLabelsWordBreak) {
                 xAxisTextNodes.call(
                     axis.LabelLayoutStrategy.wordBreak,
                     xAxis,
-                    bottomMarginLimit
+                    this.bottomMarginLimit
                 );
             } else {
                 xAxisTextNodes.call(
                     axis.LabelLayoutStrategy.rotate,
-                    bottomMarginLimit,
+                    this.bottomMarginLimit,
                     getTailoredTextOrDefault,
                     EnhancedScatterChart.TextProperties,
                     !xAxis.willLabelsFit,
-                    bottomMarginLimit === tickLabelMargins.xMax,
+                    this.bottomMarginLimit === tickLabelMargins.xMax,
                     xAxis,
                     this.margin,
                     this.isXScrollBarVisible || this.isYScrollBarVisible
                 );
             }
-
             this.applyAxisColor(this.xAxisGraphicsContext, xAxisSettings);
         }
         else {
@@ -2453,7 +2410,14 @@ export class EnhancedScatterChart implements IVisual {
                 .selectAll("*")
                 .remove();
         }
+    }
 
+    private renderYAxis(
+        yAxis: IAxisProperties,
+        yAxisSettings: AxisSettings,
+        tickLabelMargins: any,
+        duration: number
+    ): void {
         if (this.shouldRenderAxis(yAxis, yAxisSettings)) {
             const scale: any = yAxis.scale;
             const ticksCount: number = yAxis.values.length;
@@ -2461,7 +2425,6 @@ export class EnhancedScatterChart implements IVisual {
 
             let newAxis = this.yAxisOrientation == yAxisPosition.left ? d3.axisLeft(scale) : d3.axisRight(scale);
             yAxis.axis = newAxis;
-
             this.yAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
             yAxis.axis
@@ -2480,12 +2443,12 @@ export class EnhancedScatterChart implements IVisual {
 
             this.applyAxisColor(this.yAxisGraphicsContext, yAxisSettings);
 
-            if (tickLabelMargins.yLeft >= leftRightMarginLimit) {
+            if (tickLabelMargins.yLeft >= this.leftRightMarginLimit) {
                 this.yAxisGraphicsContext
                     .selectAll("text")
                     .call(axis.LabelLayoutStrategy.clip,
                         // Can't use padding space to render text, so subtract that from available space for ellipses calculations
-                        leftRightMarginLimit - EnhancedScatterChart.AxisSide,
+                        this.leftRightMarginLimit - EnhancedScatterChart.AxisSide,
                         svgEllipsis
                     );
             }
@@ -2497,6 +2460,22 @@ export class EnhancedScatterChart implements IVisual {
                 .selectAll("*")
                 .remove();
         }
+    }
+
+    private renderChart(
+        xAxis: IAxisProperties,
+        xAxisSettings: AxisSettings,
+        yAxis: IAxisProperties,
+        yAxisSettings: AxisSettings,
+        tickLabelMargins: any,
+        chartHasAxisLabels: boolean,
+        axisLabels: ChartAxesLabels
+    ): void {
+        const duration = EnhancedScatterChart.AnimationDuration;
+
+        this.renderBackground();
+        this.renderXAxis(xAxis, xAxisSettings, tickLabelMargins, duration);
+        this.renderYAxis(yAxis, yAxisSettings, tickLabelMargins, duration);
 
         // Axis labels
         // TO BE CHANGED: Add label for second Y axis for combo chart
@@ -2711,6 +2690,143 @@ export class EnhancedScatterChart implements IVisual {
         }
     }
 
+    private drawScatterMarkersUsingShapes(
+        markers: Selection<EnhancedScatterChartDataPoint>,
+        markersMerged: Selection<EnhancedScatterChartDataPoint>,
+        scatterData: EnhancedScatterChartDataPoint[],
+        sizeRange: NumberRange,
+        duration: number
+    ): {
+            markers: Selection<EnhancedScatterChartDataPoint>,
+            markersMerged: Selection<EnhancedScatterChartDataPoint>
+        } {
+        this.mainGraphicsContext
+            .selectAll(EnhancedScatterChart.DotSelector.selectorName)
+            .remove();
+
+        markers = this.mainGraphicsContext
+            .classed(EnhancedScatterChart.ScatterMarkersSelector.className, true)
+            .selectAll(EnhancedScatterChart.ImageSelector.selectorName)
+            .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
+                return (<ISelectionId>dataPoint.identity).getKey();
+            });
+
+        markersMerged = markers
+            .enter()
+            .append("svg:image")
+            .merge(markers);
+
+        markersMerged
+            .classed(EnhancedScatterChart.ImageSelector.className, true)
+            .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
+
+        markersMerged
+            .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
+                if (dataPoint.svgurl !== undefined
+                    && dataPoint.svgurl != null
+                    && dataPoint.svgurl !== "") {
+
+                    return dataPoint.svgurl;
+                }
+
+                return this.svgDefaultImage;
+            })
+            .attr("title", (dataPoint: EnhancedScatterChartDataPoint) => {
+                return dataPoint.formattedCategory
+                    ? dataPoint.formattedCategory()
+                    : null;
+            })
+            .each(function (dataPoint: EnhancedScatterChartDataPoint): void {
+                const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
+                    dataPoint.radius,
+                    sizeRange,
+                    this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
+
+                d3.select(this).attr("width", bubbleRadius)
+                    .attr("height", bubbleRadius);
+            })
+            .transition()
+            .duration((dataPoint: EnhancedScatterChartDataPoint) => {
+                if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
+                    return duration;
+                }
+
+                return EnhancedScatterChart.MinAnimationDuration;
+            })
+            .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
+                const radius: number = EnhancedScatterChart.getBubbleRadius(
+                    dataPoint.radius,
+                    sizeRange,
+                    this.viewport);
+
+                const x: number = EnhancedScatterChart.getDefinedNumberValue(this.xAxisProperties.scale(dataPoint.x) - radius),
+                    y: number = EnhancedScatterChart.getDefinedNumberValue(this.yAxisProperties.scale(dataPoint.y) - radius);
+
+                return `translate(${x},${y}) rotate(${dataPoint.rotation},${radius},${radius})`;
+            });
+
+        return { markers, markersMerged };
+    }
+
+    private drawScatterMarkersWithoutShapes(
+        markers: Selection<EnhancedScatterChartDataPoint>,
+        markersMerged: Selection<EnhancedScatterChartDataPoint>,
+        scatterData: EnhancedScatterChartDataPoint[],
+        sizeRange: NumberRange,
+        duration: number
+    ): {
+            markers: Selection<EnhancedScatterChartDataPoint>,
+            markersMerged: Selection<EnhancedScatterChartDataPoint>
+        } {
+        this.mainGraphicsContext
+            .selectAll(EnhancedScatterChart.ImageSelector.selectorName)
+            .remove();
+
+        markers = this.mainGraphicsContext
+            .classed(EnhancedScatterChart.ScatterMarkersSelector.className, true)
+            .selectAll(EnhancedScatterChart.DotSelector.selectorName)
+            .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
+                return (<ISelectionId>dataPoint.identity).getKey();
+            });
+
+        markersMerged = markers
+            .enter()
+            .append("path")
+            .merge(markers);
+
+        markersMerged
+            .classed(EnhancedScatterChart.DotSelector.className, true)
+            .attr("id", EnhancedScatterChart.MarkerShapeSelector.className);
+
+        markersMerged
+            .style("stroke-width", (dataPoint: EnhancedScatterChartDataPoint) => PixelConverter.toString(dataPoint.strokeWidth))
+            .style("stroke", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.stroke)
+            .style("fill", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.fill)
+            .attr("d", (dataPoint: EnhancedScatterChartDataPoint) => {
+                const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, this.viewport),
+                    area: number = EnhancedScatterChart.RadiusMultiplexer * r * r;
+
+                return dataPoint.shapeSymbolType(area);
+            })
+            .transition()
+            .duration((dataPoint: EnhancedScatterChartDataPoint) => {
+                if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
+                    return duration;
+                } else {
+                    return EnhancedScatterChart.MinAnimationDuration;
+                }
+            })
+            .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
+                const x: number = EnhancedScatterChart.getDefinedNumberValue(this.xAxisProperties.scale(dataPoint.x)),
+                    y: number = EnhancedScatterChart.getDefinedNumberValue(this.yAxisProperties.scale(dataPoint.y)),
+                    rotation: number = dataPoint.rotation;
+
+                return `translate(${x},${y}) rotate(${rotation})`;
+            });
+
+        return { markers, markersMerged };
+    }
+
     private drawScatterMarkers(
         scatterData: EnhancedScatterChartDataPoint[],
         sizeRange: NumberRange,
@@ -2723,119 +2839,16 @@ export class EnhancedScatterChart implements IVisual {
 
         let markers: Selection<EnhancedScatterChartDataPoint>;
         let markersMerged: Selection<EnhancedScatterChartDataPoint>;
+        let markersChanged;
 
         if (!this.data.useShape) {
-            this.mainGraphicsContext
-                .selectAll(EnhancedScatterChart.ImageSelector.selectorName)
-                .remove();
-
-            markers = this.mainGraphicsContext
-                .classed(EnhancedScatterChart.ScatterMarkersSelector.className, true)
-                .selectAll(EnhancedScatterChart.DotSelector.selectorName)
-                .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
-                    return (<ISelectionId>dataPoint.identity).getKey();
-                });
-
-            markersMerged = markers
-                .enter()
-                .append("path")
-                .merge(markers);
-
-            markersMerged
-                .classed(EnhancedScatterChart.DotSelector.className, true)
-                .attr("id", EnhancedScatterChart.MarkerShapeSelector.className);
-
-            markersMerged
-                .style("stroke-width", (dataPoint: EnhancedScatterChartDataPoint) => PixelConverter.toString(dataPoint.strokeWidth))
-                .style("stroke", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.stroke)
-                .style("fill", (dataPoint: EnhancedScatterChartDataPoint) => dataPoint.fill)
-                .attr("d", (dataPoint: EnhancedScatterChartDataPoint) => {
-                    const r: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport),
-                        area: number = EnhancedScatterChart.RadiusMultiplexer * r * r;
-
-                    return dataPoint.shapeSymbolType(area);
-                })
-                .transition()
-                .duration((dataPoint: EnhancedScatterChartDataPoint) => {
-                    if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
-                        return duration;
-                    } else {
-                        return EnhancedScatterChart.MinAnimationDuration;
-                    }
-                })
-                .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
-                    const x: number = EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x)),
-                        y: number = EnhancedScatterChart.getDefinedNumberValue(yScale(dataPoint.y)),
-                        rotation: number = dataPoint.rotation;
-
-                    return `translate(${x},${y}) rotate(${rotation})`;
-                });
+            markersChanged = this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
         } else {
-            this.mainGraphicsContext
-                .selectAll(EnhancedScatterChart.DotSelector.selectorName)
-                .remove();
-
-            markers = this.mainGraphicsContext
-                .classed(EnhancedScatterChart.ScatterMarkersSelector.className, true)
-                .selectAll(EnhancedScatterChart.ImageSelector.selectorName)
-                .data(scatterData, (dataPoint: EnhancedScatterChartDataPoint) => {
-                    return (<ISelectionId>dataPoint.identity).getKey();
-                });
-
-            markersMerged = markers
-                .enter()
-                .append("svg:image")
-                .merge(markers);
-
-            markersMerged
-                .classed(EnhancedScatterChart.ImageSelector.className, true)
-                .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
-
-            markersMerged
-                .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
-                    if (dataPoint.svgurl !== undefined
-                        && dataPoint.svgurl != null
-                        && dataPoint.svgurl !== "") {
-
-                        return dataPoint.svgurl;
-                    }
-
-                    return this.svgDefaultImage;
-                })
-                .attr("title", (dataPoint: EnhancedScatterChartDataPoint) => {
-                    return dataPoint.formattedCategory
-                        ? dataPoint.formattedCategory()
-                        : null;
-                })
-                .each(function (dataPoint: EnhancedScatterChartDataPoint): void {
-                    const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
-                        dataPoint.radius,
-                        sizeRange,
-                        viewport) * EnhancedScatterChart.BubbleRadiusDivider;
-
-                    d3.select(this).attr("width", bubbleRadius)
-                        .attr("height", bubbleRadius);
-                })
-                .transition()
-                .duration((dataPoint: EnhancedScatterChartDataPoint) => {
-                    if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
-                        return duration;
-                    }
-
-                    return EnhancedScatterChart.MinAnimationDuration;
-                })
-                .attr("transform", (dataPoint: EnhancedScatterChartDataPoint) => {
-                    const radius: number = EnhancedScatterChart.getBubbleRadius(
-                        dataPoint.radius,
-                        sizeRange,
-                        viewport);
-
-                    const x: number = EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x) - radius),
-                        y: number = EnhancedScatterChart.getDefinedNumberValue(yScale(dataPoint.y) - radius);
-
-                    return `translate(${x},${y}) rotate(${dataPoint.rotation},${radius},${radius})`;
-                });
+            markersChanged = this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration);
         }
+
+        markers = markersChanged.markers;
+        markersMerged = markersChanged.markersMerged;
 
         markers
             .exit()
