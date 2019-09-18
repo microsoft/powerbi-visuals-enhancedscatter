@@ -85,7 +85,7 @@ import createClassAndSelector = SVGUtil.CssConstants.createClassAndSelector;
 import manipulation = SVGUtil.manipulation;
 
 // powerbi.extensibility.utils.chart
-import { legend as legendModule, legendInterfaces, OpacityLegendBehavior, legendBehavior, axisInterfaces, axis, dataLabelInterfaces, dataLabelUtils } from "powerbi-visuals-utils-chartutils";
+import { legend as legendModule, legendInterfaces, OpacityLegendBehavior, legendBehavior, axisInterfaces, axis, dataLabelInterfaces, dataLabelUtils, legendData } from "powerbi-visuals-utils-chartutils";
 import ILegend = legendInterfaces.ILegend;
 import LegendPosition = legendInterfaces.LegendPosition;
 import LegendData = legendInterfaces.LegendData;
@@ -143,7 +143,6 @@ import * as gradientUtils from "./gradientUtils";
 import { tooltipBuilder } from "./tooltipBuilder";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 import { yAxisPosition } from "./yAxisPosition";
-import { BaseType } from "d3";
 
 const getEvent = () => require("d3-selection").event;
 
@@ -713,10 +712,7 @@ export class EnhancedScatterChart implements IVisual {
             hasDynamicSeries: boolean = !!dataValues.source,
             grouped: DataViewValueColumnGroup[] = dataValues.grouped(),
             dvSource: DataViewMetadataColumn = dataValues.source,
-            scatterMetadata: EnhancedScatterChartMeasureMetadata = EnhancedScatterChart.getMetadata(
-                categories,
-                grouped,
-            ),
+            scatterMetadata: EnhancedScatterChartMeasureMetadata = EnhancedScatterChart.getMetadata(categories, grouped),
             categoryIndex: number = scatterMetadata.idx.category,
             useShape: boolean = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex,
             useCustomColor: boolean = scatterMetadata.idx.colorFill >= EnhancedScatterChart.MinIndex;
@@ -725,11 +721,8 @@ export class EnhancedScatterChart implements IVisual {
             && dataViewCategorical.categories.length > 0
             && dataViewCategorical.categories[categoryIndex]
         ) {
-
             const mainCategory: DataViewCategoryColumn = dataViewCategorical.categories[categoryIndex];
-
             categoryValues = mainCategory.values;
-
             categoryFormatter = valueFormatter.create({
                 format: valueFormatter.getFormatStringByColumn(mainCategory.source),
                 value: categoryValues[0],
@@ -740,7 +733,6 @@ export class EnhancedScatterChart implements IVisual {
         }
         else {
             categoryValues = [null];
-
             // creating default formatter for null value (to get the right string of empty value from the locale)
             categoryFormatter = valueFormatter.createDefaultFormatter(null);
         }
@@ -780,34 +772,37 @@ export class EnhancedScatterChart implements IVisual {
             interactivityService.applySelectionStateToData(dataPoints);
         }
 
-        let legendDataPoints: LegendDataPoint[] = [];
+        const legendParseResult = this.parseLegend(visualHost, dataValues, dvSource, categories, categoryIndex, colorHelper, hasDynamicSeries);
+        let legendDataPoints: LegendDataPoint[] = legendParseResult.legendDataPoints;
+        let legendTitle: string = legendParseResult.legendTitle;
 
-        if (hasDynamicSeries) {
-            const formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
+        this.changeSettingsAndMetadata(dataPoints, scatterMetadata, settings, legendTitle);
+        const hasGradientRole: boolean = gradientUtils.hasGradientRole(dataViewCategorical);
 
-            legendDataPoints = EnhancedScatterChart.createSeriesLegend(
-                visualHost,
-                dataValues,
-                formatString,
-                colorHelper,
-            );
-        }
+        return {
+            settings,
+            dataPoints,
+            legendDataPoints,
+            sizeRange,
+            hasGradientRole,
+            hasDynamicSeries,
+            useShape,
+            useCustomColor,
+            xCol: scatterMetadata.cols.x,
+            yCol: scatterMetadata.cols.y,
+            axesLabels: scatterMetadata.axesLabels,
+            selectedIds: [],
+            size: scatterMetadata.cols.size,
+        };
+    }
 
-        let legendTitle: string = dataValues && dvSource
-            ? dvSource.displayName
-            : EnhancedScatterChart.EmptyString;
-
-        if (!legendTitle) {
-            legendTitle = categories
-                && categories[categoryIndex]
-                && categories[categoryIndex].source
-                && categories[categoryIndex].source.displayName
-                ? categories[categoryIndex].source.displayName
-                : EnhancedScatterChart.EmptyString;
-        }
+    private changeSettingsAndMetadata(
+        dataPoints: EnhancedScatterChartDataPoint[],
+        scatterMetadata: EnhancedScatterChartMeasureMetadata,
+        settings: Settings,
+        legendTitle: string): void {
 
         settings.legend.titleText = settings.legend.titleText || legendTitle;
-
         if (!settings.categoryAxis.showAxisTitle) {
             scatterMetadata.axesLabels.x = null;
         }
@@ -840,24 +835,43 @@ export class EnhancedScatterChart implements IVisual {
                 settings.valueAxis.end = dataPoint.yEnd;
             }
         }
+    }
 
-        const hasGradientRole: boolean = gradientUtils.hasGradientRole(dataViewCategorical);
+    private parseLegend(
+        visualHost: IVisualHost,
+        dataValues: DataViewValueColumns,
+        dvSource: DataViewMetadataColumn,
+        categories: DataViewCategoryColumn[],
+        categoryIndex: number,
+        colorHelper: ColorHelper,
+        hasDynamicSeries: boolean): { legendDataPoints: LegendDataPoint[], legendTitle: string } {
+        let legendDataPoints: LegendDataPoint[] = [];
 
-        return {
-            settings,
-            dataPoints,
-            legendDataPoints,
-            sizeRange,
-            hasGradientRole,
-            hasDynamicSeries,
-            useShape,
-            useCustomColor,
-            xCol: scatterMetadata.cols.x,
-            yCol: scatterMetadata.cols.y,
-            axesLabels: scatterMetadata.axesLabels,
-            selectedIds: [],
-            size: scatterMetadata.cols.size,
-        };
+        if (hasDynamicSeries) {
+            const formatString: string = valueFormatter.getFormatStringByColumn(dvSource);
+
+            legendDataPoints = EnhancedScatterChart.createSeriesLegend(
+                visualHost,
+                dataValues,
+                formatString,
+                colorHelper,
+            );
+        }
+
+        let legendTitle: string = dataValues && dvSource
+            ? dvSource.displayName
+            : EnhancedScatterChart.EmptyString;
+
+        if (!legendTitle) {
+            legendTitle = categories
+                && categories[categoryIndex]
+                && categories[categoryIndex].source
+                && categories[categoryIndex].source.displayName
+                ? categories[categoryIndex].source.displayName
+                : EnhancedScatterChart.EmptyString;
+        }
+
+        return { legendDataPoints, legendTitle };
     }
 
     private isDataViewValid(dataView: DataView): boolean {
@@ -1074,6 +1088,206 @@ export class EnhancedScatterChart implements IVisual {
         return (source && source.type && source.type.dateTime);
     }
 
+    private calculateMeasures(
+        seriesValues: DataViewValueColumn[],
+        indicies: EnhancedScatterChartMeasureMetadataIndexes,
+        categories: DataViewCategoryColumn[]): { [propertyName: string]: DataViewValueColumn } {
+        const measureX: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.x,
+            seriesValues
+        );
+
+        const measureY: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.y,
+            seriesValues
+        );
+
+        const measureSize: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.size,
+            seriesValues
+        );
+
+        const measureShape: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.shape,
+            seriesValues
+        );
+
+        const measureRotation: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.rotation,
+            seriesValues
+        );
+
+        const measureXStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.xStart,
+            seriesValues
+        );
+
+        const measureXEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.xEnd,
+            seriesValues
+        );
+
+        const measureYStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.yStart,
+            seriesValues
+        );
+
+        const measureYEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
+            indicies.yEnd,
+            seriesValues
+        );
+
+        return {
+            measureX,
+            measureY,
+            measureSize,
+            measureShape,
+            measureRotation,
+            measureXStart,
+            measureXEnd,
+            measureYStart,
+            measureYEnd,
+            measureColorFill: categories[indicies.colorFill],
+            measureImage: categories[indicies.image],
+            measureBackdrop: categories[indicies.backdrop]
+        };
+    }
+
+    private changeSeriesData(
+        measures: { [propertyName: string]: DataViewValueColumn },
+        seriesData: tooltipBuilder.TooltipSeriesDataItem[],
+        xVal: PrimitiveValue,
+        yVal: PrimitiveValue,
+        categoryIdx: number) {
+        if (measures.measureX) {
+            seriesData.push({
+                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureX.source)
+                    ? EnhancedScatterChart.displayTimestamp(<number>xVal)
+                    : xVal,
+                metadata: measures.measureX
+            });
+        }
+
+        if (measures.measureY) {
+            seriesData.push({
+                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureY.source)
+                    ? EnhancedScatterChart.displayTimestamp(<number>yVal)
+                    : yVal,
+                metadata: measures.measureY
+            });
+        }
+
+        if (measures.measureSize && measures.measureSize.values
+            && measures.measureSize.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureSize.values[categoryIdx],
+                metadata: measures.measureSize
+            });
+        }
+
+        if (measures.measureColorFill && measures.measureColorFill.values
+            && measures.measureColorFill.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureColorFill.values[categoryIdx],
+                metadata: measures.measureColorFill
+            });
+        }
+
+        if (measures.measureShape && measures.measureShape.values
+            && measures.measureShape.values.length > EnhancedScatterChart.MinAmountOfValues) {
+
+            seriesData.push({
+                value: measures.measureShape.values[categoryIdx],
+                metadata: measures.measureShape
+            });
+        }
+
+        if (measures.measureImage && measures.measureImage.values
+            && measures.measureImage.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureImage.values[categoryIdx],
+                metadata: measures.measureImage
+            });
+        }
+
+        if (measures.measureRotation && measures.measureRotation.values
+            && measures.measureRotation.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureRotation.values[categoryIdx],
+                metadata: measures.measureRotation
+            });
+        }
+
+        if (measures.measureBackdrop && measures.measureBackdrop.values
+            && measures.measureBackdrop.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureBackdrop.values[categoryIdx],
+                metadata: measures.measureBackdrop
+            });
+        }
+
+        if (measures.measureXStart && measures.measureXStart.values
+            && measures.measureXStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureXStart.values[categoryIdx],
+                metadata: measures.measureXStart
+            });
+        }
+
+        if (measures.measureXEnd && measures.measureXEnd.values
+            && measures.measureXEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureXEnd.values[categoryIdx],
+                metadata: measures.measureXEnd
+            });
+        }
+
+        if (measures.measureYStart && measures.measureYStart.values
+            && measures.measureYStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureYStart.values[categoryIdx],
+                metadata: measures.measureYStart
+            });
+        }
+
+        if (measures.measureYEnd && measures.measureYEnd.values
+            && measures.measureYEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
+            seriesData.push({
+                value: measures.measureYEnd.values[categoryIdx],
+                metadata: measures.measureYEnd
+            });
+        }
+    }
+
+    private getValuesFromDataViewValueColumnById(measures, categoryIdx: number): { [property: string]: any } {
+        const size: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureSize, categoryIdx);
+        const colorFill: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureColorFill, categoryIdx);
+
+        const shapeSymbolType: ShapeFunction = EnhancedScatterChart.getCustomSymbolType(
+            EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureShape, categoryIdx));
+
+        const image: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureImage, categoryIdx);
+        const rotation: number = EnhancedScatterChart.getNumberFromDataViewValueColumnById(measures.measureRotation, categoryIdx);
+        const backdrop: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureBackdrop, categoryIdx);
+        const xStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXStart, categoryIdx);
+        const xEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXEnd, categoryIdx);
+        const yStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYStart, categoryIdx);
+        const yEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYEnd, categoryIdx);
+
+        return {
+            size,
+            colorFill,
+            shapeSymbolType,
+            image,
+            rotation,
+            backdrop,
+            xStart,
+            xEnd,
+            yStart,
+            yEnd
+        };
+    }
+
     private createDataPoints(
         visualHost: IVisualHost,
         dataValues: DataViewValueColumns,
@@ -1095,120 +1309,40 @@ export class EnhancedScatterChart implements IVisual {
             const categoryValue: any = categoryValues[categoryIdx];
 
             for (let seriesIdx: number = 0, len: number = grouped.length; seriesIdx < len; seriesIdx++) {
-                const measureColorFill: DataViewCategoryColumn = categories[indicies.colorFill];
-                const measureImage: DataViewCategoryColumn = categories[indicies.image];
-                const measureBackdrop: DataViewCategoryColumn = categories[indicies.backdrop];
-
                 const grouping: DataViewValueColumnGroup = grouped[seriesIdx];
                 const seriesValues: DataViewValueColumn[] = grouping.values;
-
-                const measureX: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.x,
-                    seriesValues
-                );
-
-                const measureY: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.y,
-                    seriesValues
-                );
-
-                const measureSize: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.size,
-                    seriesValues
-                );
-
-                const measureShape: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.shape,
-                    seriesValues
-                );
-
-                const measureRotation: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.rotation,
-                    seriesValues
-                );
-
-                const measureXStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.xStart,
-                    seriesValues
-                );
-
-                const measureXEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.xEnd,
-                    seriesValues
-                );
-
-                const measureYStart: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.yStart,
-                    seriesValues
-                );
-
-                const measureYEnd: DataViewValueColumn = EnhancedScatterChart.getMeasureValue(
-                    indicies.yEnd,
-                    seriesValues
-                );
+                let measures: { [propertyName: string]: DataViewValueColumn } = this.calculateMeasures(seriesValues, indicies, categories);
 
                 // TO BE CHANGED: need to update (refactor) these lines below.
-                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(
-                    measureX,
-                    categoryIdx);
-
-                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(
-                    measureY,
-                    categoryIdx);
-
+                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx);
+                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureY, categoryIdx);
                 const hasNullValue: boolean = (xVal == null) || (yVal == null);
 
                 if (hasNullValue) {
                     continue;
                 }
 
-                const size: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureSize, categoryIdx);
-
-                const colorFill: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(
-                    measureColorFill,
-                    categoryIdx
-                );
-
+                const { size, colorFill, shapeSymbolType, image, rotation, backdrop, xStart, xEnd, yStart, yEnd } =
+                    this.getValuesFromDataViewValueColumnById(measures, categoryIdx);
                 const parsedColorFill: string = colorFill
                     ? colorHelper.getHighContrastColor("foreground", d3.rgb(colorFill).toString())
                     : undefined;
 
-                const shapeSymbolType: ShapeFunction = EnhancedScatterChart.getCustomSymbolType(
-                    EnhancedScatterChart.getValueFromDataViewValueColumnById(measureShape, categoryIdx));
-
-                const image: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureImage, categoryIdx);
-                const rotation: number = EnhancedScatterChart.getNumberFromDataViewValueColumnById(measureRotation, categoryIdx);
-                const backdrop: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureBackdrop, categoryIdx);
-                const xStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureXStart, categoryIdx);
-                const xEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureXEnd, categoryIdx);
-                const yStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureYStart, categoryIdx);
-                const yEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measureYEnd, categoryIdx);
-
                 let color: string;
-
                 if (hasDynamicSeries) {
-                    color = colorHelper.getColorForSeriesValue(
-                        grouping.objects,
-                        grouping.name,
-                        "foreground"
-                    );
+                    color = colorHelper.getColorForSeriesValue(grouping.objects, grouping.name, "foreground");
                 } else {
                     // If we have no Size measure then use a blank query name
-                    const measureSource: string = measureSize != null
-                        ? measureSize.source.queryName
+                    const measureSource: string = measures.measureSize != null
+                        ? measures.measureSize.source.queryName
                         : EnhancedScatterChart.EmptyString;
 
-                    color = colorHelper.getColorForMeasure(
-                        categoryObjects && categoryObjects[categoryIdx],
-                        measureSource,
-                        "foreground"
-                    );
+                    color = colorHelper.getColorForMeasure(categoryObjects && categoryObjects[categoryIdx], measureSource, "foreground");
                 }
 
                 let category: DataViewCategoryColumn = categories && categories.length > EnhancedScatterChart.MinAmountOfCategories
                     ? categories[indicies.category]
                     : null;
-
                 const identity: ISelectionId = visualHost.createSelectionIdBuilder()
                     .withCategory(category, categoryIdx)
                     .withSeries(dataValues, grouping)
@@ -1216,7 +1350,6 @@ export class EnhancedScatterChart implements IVisual {
 
                 // TO BE CHANGED: need to refactor these lines below.
                 const seriesData: tooltipBuilder.TooltipSeriesDataItem[] = [];
-
                 if (dataValueSource) {
                     // Dynamic series
                     seriesData.push({
@@ -1228,139 +1361,16 @@ export class EnhancedScatterChart implements IVisual {
                     });
                 }
 
-                if (measureX) {
-                    seriesData.push({
-                        value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measureX.source)
-                            ? EnhancedScatterChart.displayTimestamp(xVal)
-                            : xVal,
-                        metadata: measureX
-                    });
-                }
-
-                if (measureY) {
-                    seriesData.push({
-                        value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measureY.source)
-                            ? EnhancedScatterChart.displayTimestamp(yVal)
-                            : yVal,
-                        metadata: measureY
-                    });
-                }
-
-                if (measureSize
-                    && measureSize.values
-                    && measureSize.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureSize.values[categoryIdx],
-                        metadata: measureSize
-                    });
-                }
-
-                if (measureColorFill
-                    && measureColorFill.values
-                    && measureColorFill.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureColorFill.values[categoryIdx],
-                        metadata: measureColorFill
-                    });
-                }
-
-                if (measureShape
-                    && measureShape.values
-                    && measureShape.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureShape.values[categoryIdx],
-                        metadata: measureShape
-                    });
-                }
-
-                if (measureImage
-                    && measureImage.values
-                    && measureImage.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureImage.values[categoryIdx],
-                        metadata: measureImage
-                    });
-                }
-
-                if (measureRotation
-                    && measureRotation.values
-                    && measureRotation.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureRotation.values[categoryIdx],
-                        metadata: measureRotation
-                    });
-                }
-
-                if (measureBackdrop
-                    && measureBackdrop.values
-                    && measureBackdrop.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureBackdrop.values[categoryIdx],
-                        metadata: measureBackdrop
-                    });
-                }
-
-                if (measureXStart
-                    && measureXStart.values
-                    && measureXStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureXStart.values[categoryIdx],
-                        metadata: measureXStart
-                    });
-                }
-
-                if (measureXEnd
-                    && measureXEnd.values
-                    && measureXEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureXEnd.values[categoryIdx],
-                        metadata: measureXEnd
-                    });
-                }
-
-                if (measureYStart
-                    && measureYStart.values
-                    && measureYStart.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureYStart.values[categoryIdx],
-                        metadata: measureYStart
-                    });
-                }
-
-                if (measureYEnd
-                    && measureYEnd.values
-                    && measureYEnd.values.length > EnhancedScatterChart.MinAmountOfValues) {
-
-                    seriesData.push({
-                        value: measureYEnd.values[categoryIdx],
-                        metadata: measureYEnd
-                    });
-                }
+                this.changeSeriesData(measures, seriesData, xVal, yVal, categoryIdx);
 
                 const tooltipInfo: VisualTooltipDataItem[] = tooltipBuilder.createTooltipInfo(
                     categoryValue,
                     category ? [category] : undefined,
                     seriesData
                 );
-
                 const currentFill: string = parsedColorFill || color;
-
-                const stroke: string = settings.outline.show
-                    ? d3.rgb(currentFill).darker().toString()
-                    : currentFill;
-
-                const fill: string = settings.fillPoint.show || settings.fillPoint.isHidden
-                    ? currentFill
-                    : null;
+                const stroke: string = settings.outline.show ? d3.rgb(currentFill).darker().toString() : currentFill;
+                const fill: string = settings.fillPoint.show || settings.fillPoint.isHidden ? currentFill : null;
 
                 dataPoints.push({
                     size,
@@ -1377,10 +1387,7 @@ export class EnhancedScatterChart implements IVisual {
                     tooltipInfo,
                     x: xVal,
                     y: yVal,
-                    radius: {
-                        sizeMeasure: measureSize,
-                        index: categoryIdx
-                    },
+                    radius: { sizeMeasure: measures.measureSize, index: categoryIdx },
                     strokeWidth: settings.dataPoint.strokeWidth,
                     formattedCategory: EnhancedScatterChart.CREATE_LAZY_FORMATTED_CATEGORY(categoryFormatter, categoryValue),
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
