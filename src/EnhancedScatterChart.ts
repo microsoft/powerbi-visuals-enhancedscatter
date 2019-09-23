@@ -1558,17 +1558,7 @@ export class EnhancedScatterChart implements IVisual {
         }
     }
 
-    public render(): void {
-        this.viewport.height -= this.legendViewport.height;
-        this.viewport.width -= this.legendViewport.width;
-
-        if (this.viewportIn.width === EnhancedScatterChart.MinViewport.width
-            || this.viewportIn.height === EnhancedScatterChart.MinViewport.height
-        ) {
-
-            return;
-        }
-
+    private initMargins() {
         const maxMarginFactor: number = EnhancedScatterChart.MaxMarginFactor;
 
         this.leftRightMarginLimit = this.viewport.width * maxMarginFactor;
@@ -1582,7 +1572,19 @@ export class EnhancedScatterChart implements IVisual {
         this.margin.top = EnhancedScatterChart.DefaultMargin.top;
         this.margin.bottom = this.bottomMarginLimit;
         this.margin.right = EnhancedScatterChart.DefaultMargin.right;
+    }
 
+    public render(): void {
+        this.viewport.height -= this.legendViewport.height;
+        this.viewport.width -= this.legendViewport.width;
+
+        if (this.viewportIn.width === EnhancedScatterChart.MinViewport.width
+            || this.viewportIn.height === EnhancedScatterChart.MinViewport.height
+        ) {
+            return;
+        }
+
+        this.initMargins();
         this.calculateAxes(
             this.data.settings.categoryAxis,
             this.data.settings.valueAxis,
@@ -1590,35 +1592,133 @@ export class EnhancedScatterChart implements IVisual {
             true
         );
 
-        const renderXAxis: boolean = this.shouldRenderAxis(
-            this.xAxisProperties,
-            this.data.settings.categoryAxis
-        );
-
-        const renderY1Axis: boolean = this.shouldRenderAxis(
-            this.yAxisProperties,
-            this.data.settings.valueAxis
-        );
+        const renderXAxis: boolean = this.shouldRenderAxis(this.xAxisProperties, this.data.settings.categoryAxis);
+        const renderY1Axis: boolean = this.shouldRenderAxis(this.yAxisProperties, this.data.settings.valueAxis);
 
         this.isXScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
         this.isYScrollBarVisible = EnhancedScatterChart.isScrollbarVisible;
 
+        this.calculateAxes(this.data.settings.categoryAxis, this.data.settings.valueAxis, EnhancedScatterChart.TextProperties);
+
         let tickLabelMargins: TickLabelMargins;
         let axisLabels: ChartAxesLabels;
         let chartHasAxisLabels: boolean;
-
         const showY1OnRight: boolean = this.yAxisOrientation === yAxisPosition.right;
+        let changedLabelsResult = this.changeLabelMargins(
+            EnhancedScatterChart.DefaultValueOfDoneWithMargins,
+            tickLabelMargins,
+            axisLabels,
+            EnhancedScatterChart.DefaultNumIterations,
+            EnhancedScatterChart.MaxIterations,
+            showY1OnRight,
+            renderXAxis,
+            renderY1Axis,
+            chartHasAxisLabels,
+            true);
 
-        this.calculateAxes(
+        // we have to do the above process again since changes are made to viewport.
+        if (this.data.settings.backdrop.show && (this.data.settings.backdrop.url !== undefined)) {
+            this.adjustViewportByBackdrop();
+            changedLabelsResult = this.changeLabelMargins(
+                EnhancedScatterChart.DefaultValueOfDoneWithMargins,
+                changedLabelsResult.tickLabelMargins,
+                changedLabelsResult.axisLabels,
+                EnhancedScatterChart.DefaultNumIterations,
+                EnhancedScatterChart.MaxIterations,
+                showY1OnRight,
+                renderXAxis,
+                renderY1Axis,
+                changedLabelsResult.chartHasAxisLabels);
+        }
+
+        this.renderChart(
+            this.xAxisProperties,
             this.data.settings.categoryAxis,
+            this.yAxisProperties,
             this.data.settings.valueAxis,
-            EnhancedScatterChart.TextProperties
+            changedLabelsResult.tickLabelMargins,
+            changedLabelsResult.chartHasAxisLabels,
+            changedLabelsResult.axisLabels
         );
 
-        let doneWithMargins: boolean = EnhancedScatterChart.DefaultValueOfDoneWithMargins,
-            maxIterations: number = EnhancedScatterChart.MaxIterations,
-            numIterations: number = EnhancedScatterChart.DefaultNumIterations;
+        this.updateAxis();
 
+        if (!this.data) {
+            return;
+        }
+
+        this.mainGraphicsSVGSelection
+            .attr("width", this.viewportIn.width)
+            .attr("height", this.viewportIn.height);
+
+        const sortedData: EnhancedScatterChartDataPoint[] = this.data.dataPoints.sort(
+            (firstDataPoint: EnhancedScatterChartDataPoint, secondDataPoint: EnhancedScatterChartDataPoint) => {
+                return secondDataPoint.radius.sizeMeasure
+                    ? <number>secondDataPoint.radius.sizeMeasure.values[secondDataPoint.radius.index]
+                    - (<number>firstDataPoint.radius.sizeMeasure.values[firstDataPoint.radius.index])
+                    : EnhancedScatterChart.DefaultSizeMeasure;
+            });
+
+        const scatterMarkers: Selection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
+            sortedData,
+            this.data.sizeRange,
+            EnhancedScatterChart.AnimationDuration
+        );
+
+        this.drawCategoryLabels();
+        this.renderCrosshair(this.data);
+        this.bindTooltip(scatterMarkers);
+
+        this.bindInteractivityService(scatterMarkers, this.data.dataPoints);
+    }
+
+    private drawCategoryLabels() {
+        const dataPoints: EnhancedScatterChartDataPoint[] = this.data.dataPoints;
+        if (this.data.settings.categoryLabels.show) {
+            const layout: ILabelLayout = this.getLabelLayout(this.data.settings.categoryLabels, this.viewportIn, this.data.sizeRange);
+            const clonedDataPoints: EnhancedScatterChartDataPoint[] = this.cloneDataPoints(dataPoints);
+
+            // fix bug 3863: drawDefaultLabelsForDataPointChart add to datapoints[xxx].size = object, which causes when
+            // category labels is on and Fill Points option off to fill the points when mouse click occures because of default size
+            // is set to datapoints.
+            const labels: Selection<EnhancedScatterChartDataPoint> = dataLabelUtils.drawDefaultLabelsForDataPointChart(
+                clonedDataPoints,
+                this.mainGraphicsG,
+                layout,
+                this.viewportIn
+            );
+
+            if (labels) {
+                labels.attr("transform", (d: EnhancedScatterChartDataPoint) => {
+                    let size: ISize = <ISize>d.size,
+                        dx: number,
+                        dy: number;
+
+                    dx = size.width / EnhancedScatterChart.DataLabelXOffset;
+                    dy = size.height / EnhancedScatterChart.DataLabelYOffset;
+
+                    return manipulation.translate(dx, dy);
+                });
+            }
+        }
+        else {
+            dataLabelUtils.cleanDataLabels(this.mainGraphicsG);
+        }
+    }
+
+
+    private changeLabelMargins(
+        doneWithMargins: boolean,
+        tickLabelMargins: TickLabelMargins,
+        axisLabels: ChartAxesLabels,
+        numIterations: number,
+        maxIterations: number,
+        showY1OnRight: boolean,
+        renderXAxis: boolean,
+        renderY1Axis: boolean,
+        chartHasAxisLabels: boolean,
+        changeYAxisSide: boolean = false
+    ): { tickLabelMargins: TickLabelMargins, axisLabels: ChartAxesLabels, chartHasAxisLabels: boolean } {
         while (!doneWithMargins && numIterations < maxIterations) {
             numIterations++;
 
@@ -1651,20 +1751,23 @@ export class EnhancedScatterChart implements IVisual {
                 ? tickLabelMargins.yLeft
                 : tickLabelMargins.yRight;
 
-            let xMax: number = tickLabelMargins.xMax;
+            let xMax = tickLabelMargins.xMax;
 
             maxMainYaxisSide += EnhancedScatterChart.AxisSide;
-            maxSecondYaxisSide += EnhancedScatterChart.AxisSide;
 
-            xMax += EnhancedScatterChart.XMaxOffset;
+            if (changeYAxisSide) {
+                maxSecondYaxisSide += EnhancedScatterChart.AxisSide;
+            }
 
             if (showY1OnRight && renderY1Axis) {
-                maxSecondYaxisSide += EnhancedScatterChart.SecondAxisSide;
+                maxSecondYaxisSide += EnhancedScatterChart.SecondYAxisSide;
             }
 
-            if (!showY1OnRight && renderY1Axis) {
+            if (changeYAxisSide && !showY1OnRight && renderY1Axis) {
                 maxMainYaxisSide += EnhancedScatterChart.SecondAxisSide;
             }
+
+            xMax += EnhancedScatterChart.XMaxOffset;
 
             axisLabels = {
                 x: this.xAxisProperties.axisLabel,
@@ -1696,9 +1799,6 @@ export class EnhancedScatterChart implements IVisual {
 
             this.margin.bottom = xMax;
 
-            // re-calculate the axes with the new margins
-            const previousTickCountY1: number = this.yAxisProperties.values.length;
-
             this.calculateAxes(
                 this.data.settings.categoryAxis,
                 this.data.settings.valueAxis,
@@ -1707,183 +1807,12 @@ export class EnhancedScatterChart implements IVisual {
 
             // the minor padding adjustments could have affected the chosen tick values, which would then need to calculate margins again
             // e.g. [0,2,4,6,8] vs. [0,5,10] the 10 is wider and needs more margin.
-            if (this.yAxisProperties.values.length === previousTickCountY1) {
+            if (this.yAxisProperties.values.length === this.yAxisProperties.values.length) {
                 doneWithMargins = !EnhancedScatterChart.DefaultValueOfDoneWithMargins;
             }
         }
 
-        // we have to do the above process again since changes are made to viewport.
-        if (this.data.settings.backdrop.show && (this.data.settings.backdrop.url !== undefined)) {
-
-            this.adjustViewportByBackdrop();
-
-            doneWithMargins = EnhancedScatterChart.DefaultValueOfDoneWithMargins;
-            maxIterations = EnhancedScatterChart.MaxIterations;
-            numIterations = EnhancedScatterChart.DefaultNumIterations;
-
-            while (!doneWithMargins && numIterations < maxIterations) {
-                numIterations++;
-
-                tickLabelMargins = axis.getTickLabelMargins(
-                    {
-                        width: this.viewportIn.width,
-                        height: this.viewport.height
-                    },
-                    this.leftRightMarginLimit,
-                    measureSvgTextWidth,
-                    measureSvgTextHeight,
-                    {
-                        x: this.xAxisProperties,
-                        y1: this.yAxisProperties
-                    },
-                    this.bottomMarginLimit,
-                    EnhancedScatterChart.TextProperties,
-                    this.isXScrollBarVisible || this.isYScrollBarVisible,
-                    showY1OnRight,
-                    renderXAxis,
-                    renderY1Axis,
-                    false);
-
-                // We look at the y axes as main and second sides, if the y axis orientation is right so the main side represents the right side
-                let maxMainYaxisSide: number = showY1OnRight
-                    ? tickLabelMargins.yRight
-                    : tickLabelMargins.yLeft;
-
-                let maxSecondYaxisSide: number = showY1OnRight
-                    ? tickLabelMargins.yLeft
-                    : tickLabelMargins.yRight;
-
-                let xMax = tickLabelMargins.xMax;
-
-                maxMainYaxisSide += EnhancedScatterChart.AxisSide;
-
-                if (showY1OnRight && renderY1Axis) {
-                    maxSecondYaxisSide += EnhancedScatterChart.SecondYAxisSide;
-                }
-
-                xMax += EnhancedScatterChart.XMaxOffset;
-
-                axisLabels = {
-                    x: this.xAxisProperties.axisLabel,
-                    y: this.yAxisProperties.axisLabel,
-                    y2: null
-                };
-
-                chartHasAxisLabels = (axisLabels.x != null) || (axisLabels.y != null || axisLabels.y2 != null);
-
-                if (axisLabels.x != null) {
-                    xMax += EnhancedScatterChart.AdditionalXMaxOffset;
-                }
-
-                if (axisLabels.y != null) {
-                    maxMainYaxisSide += EnhancedScatterChart.SecondAxisSide;
-                }
-
-                if (axisLabels.y2 != null) {
-                    maxSecondYaxisSide += EnhancedScatterChart.SecondAxisSide;
-                }
-
-                this.margin.left = showY1OnRight
-                    ? maxSecondYaxisSide
-                    : maxMainYaxisSide;
-
-                this.margin.right = showY1OnRight
-                    ? maxMainYaxisSide
-                    : maxSecondYaxisSide;
-
-                this.margin.bottom = xMax;
-
-                this.calculateAxes(
-                    this.data.settings.categoryAxis,
-                    this.data.settings.valueAxis,
-                    EnhancedScatterChart.TextProperties
-                );
-
-                // the minor padding adjustments could have affected the chosen tick values, which would then need to calculate margins again
-                // e.g. [0,2,4,6,8] vs. [0,5,10] the 10 is wider and needs more margin.
-                if (this.yAxisProperties.values.length === this.yAxisProperties.values.length) {
-                    doneWithMargins = !EnhancedScatterChart.DefaultValueOfDoneWithMargins;
-                }
-            }
-        }
-
-        this.renderChart(
-            this.xAxisProperties,
-            this.data.settings.categoryAxis,
-            this.yAxisProperties,
-            this.data.settings.valueAxis,
-            tickLabelMargins,
-            chartHasAxisLabels,
-            axisLabels
-        );
-
-        this.updateAxis();
-
-        if (!this.data) {
-            return;
-        }
-
-        const data: EnhancedScatterChartData = this.data;
-        const dataPoints: EnhancedScatterChartDataPoint[] = this.data.dataPoints;
-
-        this.mainGraphicsSVGSelection
-            .attr("width", this.viewportIn.width)
-            .attr("height", this.viewportIn.height);
-
-        const sortedData: EnhancedScatterChartDataPoint[] = dataPoints.sort(
-            (firstDataPoint: EnhancedScatterChartDataPoint, secondDataPoint: EnhancedScatterChartDataPoint) => {
-                return secondDataPoint.radius.sizeMeasure
-                    ? <number>secondDataPoint.radius.sizeMeasure.values[secondDataPoint.radius.index]
-                    - (<number>firstDataPoint.radius.sizeMeasure.values[firstDataPoint.radius.index])
-                    : EnhancedScatterChart.DefaultSizeMeasure;
-            });
-
-        const scatterMarkers: Selection<EnhancedScatterChartDataPoint> = this.drawScatterMarkers(
-            sortedData,
-            data.sizeRange,
-            EnhancedScatterChart.AnimationDuration
-        );
-
-        if (data.settings.categoryLabels.show) {
-            const layout: ILabelLayout = this.getLabelLayout(data.settings.categoryLabels, this.viewportIn, data.sizeRange);
-
-            const clonedDataPoints: EnhancedScatterChartDataPoint[] = this.cloneDataPoints(dataPoints);
-
-            // fix bug 3863: drawDefaultLabelsForDataPointChart add to datapoints[xxx].size = object, which causes when
-            // category labels is on and Fill Points option off to fill the points when mouse click occures because of default size
-            // is set to datapoints.
-            const labels: Selection<EnhancedScatterChartDataPoint> = dataLabelUtils.drawDefaultLabelsForDataPointChart(
-                clonedDataPoints,
-                this.mainGraphicsG,
-                layout,
-                this.viewportIn
-            );
-
-            if (labels) {
-                labels.attr("transform", (d: EnhancedScatterChartDataPoint) => {
-                    let size: ISize = <ISize>d.size,
-                        dx: number,
-                        dy: number;
-
-                    dx = size.width / EnhancedScatterChart.DataLabelXOffset;
-                    dy = size.height / EnhancedScatterChart.DataLabelYOffset;
-
-                    return manipulation.translate(dx, dy);
-                });
-            }
-        }
-        else {
-            dataLabelUtils.cleanDataLabels(this.mainGraphicsG);
-        }
-
-        this.renderCrosshair(data);
-
-        this.bindTooltip(scatterMarkers);
-
-        this.bindInteractivityService(
-            scatterMarkers,
-            dataPoints
-        );
+        return { tickLabelMargins, axisLabels, chartHasAxisLabels };
     }
 
     private bindTooltip(selection: Selection<TooltipEnabledDataPoint>): void {
@@ -2727,6 +2656,7 @@ export class EnhancedScatterChart implements IVisual {
             .classed(EnhancedScatterChart.ImageSelector.className, true)
             .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
 
+        const thisVisual = this;
         markersMerged
             .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
                 if (dataPoint.svgurl !== undefined
@@ -2747,9 +2677,10 @@ export class EnhancedScatterChart implements IVisual {
                 const bubbleRadius: number = EnhancedScatterChart.getBubbleRadius(
                     dataPoint.radius,
                     sizeRange,
-                    this.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
+                    thisVisual.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                d3.select(this).attr("width", bubbleRadius)
+                d3.select(this)
+                    .attr("width", bubbleRadius)
                     .attr("height", bubbleRadius);
             })
             .transition()
@@ -2846,13 +2777,8 @@ export class EnhancedScatterChart implements IVisual {
 
         let markers: Selection<EnhancedScatterChartDataPoint>;
         let markersMerged: Selection<EnhancedScatterChartDataPoint>;
-        let markersChanged;
-
-        if (!this.data.useShape) {
-            markersChanged = this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
-        } else {
-            markersChanged = this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration);
-        }
+        let markersChanged = this.data.useShape ? this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration) :
+            this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
 
         markers = markersChanged.markers;
         markersMerged = markersChanged.markersMerged;
