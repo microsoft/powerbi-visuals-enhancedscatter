@@ -24,25 +24,27 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual.gradientUtils {
-    import DataRoleHelper = powerbi.extensibility.utils.dataview.DataRoleHelper;
+import powerbi from "powerbi-visuals-api";
 
-    const GradientCategoryName: string = "Gradient";
+import DataViewCategorical = powerbi.DataViewCategorical;
 
-    export function getGradientMeasureIndex(dataViewCategorical: DataViewCategorical): number {
-        if (dataViewCategorical
-            && dataViewCategorical.values
-            && dataViewCategorical.values.grouped) {
+import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
 
-            return DataRoleHelper.getMeasureIndexOfRole(
-                dataViewCategorical.values.grouped(),
-                GradientCategoryName);
-        }
+const GradientCategoryName: string = "Gradient";
 
-        return -1;
+export function getGradientMeasureIndex(dataViewCategorical: DataViewCategorical): number {
+    if (dataViewCategorical
+        && dataViewCategorical.values
+        && dataViewCategorical.values.grouped) {
+
+        return DataRoleHelper.getMeasureIndexOfRole(
+            dataViewCategorical.values.grouped(),
+            GradientCategoryName);
     }
 
-    export function hasGradientRole(dataViewCategorical: DataViewCategorical): boolean {
-        return getGradientMeasureIndex(dataViewCategorical) >= 0;
-    }
+    return -1;
+}
+
+export function hasGradientRole(dataViewCategorical: DataViewCategorical): boolean {
+    return getGradientMeasureIndex(dataViewCategorical) >= 0;
 }

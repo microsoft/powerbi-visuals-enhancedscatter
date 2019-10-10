@@ -23,216 +23,225 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+import powerbi from "powerbi-visuals-api";
 
-module powerbi.extensibility.visual {
-    // powerbi.visuals
-    import ISelectionId = powerbi.visuals.ISelectionId;
+import IViewport = powerbi.IViewport;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import NumberRange = powerbi.NumberRange;
 
-    // powerbi.extensibility.utils.interactivity
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
+// powerbi.visuals
+import ISelectionId = powerbi.visuals.ISelectionId;
 
-    // powerbi.extensibility.utils.tooltip
-    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+// powerbi.extensibility.utils.interactivity
+import { interactivitySelectionService as interactivityService } from "powerbi-visuals-utils-interactivityutils";
+import SelectableDataPoint = interactivityService.SelectableDataPoint;
 
-    // powerbi.extensibility.utils.chart
-    import LegendDataPoint = powerbi.extensibility.utils.chart.legend.LegendDataPoint;
+// powerbi.extensibility.utils.tooltip
+import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 
-    // powerbi.extensibility.utils.svg
-    import IRect = powerbi.extensibility.utils.svg.IRect;
-    import IMargin = powerbi.extensibility.utils.svg.IMargin;
-    import ISize = powerbi.extensibility.utils.svg.shapes.ISize;
+// powerbi.extensibility.utils.chart
+import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
+import LegendDataPoint = legendInterfaces.LegendDataPoint;
 
-    export interface ElementProperty {
-        [propertyName: string]: any;
-    }
+// powerbi.extensibility.utils.svg
+import * as SVGUtil from "powerbi-visuals-utils-svgutils";
+import IMargin = SVGUtil.IMargin;
+import IRect = SVGUtil.IRect;
+import ISize = SVGUtil.shapesInterfaces.ISize;
 
-    export interface ElementProperties {
-        name: string;
-        selector: string;
-        className?: string;
-        data?: any;
-        styles?: ElementProperty;
-        attributes?: ElementProperty;
-    }
+import { Settings } from "./settings";
 
-    export interface EnhancedScatterChartMeasureMetadataIndexes {
-        category?: number;
-        x?: number;
-        y?: number;
-        size?: number;
-        colorFill?: number;
-        shape?: number;
-        image?: number;
-        rotation?: number;
-        backdrop?: number;
-        xStart?: number;
-        xEnd?: number;
-        yStart?: number;
-        yEnd?: number;
-    }
+export interface ElementProperty {
+    [propertyName: string]: any;
+}
 
-    export interface EnhancedScatterChartMeasureMetadataColumns {
-        x?: DataViewMetadataColumn;
-        y?: DataViewMetadataColumn;
-        size?: DataViewMetadataColumn;
-    }
+export interface ElementProperties {
+    name: string;
+    selector: string;
+    className?: string;
+    data?: any;
+    styles?: ElementProperty;
+    attributes?: ElementProperty;
+}
 
-    export interface EnhancedScatterChartMeasureMetadata {
-        idx: EnhancedScatterChartMeasureMetadataIndexes;
-        cols: EnhancedScatterChartMeasureMetadataColumns;
-        axesLabels: ChartAxesLabels;
-    }
+export interface EnhancedScatterChartMeasureMetadataIndexes {
+    category?: number;
+    x?: number;
+    y?: number;
+    size?: number;
+    colorFill?: number;
+    shape?: number;
+    image?: number;
+    rotation?: number;
+    backdrop?: number;
+    xStart?: number;
+    xEnd?: number;
+    yStart?: number;
+    yEnd?: number;
+}
 
-    export interface ChartAxesLabels {
-        x: string;
-        y: string;
-        y2?: string;
-    }
+export interface EnhancedScatterChartMeasureMetadataColumns {
+    x?: DataViewMetadataColumn;
+    y?: DataViewMetadataColumn;
+    size?: DataViewMetadataColumn;
+}
 
-    export interface EnhancedScatterChartRadiusData {
-        sizeMeasure: DataViewValueColumn;
-        index: number;
-    }
+export interface EnhancedScatterChartMeasureMetadata {
+    idx: EnhancedScatterChartMeasureMetadataIndexes;
+    cols: EnhancedScatterChartMeasureMetadataColumns;
+    axesLabels: ChartAxesLabels;
+}
 
-    /** Defines possible content positions.  */
-    export const enum ContentPositions {
+export interface ChartAxesLabels {
+    x: string;
+    y: string;
+    y2?: string;
+}
 
-        /** Content position is not defined. */
-        None = 0,
+export interface EnhancedScatterChartRadiusData {
+    sizeMeasure: DataViewValueColumn;
+    index: number;
+}
 
-        /** Content aligned top left. */
-        TopLeft = 1,
+// Defines possible content positions.
+export const enum ContentPositions {
 
-        /** Content aligned top center. */
-        TopCenter = 2,
+    // Content position is not defined.
+    None = 0,
 
-        /** Content aligned top right. */
-        TopRight = 4,
+    // Content aligned top left.
+    TopLeft = 1,
 
-        /** Content aligned middle left. */
-        MiddleLeft = 8,
+    // Content aligned top center.
+    TopCenter = 2,
 
-        /** Content aligned middle center. */
-        MiddleCenter = 16,
+    // Content aligned top right.
+    TopRight = 4,
 
-        /** Content aligned middle right. */
-        MiddleRight = 32,
+    // Content aligned middle left.
+    MiddleLeft = 8,
 
-        /** Content aligned bottom left. */
-        BottomLeft = 64,
+    // Content aligned middle center.
+    MiddleCenter = 16,
 
-        /** Content aligned bottom center. */
-        BottomCenter = 128,
+    // Content aligned middle right.
+    MiddleRight = 32,
 
-        /** Content aligned bottom right. */
-        BottomRight = 256,
+    // Content aligned bottom left.
+    BottomLeft = 64,
 
-        /** Content is placed inside the bounding rectangle in the center. */
-        InsideCenter = 512,
+    // Content aligned bottom center.
+    BottomCenter = 128,
 
-        /** Content is placed inside the bounding rectangle at the base. */
-        InsideBase = 1024,
+    // Content aligned bottom right.
+    BottomRight = 256,
 
-        /** Content is placed inside the bounding rectangle at the end. */
-        InsideEnd = 2048,
+    // Content is placed inside the bounding rectangle in the center.
+    InsideCenter = 512,
 
-        /** Content is placed outside the bounding rectangle at the base. */
-        OutsideBase = 4096,
+    // Content is placed inside the bounding rectangle at the base.
+    InsideBase = 1024,
 
-        /** Content is placed outside the bounding rectangle at the end. */
-        OutsideEnd = 8192,
+    // Content is placed inside the bounding rectangle at the end.
+    InsideEnd = 2048,
 
-        /** Content supports all possible positions. */
-        All =
-        TopLeft |
-        TopCenter |
-        TopRight |
-        MiddleLeft |
-        MiddleCenter |
-        MiddleRight |
-        BottomLeft |
-        BottomCenter |
-        BottomRight |
-        InsideCenter |
-        InsideBase |
-        InsideEnd |
-        OutsideBase |
-        OutsideEnd,
-    }
+    // Content is placed outside the bounding rectangle at the base.
+    OutsideBase = 4096,
 
-    export interface EnhancedScatterChartDataPoint extends
-        SelectableDataPoint,
-        TooltipEnabledDataPoint {
+    // Content is placed outside the bounding rectangle at the end.
+    OutsideEnd = 8192,
 
-        x: any;
-        y: any;
-        size: number | ISize;
-        radius: EnhancedScatterChartRadiusData;
-        fill: string;
-        stroke: string;
-        strokeWidth: number;
-        contentPosition: ContentPositions;
-        formattedCategory: () => string;
-        svgurl?: string;
-        shapeSymbolType?: (value: number) => string;
-        rotation: number;
-        backdrop?: string;
-        xStart?: number;
-        xEnd?: number;
-        yStart?: number;
-        yEnd?: number;
-        highlight?: boolean;
-    }
+    // Content supports all possible positions.
+    All =
+    TopLeft |
+    TopCenter |
+    TopRight |
+    MiddleLeft |
+    MiddleCenter |
+    MiddleRight |
+    BottomLeft |
+    BottomCenter |
+    BottomRight |
+    InsideCenter |
+    InsideBase |
+    InsideEnd |
+    OutsideBase |
+    OutsideEnd,
+}
 
-    export interface EnhancedScatterChartAxesLabels {
-        x: string;
-        y: string;
-        y2?: string;
-    }
+export interface EnhancedScatterChartDataPoint extends
+    SelectableDataPoint,
+    TooltipEnabledDataPoint {
 
-    export interface EnhancedScatterChartData {
-        useShape: boolean;
-        useCustomColor: boolean;
-        xCol: DataViewMetadataColumn;
-        yCol: DataViewMetadataColumn;
-        dataPoints: EnhancedScatterChartDataPoint[];
-        legendDataPoints: LegendDataPoint[];
-        axesLabels: EnhancedScatterChartAxesLabels;
-        size?: DataViewMetadataColumn;
-        sizeRange: NumberRange;
-        hasDynamicSeries?: boolean;
-        hasGradientRole?: boolean;
-        colorBorder?: boolean;
-        colorByCategory?: boolean;
-        selectedIds: ISelectionId[];
-        settings: Settings;
-    }
+    x: any;
+    y: any;
+    size: number | ISize;
+    radius: EnhancedScatterChartRadiusData;
+    fill: string;
+    stroke: string;
+    strokeWidth: number;
+    contentPosition: ContentPositions;
+    formattedCategory: () => string;
+    svgurl?: string;
+    shapeSymbolType?: (value: number) => string;
+    rotation: number;
+    backdrop?: string;
+    xStart?: number;
+    xEnd?: number;
+    yStart?: number;
+    yEnd?: number;
+    highlight?: boolean;
+}
 
-    export interface EnhancedScatterDataRange {
-        minRange: number;
-        maxRange: number;
-        delta: number;
-    }
+export interface EnhancedScatterChartAxesLabels {
+    x: string;
+    y: string;
+    y2?: string;
+}
 
-    export interface CalculateScaleAndDomainOptions {
-        viewport: IViewport;
-        margin: IMargin;
-        showCategoryAxisLabel: boolean;
-        showValueAxisLabel: boolean;
-        forceMerge: boolean;
-        categoryAxisScaleType: string;
-        valueAxisScaleType: string;
-        trimOrdinalDataOnOverflow: boolean;
-        // optional
-        playAxisControlLayout?: IRect;
-        forcedTickCount?: number;
-        forcedYDomain?: any[];
-        forcedXDomain?: any[];
-        ensureXDomain?: NumberRange;
-        ensureYDomain?: NumberRange;
-        categoryAxisDisplayUnits?: number;
-        categoryAxisPrecision?: number;
-        valueAxisDisplayUnits?: number;
-        valueAxisPrecision?: number;
-    }
+export interface EnhancedScatterChartData {
+    useShape: boolean;
+    useCustomColor: boolean;
+    xCol: DataViewMetadataColumn;
+    yCol: DataViewMetadataColumn;
+    dataPoints: EnhancedScatterChartDataPoint[];
+    legendDataPoints: LegendDataPoint[];
+    axesLabels: EnhancedScatterChartAxesLabels;
+    size?: DataViewMetadataColumn;
+    sizeRange: NumberRange;
+    hasDynamicSeries?: boolean;
+    hasGradientRole?: boolean;
+    colorBorder?: boolean;
+    colorByCategory?: boolean;
+    selectedIds: ISelectionId[];
+    settings: Settings;
+}
+
+export interface EnhancedScatterDataRange {
+    minRange: number;
+    maxRange: number;
+    delta: number;
+}
+
+export interface CalculateScaleAndDomainOptions {
+    viewport: IViewport;
+    margin: IMargin;
+    showCategoryAxisLabel: boolean;
+    showValueAxisLabel: boolean;
+    forceMerge: boolean;
+    categoryAxisScaleType: string;
+    valueAxisScaleType: string;
+    trimOrdinalDataOnOverflow: boolean;
+    // optional
+    playAxisControlLayout?: IRect;
+    forcedTickCount?: number;
+    forcedYDomain?: any[];
+    forcedXDomain?: any[];
+    ensureXDomain?: NumberRange;
+    ensureYDomain?: NumberRange;
+    categoryAxisDisplayUnits?: number;
+    categoryAxisPrecision?: number;
+    valueAxisDisplayUnits?: number;
+    valueAxisPrecision?: number;
 }

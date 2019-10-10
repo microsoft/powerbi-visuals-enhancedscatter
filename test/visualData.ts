@@ -24,165 +24,168 @@
  *  THE SOFTWARE.
  */
 
-/// <reference path="_references.ts"/>
+import * as _ from "lodash";
 
-module powerbi.extensibility.visual.test {
-    // powerbi.extensibility.visual
-    import EnhancedScatterChart = powerbi.extensibility.visual.EnhancedScatterChart1443994985041.EnhancedScatterChart;
+import powerbi from "powerbi-visuals-api";
+import DataView = powerbi.DataView;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
-    // powerbi.extensibility.utils.type
-    import ValueType = powerbi.extensibility.utils.type.ValueType;
+// powerbi.extensibility.visual
+import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
 
-    // powerbi.extensibility.utils.test
-    import getRandomNumbers = powerbi.extensibility.utils.test.helpers.getRandomNumbers;
-    import TestDataViewBuilder = powerbi.extensibility.utils.test.dataViewBuilder.TestDataViewBuilder;
+// powerbi.extensibility.utils.type
+import { valueType } from "powerbi-visuals-utils-typeutils";
+import ValueType = valueType.ValueType;
 
-    export class EnhancedScatterChartData extends TestDataViewBuilder {
-        private static NumberFormatWithPrecision: string = "#,0.00";
-        private static NumberFormatWithoutPrecision: string = "#,0";
+// powerbi.extensibility.utils.test
+import { testDataViewBuilder, getRandomNumbers } from "powerbi-visuals-utils-testutils";
+import TestDataViewBuilder = testDataViewBuilder.TestDataViewBuilder;
 
-        public static ColumnCategory: string = EnhancedScatterChart.ColumnCategory;
-        public static ColumnSeries: string = EnhancedScatterChart.ColumnSeries;
-        public static ColumnX: string = EnhancedScatterChart.ColumnX;
-        public static ColumnY: string = EnhancedScatterChart.ColumnY;
-        public static ColumnSize: string = EnhancedScatterChart.ColumnSize;
-        public static ColumnColorFill: string = EnhancedScatterChart.ColumnColorFill;
-        public static ColumnImage: string = EnhancedScatterChart.ColumnImage;
-        public static ColumnBackdrop: string = EnhancedScatterChart.ColumnBackdrop;
-        public static ColumnRotation: string = EnhancedScatterChart.ColumnRotation;
+export class EnhancedScatterChartData extends TestDataViewBuilder {
+    private static NumberFormatWithPrecision: string = "#,0.00";
+    private static NumberFormatWithoutPrecision: string = "#,0";
 
-        public XColumnTypeOverload: ValueTypeDescriptor;
-        public YColumnTypeOverload: ValueTypeDescriptor;
+    public static ColumnCategory: string = EnhancedScatterChart.ColumnCategory;
+    public static ColumnSeries: string = EnhancedScatterChart.ColumnSeries;
+    public static ColumnX: string = EnhancedScatterChart.ColumnX;
+    public static ColumnY: string = EnhancedScatterChart.ColumnY;
+    public static ColumnSize: string = EnhancedScatterChart.ColumnSize;
+    public static ColumnColorFill: string = EnhancedScatterChart.ColumnColorFill;
+    public static ColumnImage: string = EnhancedScatterChart.ColumnImage;
+    public static ColumnBackdrop: string = EnhancedScatterChart.ColumnBackdrop;
+    public static ColumnRotation: string = EnhancedScatterChart.ColumnRotation;
 
-        public static DefaultSetOfColumns: string[] = [
-            EnhancedScatterChartData.ColumnCategory,
-            EnhancedScatterChartData.ColumnSeries,
-            EnhancedScatterChartData.ColumnX,
-            EnhancedScatterChartData.ColumnY,
-            EnhancedScatterChartData.ColumnSize
-        ];
+    public XColumnTypeOverload: ValueTypeDescriptor;
+    public YColumnTypeOverload: ValueTypeDescriptor;
 
-        public valuesCategory: Date[] = EnhancedScatterChartData.getDateYearRange(
-            new Date(2016, 0, 1),
-            new Date(2019, 0, 10),
-            1);
+    public static DefaultSetOfColumns: string[] = [
+        EnhancedScatterChartData.ColumnCategory,
+        EnhancedScatterChartData.ColumnSeries,
+        EnhancedScatterChartData.ColumnX,
+        EnhancedScatterChartData.ColumnY,
+        EnhancedScatterChartData.ColumnSize
+    ];
 
-        public valuesSeries: string[] = [
-            "Access",
-            "OneNote",
-            "Outlook"
-        ];
+    public valuesCategory: Date[] = EnhancedScatterChartData.getDateYearRange(
+        new Date(2016, 0, 1),
+        new Date(2019, 0, 10),
+        1);
 
-        public valuesX: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
-        public valuesY: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
-        public valuesSize: number[] = getRandomNumbers(this.valuesCategory.length, 10, 20);
+    public valuesSeries: string[] = [
+        "Access",
+        "OneNote",
+        "Outlook"
+    ];
 
-        public colorValues: string[] = ["#ff0000", "#008000", "#0000ff"];
+    public valuesX: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
+    public valuesY: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
+    public valuesSize: number[] = getRandomNumbers(this.valuesCategory.length, 10, 20);
 
-        public imageValues: string[] = [
-            "Microsoft_Access.png",
-            "Microsoft_OneNote.png",
-            "Microsoft_Outlook.png"
-        ];
+    public colorValues: string[] = ["#ff0000", "#008000", "#0000ff"];
 
-        public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
+    public imageValues: string[] = [
+        "Microsoft_Access.png",
+        "Microsoft_OneNote.png",
+        "Microsoft_Outlook.png"
+    ];
 
-        private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
-            return _.range(start.getFullYear(), stop.getFullYear(), yearStep)
-                .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
-        }
+    public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
 
-        public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns): DataView {
-            return this.createCategoricalDataViewBuilder([
-                {
-                    source: {
-                        displayName: EnhancedScatterChartData.ColumnCategory,
-                        roles: { [EnhancedScatterChartData.ColumnCategory]: true },
-                        type: ValueType.fromDescriptor({ dateTime: true })
-                    },
-                    values: this.valuesCategory
+    private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
+        return _.range(start.getFullYear(), stop.getFullYear(), yearStep)
+            .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
+    }
+
+    public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns): DataView {
+        return this.createCategoricalDataViewBuilder([
+            {
+                source: {
+                    displayName: EnhancedScatterChartData.ColumnCategory,
+                    roles: { [EnhancedScatterChartData.ColumnCategory]: true },
+                    type: ValueType.fromDescriptor({ dateTime: true })
                 },
-                {
-                    isGroup: true,
-                    source: {
-                        displayName: EnhancedScatterChartData.ColumnSeries,
-                        roles: { [EnhancedScatterChartData.ColumnSeries]: true },
-                        type: ValueType.fromDescriptor({ text: true })
-                    },
-                    values: this.valuesSeries,
+                values: this.valuesCategory
+            },
+            {
+                isGroup: true,
+                source: {
+                    displayName: EnhancedScatterChartData.ColumnSeries,
+                    roles: { [EnhancedScatterChartData.ColumnSeries]: true },
+                    type: ValueType.fromDescriptor({ text: true })
                 },
-                {
-                    source: {
-                        displayName: EnhancedScatterChartData.ColumnColorFill,
-                        roles: { [EnhancedScatterChartData.ColumnColorFill]: true },
-                        type: ValueType.fromDescriptor({ text: true })
-                    },
-                    values: this.colorValues
+                values: this.valuesSeries,
+            },
+            {
+                source: {
+                    displayName: EnhancedScatterChartData.ColumnColorFill,
+                    roles: { [EnhancedScatterChartData.ColumnColorFill]: true },
+                    type: ValueType.fromDescriptor({ text: true })
                 },
-                {
-                    source: {
-                        displayName: EnhancedScatterChartData.ColumnImage,
-                        roles: { [EnhancedScatterChartData.ColumnImage]: true },
-                        type: ValueType.fromDescriptor({ text: true })
-                    },
-                    values: this.imageValues
+                values: this.colorValues
+            },
+            {
+                source: {
+                    displayName: EnhancedScatterChartData.ColumnImage,
+                    roles: { [EnhancedScatterChartData.ColumnImage]: true },
+                    type: ValueType.fromDescriptor({ text: true })
                 },
+                values: this.imageValues
+            },
+            {
+                source: {
+                    displayName: EnhancedScatterChartData.ColumnBackdrop,
+                    roles: { [EnhancedScatterChartData.ColumnBackdrop]: true },
+                    type: ValueType.fromDescriptor({ text: true })
+                },
+                values: this.imageValues
+            }
+        ], [
                 {
                     source: {
-                        displayName: EnhancedScatterChartData.ColumnBackdrop,
-                        roles: { [EnhancedScatterChartData.ColumnBackdrop]: true },
-                        type: ValueType.fromDescriptor({ text: true })
-                    },
-                    values: this.imageValues
-                }
-            ], [
-                    {
-                        source: {
-                            displayName: EnhancedScatterChartData.ColumnX,
-                            format: EnhancedScatterChartData.NumberFormatWithPrecision,
-                            isMeasure: true,
-                            roles: { [EnhancedScatterChartData.ColumnX]: true },
-                            ...(
-                                this.XColumnTypeOverload
+                        displayName: EnhancedScatterChartData.ColumnX,
+                        format: EnhancedScatterChartData.NumberFormatWithPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnX]: true },
+                        ...(
+                            this.XColumnTypeOverload
                                 ? { type: ValueType.fromDescriptor(this.XColumnTypeOverload) }
                                 : {}
-                            )
-                        },
-                        values: this.valuesX
+                        )
                     },
-                    {
-                        source: {
-                            displayName: EnhancedScatterChartData.ColumnY,
-                            format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
-                            isMeasure: true,
-                            roles: { [EnhancedScatterChartData.ColumnY]: true },
-                            ...(
-                                this.YColumnTypeOverload
+                    values: this.valuesX
+                },
+                {
+                    source: {
+                        displayName: EnhancedScatterChartData.ColumnY,
+                        format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnY]: true },
+                        ...(
+                            this.YColumnTypeOverload
                                 ? { type: ValueType.fromDescriptor(this.YColumnTypeOverload) }
                                 : {}
-                            )
-                        },
-                        values: this.valuesY
+                        )
                     },
-                    {
-                        source: {
-                            displayName: EnhancedScatterChartData.ColumnSize,
-                            format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
-                            isMeasure: true,
-                            roles: { [EnhancedScatterChartData.ColumnSize]: true }
-                        },
-                        values: this.valuesSize
+                    values: this.valuesY
+                },
+                {
+                    source: {
+                        displayName: EnhancedScatterChartData.ColumnSize,
+                        format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnSize]: true }
                     },
-                    {
-                        source: {
-                            displayName: EnhancedScatterChartData.ColumnRotation,
-                            format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
-                            isMeasure: true,
-                            roles: { [EnhancedScatterChartData.ColumnRotation]: true },
-                        },
-                        values: this.rotationValues
-                    }
-                ], columnNames).build();
-        }
+                    values: this.valuesSize
+                },
+                {
+                    source: {
+                        displayName: EnhancedScatterChartData.ColumnRotation,
+                        format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnRotation]: true },
+                    },
+                    values: this.rotationValues
+                }
+            ], columnNames).build();
     }
 }

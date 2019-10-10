@@ -1,3 +1,10 @@
+## 2.0.0
+* Webpack integration
+* Azure Pipelines integration
+* API 2.5.0
+* updated powerbi-visuals-utils, powerbi-visuals-tools 3.x.x
+* d3 v5
+
 ## 1.5.1
 * Tests for date values case
 

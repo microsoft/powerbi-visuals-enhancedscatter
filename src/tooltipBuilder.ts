@@ -24,10 +24,17 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual.tooltipBuilder {
-    // powerbi.extensibility.utils.formatting
-    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+import powerbi from "powerbi-visuals-api";
 
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+
+// powerbi.extensibility.utils.formatting
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+
+export module tooltipBuilder {
     export interface TooltipSeriesDataItem {
         value?: any;
         highlightedValue?: any;

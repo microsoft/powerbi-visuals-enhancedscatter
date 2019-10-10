@@ -24,119 +24,118 @@
  *  THE SOFTWARE.
  */
 
-/// <reference path="_references.ts"/>
+import powerbi from "powerbi-visuals-api";
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
-module powerbi.extensibility.visual.test {
-    // powerbi.extensibility.utils.test
-    import VisualBuilderBase = powerbi.extensibility.utils.test.VisualBuilderBase;
+// powerbi.extensibility.utils.test
+import { VisualBuilderBase } from "powerbi-visuals-utils-testutils";
 
-    // EnhancedScatterChart1443994985041
-    import VisualClass = powerbi.extensibility.visual.EnhancedScatterChart1443994985041.EnhancedScatterChart;
+// EnhancedScatterChart1443994985041
+import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
 
-    export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
-        constructor(width: number, height: number) {
-            super(width, height, "EnhancedScatterChart1443994985041");
-        }
+export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
+    constructor(width: number, height: number) {
+        super(width, height, "EnhancedScatterChart1443994985041");
+    }
 
-        protected build(options: VisualConstructorOptions) {
-            return new VisualClass(options);
-        }
+    protected build(options: VisualConstructorOptions) {
+        return new VisualClass(options);
+    }
 
-        public get instance(): VisualClass {
-            return this.visual;
-        }
+    public get instance(): VisualClass {
+        return this.visual;
+    }
 
-        public get mainElement(): JQuery {
-            return this.element.find(".enhancedScatterChart");
-        }
+    public get mainElement(): JQuery {
+        return this.element.find(".enhancedScatterChart");
+    }
 
-        public get axisGraphicsContext(): JQuery {
-            return this.mainElement.children(".axisGraphicsContext");
-        }
+    public get axisGraphicsContext(): JQuery {
+        return this.mainElement.children(".axisGraphicsContext");
+    }
 
-        public get backdropImage(): JQuery {
-            return this.axisGraphicsContext.children("image");
-        }
+    public get backdropImage(): JQuery {
+        return this.axisGraphicsContext.children("image");
+    }
 
-        public get xAxis(): JQuery {
-            return this.axisGraphicsContext.children("g.x.axis");
-        }
+    public get xAxis(): JQuery {
+        return this.axisGraphicsContext.children("g.x.axis");
+    }
 
-        public get xAxisTicks(): JQuery {
-            return this.xAxis.children("g.tick");
-        }
+    public get xAxisTicks(): JQuery {
+        return this.xAxis.children("g.tick");
+    }
 
-        public get xAxisLabel(): JQuery {
-            return this.axisGraphicsContext.children(".xAxisLabel");
-        }
+    public get xAxisLabel(): JQuery {
+        return this.axisGraphicsContext.children(".xAxisLabel");
+    }
 
-        public get yAxis(): JQuery {
-            return this.svgScrollableAxisGraphicsContext.children("g.y.axis");
-        }
+    public get yAxis(): JQuery {
+        return this.svgScrollableAxisGraphicsContext.children("g.y.axis");
+    }
 
-        public get yAxisTicks(): JQuery {
-            return this.yAxis.children("g.tick");
-        }
+    public get yAxisTicks(): JQuery {
+        return this.yAxis.children("g.tick");
+    }
 
-        public get yAxisLabel(): JQuery {
-            return this.axisGraphicsContext.children(".yAxisLabel");
-        }
+    public get yAxisLabel(): JQuery {
+        return this.axisGraphicsContext.children(".yAxisLabel");
+    }
 
-        public get svgScrollableAxisGraphicsContext(): JQuery {
-            return this.mainElement
-                .children(".svgScrollable")
-                .children(".axisGraphicsContext");
-        }
+    public get svgScrollableAxisGraphicsContext(): JQuery {
+        return this.mainElement
+            .children(".svgScrollable")
+            .children(".axisGraphicsContext");
+    }
 
-        public get mainGraphicsContext(): JQuery {
-            return this.svgScrollableAxisGraphicsContext
-                .children(".mainGraphicsContext");
-        }
+    public get mainGraphicsContext(): JQuery {
+        return this.svgScrollableAxisGraphicsContext
+            .children(".mainGraphicsContext");
+    }
 
-        public get dataLabels(): JQuery {
-            return this.mainGraphicsContext
-                .children(".labels");
-        }
+    public get dataLabels(): JQuery {
+        return this.mainGraphicsContext
+            .children(".labels");
+    }
 
-        public get dataLabelsText(): JQuery {
-            return this.dataLabels
-                .children("text.data-labels");
-        }
+    public get dataLabelsText(): JQuery {
+        return this.dataLabels
+            .children("text.data-labels");
+    }
 
-        public get crosshair(): JQuery {
-            return this.mainGraphicsContext
-                .children("svg")
-                .children("g.crosshairCanvas");
-        }
+    public get crosshair(): JQuery {
+        return this.mainGraphicsContext
+            .children("svg")
+            .children("g.crosshairCanvas");
+    }
 
-        public get dots(): JQuery {
-            return this.mainGraphicsContext
-                .children("svg")
-                .children("g.ScatterMarkers")
-                .children("path.dot");
-        }
+    public get dots(): JQuery {
+        return this.mainGraphicsContext
+            .children("svg")
+            .children("g.ScatterMarkers")
+            .children("path.dot");
+    }
 
-        public get images(): JQuery {
-            return this.mainGraphicsContext
-                .children("svg")
-                .children("g.ScatterMarkers")
-                .children("image.img");
-        }
+    public get images(): JQuery {
+        return this.mainGraphicsContext
+            .children("svg")
+            .children("g.ScatterMarkers")
+            .children("image.img");
+    }
 
-        public get legendGroup(): JQuery {
-            return this.element
-                .children(".legend")
-                .children("#legendGroup");
-        }
+    public get legendGroup(): JQuery {
+        return this.element
+            .children(".legend")
+            .children("#legendGroup");
+    }
 
-        public get legendTitle(): JQuery {
-            return this.legendGroup.children(".legendTitle");
-        }
+    public get legendTitle(): JQuery {
+        return this.legendGroup.children(".legendTitle");
+    }
 
-        public get legendItemText(): JQuery {
-            return this.legendGroup
-                .children(".legendItem")
-                .children("text.legendText");
-        }
+    public get legendItemText(): JQuery {
+        return this.legendGroup
+            .children(".legendItem")
+            .children("text.legendText");
     }
 }

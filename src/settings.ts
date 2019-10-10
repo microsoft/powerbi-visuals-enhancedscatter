@@ -24,74 +24,75 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // powerbi.extensibility.utils.dataview
-    import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
+import { dataViewObjectsParser } from "powerbi-visuals-utils-dataviewutils";
+import DataViewObjectsParser = dataViewObjectsParser.DataViewObjectsParser;
 
-    // powerbi.extensibility.utils.chart.legend
-    import LegendPosition = powerbi.extensibility.utils.chart.legend.LegendPosition;
+import { legendPosition as LegendPosition } from "powerbi-visuals-utils-chartutils";
 
-    export class DataPointSettings {
-        public defaultColor: string = "#01B8AA";
-        public showAllDataPoints: boolean = false;
-        public strokeWidth: number = 1;
-    }
+export class DataPointSettings {
+    public defaultColor: string = "#01B8AA";
+    public showAllDataPoints: boolean = false;
+    public strokeWidth: number = 1;
+}
 
-    export class AxisSettings {
-        public show: boolean = true;
-        public start: number = undefined;
-        public end: number = undefined;
-        public labelDisplayUnits: number = 0;
-        public axisColor: string = "#777777";
-        public showAxisTitle: boolean = true;
-        public zeroLineColor: string = "#333";
-        public zeroLineStrokeWidth: number = 2;
-        public lineColor: string = "#777777";
-    }
+export class AxisSettings {
+    public show: boolean = true;
+    // tslint:disable-next-line
+    public start: number = undefined;
+    // tslint:disable-next-line
+    public end: number = undefined;
+    public labelDisplayUnits: number = 0;
+    public axisColor: string = "#777777";
+    public showAxisTitle: boolean = true;
+    public zeroLineColor: string = "#333";
+    public zeroLineStrokeWidth: number = 2;
+    public lineColor: string = "#777777";
+}
 
-    export class LegendSettings {
-        public show: boolean = true;
-        public position: string = LegendPosition[LegendPosition.Top];
-        public showTitle: boolean = true;
-        public titleText: string = undefined;
-        public labelColor: string = "#666666";
-        public fontSize: number = 9;
-    }
+export class LegendSettings {
+    public show: boolean = true;
+    public position: string = LegendPosition[LegendPosition.top];
+    public showTitle: boolean = true;
+    // tslint:disable-next-line
+    public titleText: string = undefined;
+    public labelColor: string = "#666666";
+    public fontSize: number = 9;
+}
 
-    export class CategoryLabelsSettings {
-        public show: boolean = false;
-        public color: string = "#777777";
-        public fontSize: number = 9;
-    }
+export class CategoryLabelsSettings {
+    public show: boolean = false;
+    public color: string = "#777777";
+    public fontSize: number = 9;
+}
 
-    export class FillPointSettings {
-        public show: boolean = false;
-        public isHidden: boolean = true;
-    }
+export class FillPointSettings {
+    public show: boolean = false;
+    public isHidden: boolean = true;
+}
 
-    export class BackdropSettings {
-        public show: boolean = false;
-        public url: string = undefined;
-    }
+export class BackdropSettings {
+    public show: boolean = false;
+    // tslint:disable-next-line
+    public url: string = undefined;
+}
 
-    export class CrosshairSettings {
-        public show: boolean = false;
-        public color: string = "#808080";
-    }
+export class CrosshairSettings {
+    public show: boolean = false;
+    public color: string = "#808080";
+}
 
-    export class OutlineSettings {
-        public show: boolean = false;
-    }
+export class OutlineSettings {
+    public show: boolean = false;
+}
 
-    export class Settings extends DataViewObjectsParser {
-        public dataPoint: DataPointSettings = new DataPointSettings();
-        public categoryAxis: AxisSettings = new AxisSettings();
-        public valueAxis: AxisSettings = new AxisSettings();
-        public legend: LegendSettings = new LegendSettings();
-        public categoryLabels: CategoryLabelsSettings = new CategoryLabelsSettings();
-        public fillPoint: FillPointSettings = new FillPointSettings();
-        public backdrop: BackdropSettings = new BackdropSettings();
-        public crosshair: CrosshairSettings = new CrosshairSettings();
-        public outline: OutlineSettings = new OutlineSettings();
-    }
+export class Settings extends DataViewObjectsParser {
+    public dataPoint: DataPointSettings = new DataPointSettings();
+    public categoryAxis: AxisSettings = new AxisSettings();
+    public valueAxis: AxisSettings = new AxisSettings();
+    public legend: LegendSettings = new LegendSettings();
+    public categoryLabels: CategoryLabelsSettings = new CategoryLabelsSettings();
+    public fillPoint: FillPointSettings = new FillPointSettings();
+    public backdrop: BackdropSettings = new BackdropSettings();
+    public crosshair: CrosshairSettings = new CrosshairSettings();
+    public outline: OutlineSettings = new OutlineSettings();
 }

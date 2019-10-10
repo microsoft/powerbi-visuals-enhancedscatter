@@ -23,73 +23,75 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+// d3
+import * as d3 from "d3";
+type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
 
-module powerbi.extensibility.visual {
-    // d3
-    import Selection = d3.Selection;
+// powerbi.extensibility.utils.interactivity
+import { interactivityBaseService as interactivityService, interactivityUtils } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityService.IInteractiveBehavior;
+import IInteractivityService = interactivityService.IInteractivityService;
+import ISelectionHandler = interactivityService.ISelectionHandler;
+import registerStandardSelectionHandler = interactivityUtils.registerStandardSelectionHandler;
+import BaseDataPoint = interactivityService.BaseDataPoint;
+import IBehaviorOptions = interactivityService.IBehaviorOptions;
 
-    // powerbi.extensibility.utils.interactivity
-    import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
-    import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-    import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-    import registerStandardSelectionHandler = powerbi.extensibility.utils.interactivity.interactivityUtils.registerStandardSelectionHandler;
+import { EnhancedScatterChartDataPoint } from "./dataInterfaces";
 
-    export interface BehaviorOptions {
-        clearCatcher: Selection<any>;
-        dataPointsSelection: Selection<EnhancedScatterChartDataPoint>;
-        interactivityService: IInteractivityService;
+export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
+    clearCatcher: Selection<any>;
+    dataPointsSelection: Selection<EnhancedScatterChartDataPoint>;
+    interactivityService: IInteractivityService<BaseDataPoint>;
+}
+
+export const DefaultOpacity: number = 0.85;
+export const DimmedOpacity: number = 0.4;
+
+export function getFillOpacity(
+    selected: boolean,
+    highlight: boolean,
+    hasSelection: boolean,
+    hasPartialHighlights: boolean
+): number {
+    if ((hasPartialHighlights && !highlight) || (hasSelection && !selected)) {
+        return DimmedOpacity;
     }
 
-    export const DefaultOpacity: number = 0.85;
-    export const DimmedOpacity: number = 0.4;
+    return DefaultOpacity;
+}
 
-    export function getFillOpacity(
-        selected: boolean,
-        highlight: boolean,
-        hasSelection: boolean,
-        hasPartialHighlights: boolean
-    ): number {
-        if ((hasPartialHighlights && !highlight) || (hasSelection && !selected)) {
-            return DimmedOpacity;
-        }
+export class VisualBehavior implements IInteractiveBehavior {
+    public options: BehaviorOptions;
 
-        return DefaultOpacity;
+    public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
+        this.options = options;
+
+        const {
+            dataPointsSelection,
+        } = options;
+
+        registerStandardSelectionHandler(dataPointsSelection, selectionHandler);
+
+        options.clearCatcher.on("click", () => {
+            selectionHandler.handleClearSelection();
+        });
     }
 
-    export class VisualBehavior implements IInteractiveBehavior {
-        public options: BehaviorOptions;
+    public renderSelection(hasSelection: boolean) {
+        const {
+            dataPointsSelection,
+            interactivityService,
+        } = this.options;
 
-        public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
-            this.options = options;
+        const hasHighlights: boolean = interactivityService.hasSelection();
 
-            const {
-                dataPointsSelection,
-            } = options;
-
-            registerStandardSelectionHandler(dataPointsSelection, selectionHandler);
-
-            options.clearCatcher.on("click", () => {
-                selectionHandler.handleClearSelection();
-            });
-        }
-
-        public renderSelection(hasSelection: boolean) {
-            const {
-                dataPointsSelection,
-                interactivityService,
-            } = this.options;
-
-            const hasHighlights: boolean = interactivityService.hasSelection();
-
-            dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
-                return getFillOpacity(
-                    dataPoint.selected,
-                    dataPoint.highlight,
-                    !dataPoint.highlight && hasSelection,
-                    !dataPoint.selected && hasHighlights
-                );
-            });
-        }
+        dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
+            return getFillOpacity(
+                dataPoint.selected,
+                dataPoint.highlight,
+                !dataPoint.highlight && hasSelection,
+                !dataPoint.selected && hasHighlights
+            );
+        });
     }
 }
