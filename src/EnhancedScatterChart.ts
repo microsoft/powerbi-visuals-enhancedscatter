@@ -543,6 +543,10 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     constructor(options: VisualConstructorOptions) {
+        if (window.location !== window.parent.location) {
+            require("core-js/stable");
+        }
+
         this.init(options);
     }
 
