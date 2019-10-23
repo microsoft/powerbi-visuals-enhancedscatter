@@ -24,12 +24,12 @@
  *  THE SOFTWARE.
  */
 
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
-import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
-import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewValueColumn = powerbi.DataViewValueColumn;
-import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
+import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
 
 // powerbi.extensibility.utils.formatting
 import { valueFormatter } from "powerbi-visuals-utils-formattingutils";

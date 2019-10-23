@@ -24,9 +24,9 @@
  *  THE SOFTWARE.
  */
 
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
-import DataViewCategorical = powerbi.DataViewCategorical;
+import DataViewCategorical = powerbiVisualsApi.DataViewCategorical;
 
 import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
 
