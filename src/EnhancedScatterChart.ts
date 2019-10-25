@@ -50,6 +50,7 @@ import DataViewValueColumns = powerbiVisualsApi.DataViewValueColumns;
 import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
 import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
 import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
+import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
 import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
 import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
 import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
@@ -533,12 +534,16 @@ export class EnhancedScatterChart implements IVisual {
             : value;
     }
 
-    private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number): number {
+    private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number, valueTypeDescriptor: ValueTypeDescriptor): number {
+        const columnValue = column.values[index];
+        const isDate = valueTypeDescriptor.dateTime;
+        const value = isDate ? new Date(<any>columnValue) : columnValue;
+
         return column
             && column.values
-            && !(column.values[index] === null)
-            && !isNaN(<number>column.values[index])
-            ? Number(column.values[index])
+            && !(columnValue === null)
+            && !isNaN(<number>value)
+            ? Number(value)
             : null;
     }
 
@@ -548,6 +553,7 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         this.init(options);
+        this.handleContextMenu();
     }
 
     public init(options: VisualConstructorOptions): void {
@@ -649,6 +655,19 @@ export class EnhancedScatterChart implements IVisual {
 
         this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
         this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
+    }
+
+    public handleContextMenu() {
+        this.svg.on('contextmenu', () => {
+            const mouseEvent: MouseEvent = getEvent();
+            const eventTarget: EventTarget = mouseEvent.target;
+            let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
+            this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
+                x: mouseEvent.clientX,
+                y: mouseEvent.clientY
+            });
+            mouseEvent.preventDefault();
+        });
     }
 
     private adjustMargins(): void {
@@ -1318,8 +1337,8 @@ export class EnhancedScatterChart implements IVisual {
                 let measures: { [propertyName: string]: DataViewValueColumn } = this.calculateMeasures(seriesValues, indicies, categories);
 
                 // TO BE CHANGED: need to update (refactor) these lines below.
-                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx);
-                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureY, categoryIdx);
+                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx, metadata.cols.x.type);
+                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureY, categoryIdx, metadata.cols.y.type);
                 const hasNullValue: boolean = (xVal == null) || (yVal == null);
 
                 if (hasNullValue) {
