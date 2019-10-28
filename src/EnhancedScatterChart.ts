@@ -536,7 +536,7 @@ export class EnhancedScatterChart implements IVisual {
 
     private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number, valueTypeDescriptor: ValueTypeDescriptor): number {
         const columnValue = column.values[index];
-        const isDate = valueTypeDescriptor.dateTime;
+        const isDate = valueTypeDescriptor && valueTypeDescriptor.dateTime;
         const value = isDate ? new Date(<any>columnValue) : columnValue;
 
         return column
