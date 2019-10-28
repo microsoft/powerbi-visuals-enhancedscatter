@@ -24,21 +24,21 @@
  *  THE SOFTWARE.
  */
 
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 import * as d3 from "d3";
-import * as _ from "lodash";
+import * as lodash from "lodash";
 import * as $ from "jquery";
 
 // d3
 type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
 
 // powerbi
-import DataView = powerbi.DataView;
-import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
+import DataView = powerbiVisualsApi.DataView;
+import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
 
 // powerbi.extensibility.visual
-import IColorPalette = powerbi.extensibility.IColorPalette;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
+import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
 
 // powerbi.extensibility.visual.test
@@ -47,8 +47,8 @@ import areColorsEqual = helpers.areColorsEqual;
 import getRandomUniqueHexColors = helpers.getRandomUniqueHexColors;
 import getSolidColorStructuralObject = helpers.getSolidColorStructuralObject;
 
-import { EnhancedScatterChartData } from "./visualData";
-import { EnhancedScatterChartBuilder } from "./visualBuilder";
+import { EnhancedScatterChartData } from "./EnhancedScatterChartData";
+import { EnhancedScatterChartBuilder } from "./EnhancedScatterChartBuilder";
 
 // powerbi.extensibility.utils.interactivity
 import { interactivityBaseService as interactivityService } from "powerbi-visuals-utils-interactivityutils";
@@ -67,9 +67,10 @@ describe("EnhancedScatterChart", () => {
     let visualBuilder: EnhancedScatterChartBuilder;
     let defaultDataViewBuilder: EnhancedScatterChartData;
     let previousCreateSelectionId: any;
-    let customMockISelectionIdBuilder = new MockISelectionIdBuilder();
+    let customMockISelectionIdBuilder: MockISelectionIdBuilder;
 
     beforeEach(() => {
+        customMockISelectionIdBuilder = new MockISelectionIdBuilder();
         let selectionIdIndex: number = 0;
         previousCreateSelectionId = createSelectionId;
         customMockISelectionIdBuilder.createSelectionId = () => {
@@ -148,7 +149,7 @@ describe("EnhancedScatterChart", () => {
             };
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                const labels: HTMLElement[] = visualBuilder.dataLabelsText.get() as any[];
+                const labels: HTMLElement[] = <any[]>visualBuilder.dataLabelsText.get();
 
                 labels.forEach((label: HTMLElement) => {
                     let jqueryLabel: JQuery = $(label),
@@ -183,7 +184,7 @@ describe("EnhancedScatterChart", () => {
             let rootElement: Selection<any>;
 
             beforeEach(() => {
-                rootElement = d3.select(visualBuilder.element.get(0) as any);
+                rootElement = d3.select(<any>visualBuilder.element.get(0));
             });
 
             it("arguments are null", () => {
@@ -195,7 +196,7 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("the first argument is null, the second argument is empty object", () => {
-                callAddElementToDOMAndResultShouldBeNull(null, {} as any);
+                callAddElementToDOMAndResultShouldBeNull(null, <any>{});
             });
 
             it("the first argument is <Element>, the second argument is null", () => {
@@ -284,7 +285,7 @@ describe("EnhancedScatterChart", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.xAxisTicks).toBeInDOM();
 
-                (dataView.metadata.objects as any).categoryAxis.show = false;
+                (<any>dataView.metadata.objects).categoryAxis.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.xAxisTicks).not.toBeInDOM();
@@ -315,8 +316,8 @@ describe("EnhancedScatterChart", () => {
                 const start: number = 500,
                     end: number = 700;
 
-                (dataView.metadata.objects as any).categoryAxis.start = start;
-                (dataView.metadata.objects as any).categoryAxis.end = end;
+                (<any>dataView.metadata.objects).categoryAxis.start = start;
+                (<any>dataView.metadata.objects).categoryAxis.end = end;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
@@ -327,21 +328,21 @@ describe("EnhancedScatterChart", () => {
             it("display Units", () => {
                 const displayUnits: number = 1000;
 
-                (dataView.metadata.objects as any).categoryAxis.labelDisplayUnits = displayUnits;
+                (<any>dataView.metadata.objects).categoryAxis.labelDisplayUnits = displayUnits;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.xAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(_.last(element.text())).toEqual("K");
+                    expect(lodash.last(element.text())).toEqual("K");
                 });
             });
 
             it("title", () => {
-                (dataView.metadata.objects as any).categoryAxis.showAxisTitle = true;
+                (<any>dataView.metadata.objects).categoryAxis.showAxisTitle = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.xAxisLabel).toBeInDOM();
 
-                (dataView.metadata.objects as any).categoryAxis.showAxisTitle = false;
+                (<any>dataView.metadata.objects).categoryAxis.showAxisTitle = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.xAxisLabel).not.toBeInDOM();
@@ -358,12 +359,12 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).valueAxis.show = true;
+                (<any>dataView.metadata.objects).valueAxis.show = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.yAxisTicks).toBeInDOM();
 
-                (dataView.metadata.objects as any).valueAxis.show = false;
+                (<any>dataView.metadata.objects).valueAxis.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.yAxisTicks).not.toBeInDOM();
@@ -394,8 +395,8 @@ describe("EnhancedScatterChart", () => {
                 const start: number = 50,
                     end: number = 500;
 
-                (dataView.metadata.objects as any).valueAxis.start = start;
-                (dataView.metadata.objects as any).valueAxis.end = end;
+                (<any>dataView.metadata.objects).valueAxis.start = start;
+                (<any>dataView.metadata.objects).valueAxis.end = end;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
@@ -409,21 +410,21 @@ describe("EnhancedScatterChart", () => {
             it("display Units", () => {
                 const displayUnits: number = 1000;
 
-                (dataView.metadata.objects as any).valueAxis.labelDisplayUnits = displayUnits;
+                (<any>dataView.metadata.objects).valueAxis.labelDisplayUnits = displayUnits;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.yAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(_.last(element.text())).toEqual("K");
+                    expect(lodash.last(element.text())).toEqual("K");
                 });
             });
 
             it("title", () => {
-                (dataView.metadata.objects as any).valueAxis.showAxisTitle = true;
+                (<any>dataView.metadata.objects).valueAxis.showAxisTitle = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.yAxisLabel).toBeInDOM();
 
-                (dataView.metadata.objects as any).valueAxis.showAxisTitle = false;
+                (<any>dataView.metadata.objects).valueAxis.showAxisTitle = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.yAxisLabel).not.toBeInDOM();
@@ -443,7 +444,7 @@ describe("EnhancedScatterChart", () => {
                 const fontSize: number = 22,
                     expectedFontSize: string = "29.3333px";
 
-                (dataView.metadata.objects as any).categoryLabels.fontSize = fontSize;
+                (<any>dataView.metadata.objects).categoryLabels.fontSize = fontSize;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
@@ -454,7 +455,7 @@ describe("EnhancedScatterChart", () => {
             it("color", () => {
                 let color: string = "#336699";
 
-                (dataView.metadata.objects as any).categoryLabels.color = getSolidColorStructuralObject(color);
+                (<any>dataView.metadata.objects).categoryLabels.color = getSolidColorStructuralObject(color);
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
@@ -463,12 +464,12 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).categoryLabels.show = true;
+                (<any>dataView.metadata.objects).categoryLabels.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 expect(visualBuilder.dataLabels).toBeInDOM();
 
-                (dataView.metadata.objects as any).categoryLabels.show = false;
+                (<any>dataView.metadata.objects).categoryLabels.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 expect(visualBuilder.dataLabels).not.toBeInDOM();
@@ -494,7 +495,7 @@ describe("EnhancedScatterChart", () => {
                     expect(element.css("fill")).not.toBe("rgba(0, 0, 0, 0)");
                 });
 
-                (dataView.metadata.objects as any).fillPoint.show = false;
+                (<any>dataView.metadata.objects).fillPoint.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
@@ -513,14 +514,14 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).backdrop.url = "https://test.url";
-                (dataView.metadata.objects as any).backdrop.show = true;
+                (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
+                (<any>dataView.metadata.objects).backdrop.show = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBeGreaterThan(0);
                 expect(parseFloat(visualBuilder.backdropImage.attr("width"))).toBeGreaterThan(0);
 
-                (dataView.metadata.objects as any).backdrop.show = false;
+                (<any>dataView.metadata.objects).backdrop.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBe(0);
@@ -530,7 +531,7 @@ describe("EnhancedScatterChart", () => {
             it("url", () => {
                 const url: string = "https://test.url";
 
-                (dataView.metadata.objects as any).backdrop.url = url;
+                (<any>dataView.metadata.objects).backdrop.url = url;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 expect(visualBuilder.backdropImage.attr("href")).toBe(url);
@@ -547,11 +548,11 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).crosshair.show = true;
+                (<any>dataView.metadata.objects).crosshair.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.crosshair.children("text")).toBeInDOM();
 
-                (dataView.metadata.objects as any).crosshair.show = false;
+                (<any>dataView.metadata.objects).crosshair.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.crosshair.children("text")).not.toBeInDOM();
             });
@@ -567,14 +568,14 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).outline.show = true;
+                (<any>dataView.metadata.objects).outline.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
                     assertColorsMatch(element.css("fill"), element.css("stroke"), true);
                 });
 
-                (dataView.metadata.objects as any).outline.show = false;
+                (<any>dataView.metadata.objects).outline.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
@@ -621,21 +622,21 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (dataView.metadata.objects as any).legend.show = true;
+                (<any>dataView.metadata.objects).legend.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.legendGroup.children()).toBeInDOM();
 
-                (dataView.metadata.objects as any).legend.show = false;
+                (<any>dataView.metadata.objects).legend.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.legendGroup.children()).not.toBeInDOM();
             });
 
             it("show title", () => {
-                (dataView.metadata.objects as any).legend.showTitle = true;
+                (<any>dataView.metadata.objects).legend.showTitle = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.legendTitle).toBeInDOM();
 
-                (dataView.metadata.objects as any).legend.showTitle = false;
+                (<any>dataView.metadata.objects).legend.showTitle = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 expect(visualBuilder.legendTitle).not.toBeInDOM();
             });
@@ -643,8 +644,8 @@ describe("EnhancedScatterChart", () => {
             it("title text", () => {
                 const titleText: string = "Power BI";
 
-                (dataView.metadata.objects as any).legend.showTitle = true;
-                (dataView.metadata.objects as any).legend.titleText = titleText;
+                (<any>dataView.metadata.objects).legend.showTitle = true;
+                (<any>dataView.metadata.objects).legend.titleText = titleText;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
@@ -658,8 +659,8 @@ describe("EnhancedScatterChart", () => {
             it("color", () => {
                 let color: string = "#555555";
 
-                (dataView.metadata.objects as any).legend.showTitle = true;
-                (dataView.metadata.objects as any).legend.labelColor = getSolidColorStructuralObject(color);
+                (<any>dataView.metadata.objects).legend.showTitle = true;
+                (<any>dataView.metadata.objects).legend.labelColor = getSolidColorStructuralObject(color);
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
@@ -674,8 +675,8 @@ describe("EnhancedScatterChart", () => {
                 const fontSize: number = 22,
                     expectedFontSize: string = "29.3333px";
 
-                (dataView.metadata.objects as any).legend.fontSize = fontSize;
-                (dataView.metadata.objects as any).legend.showTitle = true;
+                (<any>dataView.metadata.objects).legend.fontSize = fontSize;
+                (<any>dataView.metadata.objects).legend.showTitle = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
@@ -804,8 +805,9 @@ describe("EnhancedScatterChart", () => {
             let jsonData = getJSONFixture("capabilities.json");
 
             let objectsChecker: Function = (obj) => {
-                for (let property in obj) {
-                    let value: any = obj[property];
+                const objKeys = Object.keys(obj);
+                for (let key of objKeys) {
+                    let value: any = obj[key];
 
                     if (value.displayName) {
                         expect(value.displayNameKey).toBeDefined();

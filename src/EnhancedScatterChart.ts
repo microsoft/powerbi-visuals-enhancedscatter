@@ -30,46 +30,47 @@ import * as d3 from "d3";
 import * as _ from "lodash";
 import * as $ from "jquery";
 
-import powerbi from "powerbi-visuals-api";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
 // d3
 type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
 import ScaleLinear = d3.ScaleLinear;
 
 // powerbi
-import Fill = powerbi.Fill;
-import DataView = powerbi.DataView;
-import IViewport = powerbi.IViewport;
-import ValueRange = powerbi.ValueRange;
-import NumberRange = powerbi.NumberRange;
-import DataViewObject = powerbi.DataViewObject;
-import DataViewObjects = powerbi.DataViewObjects;
-import DataViewCategorical = powerbi.DataViewCategorical;
-import DataViewValueColumn = powerbi.DataViewValueColumn;
-import DataViewValueColumns = powerbi.DataViewValueColumns;
-import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
-import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
-import PrimitiveValue = powerbi.PrimitiveValue;
-import VisualObjectInstance = powerbi.VisualObjectInstance;
-import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
-import VisualObjectInstanceEnumeration = powerbi.VisualObjectInstanceEnumeration;
-import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
+import Fill = powerbiVisualsApi.Fill;
+import DataView = powerbiVisualsApi.DataView;
+import IViewport = powerbiVisualsApi.IViewport;
+import ValueRange = powerbiVisualsApi.ValueRange;
+import NumberRange = powerbiVisualsApi.NumberRange;
+import DataViewObject = powerbiVisualsApi.DataViewObject;
+import DataViewObjects = powerbiVisualsApi.DataViewObjects;
+import DataViewCategorical = powerbiVisualsApi.DataViewCategorical;
+import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
+import DataViewValueColumns = powerbiVisualsApi.DataViewValueColumns;
+import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
+import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
+import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
+import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
+import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
+import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
+import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
+import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
 
-import IColorPalette = powerbi.extensibility.IColorPalette;
-import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
-import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
-import IVisualEventService = powerbi.extensibility.IVisualEventService;
-import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
+import ISandboxExtendedColorPalette = powerbiVisualsApi.extensibility.ISandboxExtendedColorPalette;
+import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
+import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 
 // powerbi.visuals
-import ISelectionId = powerbi.visuals.ISelectionId;
-import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import ISelectionIdBuilder = powerbiVisualsApi.visuals.ISelectionIdBuilder;
 
-import IVisual = powerbi.extensibility.IVisual;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import IVisual = powerbiVisualsApi.extensibility.IVisual;
+import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.dataview
 import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
@@ -533,17 +534,26 @@ export class EnhancedScatterChart implements IVisual {
             : value;
     }
 
-    private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number): number {
+    private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number, valueTypeDescriptor: ValueTypeDescriptor): number {
+        const columnValue = column.values[index];
+        const isDate = valueTypeDescriptor && valueTypeDescriptor.dateTime;
+        const value = isDate ? new Date(<any>columnValue) : columnValue;
+
         return column
             && column.values
-            && !(column.values[index] === null)
-            && !isNaN(<number>column.values[index])
-            ? Number(column.values[index])
+            && !(columnValue === null)
+            && !isNaN(<number>value)
+            ? Number(value)
             : null;
     }
 
     constructor(options: VisualConstructorOptions) {
+        if (window.location !== window.parent.location) {
+            require("core-js/stable");
+        }
+
         this.init(options);
+        this.handleContextMenu();
     }
 
     public init(options: VisualConstructorOptions): void {
@@ -645,6 +655,19 @@ export class EnhancedScatterChart implements IVisual {
 
         this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
         this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
+    }
+
+    public handleContextMenu() {
+        this.svg.on('contextmenu', () => {
+            const mouseEvent: MouseEvent = getEvent();
+            const eventTarget: EventTarget = mouseEvent.target;
+            let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
+            this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
+                x: mouseEvent.clientX,
+                y: mouseEvent.clientY
+            });
+            mouseEvent.preventDefault();
+        });
     }
 
     private adjustMargins(): void {
@@ -1314,8 +1337,8 @@ export class EnhancedScatterChart implements IVisual {
                 let measures: { [propertyName: string]: DataViewValueColumn } = this.calculateMeasures(seriesValues, indicies, categories);
 
                 // TO BE CHANGED: need to update (refactor) these lines below.
-                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx);
-                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureY, categoryIdx);
+                const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx, metadata.cols.x.type);
+                const yVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureY, categoryIdx, metadata.cols.y.type);
                 const hasNullValue: boolean = (xVal == null) || (yVal == null);
 
                 if (hasNullValue) {

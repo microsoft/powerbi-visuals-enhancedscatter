@@ -24,11 +24,11 @@
  *  THE SOFTWARE.
  */
 
-import * as _ from "lodash";
+import * as lodash from "lodash";
 
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
 
 // powerbi.extensibility.visual
 import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
@@ -92,7 +92,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
     public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
 
     private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
-        return _.range(start.getFullYear(), stop.getFullYear(), yearStep)
+        return lodash.range(start.getFullYear(), stop.getFullYear(), yearStep)
             .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
     }
 
