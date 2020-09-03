@@ -1,3 +1,8 @@
+## 2.0.1
+* Backdrop URL field was restored
+* API 3.2.0
+* Packages updated
+
 ## 2.0.0
 * Webpack integration
 * Azure Pipelines integration

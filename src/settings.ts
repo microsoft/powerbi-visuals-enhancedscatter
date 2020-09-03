@@ -73,7 +73,7 @@ export class FillPointSettings {
 export class BackdropSettings {
     public show: boolean = false;
     // tslint:disable-next-line
-    public url: string = undefined;
+    public url: string = '';
 }
 
 export class CrosshairSettings {
