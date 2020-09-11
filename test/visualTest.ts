@@ -184,7 +184,7 @@ describe("EnhancedScatterChart", () => {
             let rootElement: Selection<any>;
 
             beforeEach(() => {
-                rootElement = d3.select(<any>visualBuilder.element.get(0));
+                rootElement = d3.select($(visualBuilder.element).get(0));
             });
 
             it("arguments are null", () => {

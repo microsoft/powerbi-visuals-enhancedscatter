@@ -47,7 +47,7 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get mainElement(): JQuery {
-        return this.element.find(".enhancedScatterChart");
+        return $(this.element).find(".enhancedScatterChart");
     }
 
     public get axisGraphicsContext(): JQuery {
@@ -124,7 +124,7 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get legendGroup(): JQuery {
-        return this.element
+        return $(this.element)
             .children(".legend")
             .children("#legendGroup");
     }

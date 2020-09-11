@@ -111,10 +111,9 @@ import IInteractivityService = interactivityService.IInteractivityService;
 import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 
 // powerbi.extensibility.utils.formatting
-import { textMeasurementService as tms, valueFormatter } from "powerbi-visuals-utils-formattingutils";
-import TextProperties = tms.TextProperties;
+import { textMeasurementService as tms, valueFormatter, textUtil } from "powerbi-visuals-utils-formattingutils";
 import IValueFormatter = valueFormatter.IValueFormatter;
-import textMeasurementService = tms.textMeasurementService;
+import textMeasurementService = tms;
 import svgEllipsis = textMeasurementService.svgEllipsis;
 import measureSvgTextWidth = textMeasurementService.measureSvgTextWidth;
 import measureSvgTextHeight = textMeasurementService.measureSvgTextHeight;
@@ -154,6 +153,16 @@ interface ShapeFunction {
 interface ShapeEntry {
     key: string;
     value: ShapeFunction;
+}
+
+interface TextProperties {
+    text?: string;
+    fontFamily: string;
+    fontSize: string;
+    fontWeight?: string;
+    fontStyle?: string;
+    fontVariant?: string;
+    whiteSpace?: string;
 }
 
 export class EnhancedScatterChart implements IVisual {
