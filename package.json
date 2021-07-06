@@ -28,11 +28,11 @@
   "homepage": "https://github.com/Microsoft/powerbi-visuals-enhancedscatter#readme",
   "dependencies": {
     "powerbi-models": "^1.4.0",
-    "powerbi-visuals-utils-chartutils": "2.5.0",
+    "powerbi-visuals-utils-chartutils": "2.6.0",
     "powerbi-visuals-utils-colorutils": "^2.3.0",
     "powerbi-visuals-utils-dataviewutils": "2.3.0",
     "powerbi-visuals-utils-formattingutils": "4.7.0",
-    "powerbi-visuals-utils-interactivityutils": "5.7.0",
+    "powerbi-visuals-utils-interactivityutils": "5.7.1",
     "powerbi-visuals-utils-tooltiputils": "2.4.0"
   },
   "devDependencies": {
