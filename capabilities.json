@@ -775,5 +775,14 @@
             }
         }
     },
-    "supportsMultiVisualSelection": true
+    "supportsMultiVisualSelection": true,
+    "tooltips": {
+        "supportedTypes": {
+            "default": true,
+            "canvas": true
+        },
+        "roles": [
+            "Tooltips"
+        ]
+    }
 }
