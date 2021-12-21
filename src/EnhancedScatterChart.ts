@@ -671,7 +671,7 @@ export class EnhancedScatterChart implements IVisual {
             const mouseEvent: MouseEvent = getEvent();
             const eventTarget: EventTarget = mouseEvent.target;
             let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
-            this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
+            this.selectionManager.showContextMenu(dataPoint ? dataPoint.identity : {}, {
                 x: mouseEvent.clientX,
                 y: mouseEvent.clientY
             });
