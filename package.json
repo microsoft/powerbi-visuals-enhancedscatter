@@ -63,7 +63,7 @@
     "less": "3.12.2",
     "lodash": "4.17.20",
     "powerbi-visuals-api": "3.2.0",
-    "powerbi-visuals-tools": "3.1.15",
+    "powerbi-visuals-tools": "3.4.3",
     "powerbi-visuals-utils-testutils": "^2.2.1",
     "puppeteer": "^5.2.1",
     "regenerator-runtime": "0.13.7",
