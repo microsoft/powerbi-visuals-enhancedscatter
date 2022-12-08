@@ -25,7 +25,7 @@
  */
 
 import powerbiVisualsApi from "powerbi-visuals-api";
-import * as lodash from "lodash";
+import lodashLast from "lodash.last";
 
 // d3
 import { Selection as d3Selection } from "d3-selection";
@@ -331,7 +331,7 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.xAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(lodash.last(element.text())).toEqual("K");
+                    expect(lodashLast(element.text())).toEqual("K");
                 });
             });
 
@@ -413,7 +413,7 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.yAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(lodash.last(element.text())).toEqual("K");
+                    expect(lodashLast(element.text())).toEqual("K");
                 });
             });
 

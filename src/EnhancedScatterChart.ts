@@ -26,7 +26,7 @@
 
 import "./../style/visual.less";
 
-import * as _ from "lodash";
+import lodashClone from "lodash.clone";
 
 import powerbiVisualsApi from "powerbi-visuals-api";
 
@@ -1882,7 +1882,7 @@ export class EnhancedScatterChart implements IVisual {
 
     private cloneDataPoints(dataPoints: EnhancedScatterChartDataPoint[]): EnhancedScatterChartDataPoint[] {
         return dataPoints.map((dataPoint: EnhancedScatterChartDataPoint) => {
-            return _.clone(dataPoint);
+            return lodashClone(dataPoint);
         });
     }
 

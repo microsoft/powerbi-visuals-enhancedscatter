@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 
-import * as lodash from "lodash";
+import lodashRange from "lodash.range";
 
 import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
@@ -92,7 +92,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
     public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
 
     private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
-        return lodash.range(start.getFullYear(), stop.getFullYear(), yearStep)
+        return lodashRange(start.getFullYear(), stop.getFullYear(), yearStep)
             .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
     }
 
