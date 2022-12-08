@@ -26,15 +26,19 @@
 
 import "./../style/visual.less";
 
-import * as d3 from "d3";
 import * as _ from "lodash";
-import * as $ from "jquery";
 
 import powerbiVisualsApi from "powerbi-visuals-api";
 
 // d3
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
-import ScaleLinear = d3.ScaleLinear;
+import { BaseType as d3BaseType, Selection as d3Selection, select as d3Select } from "d3-selection";
+import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
+import { ScaleLinear as d3ScaleLiear } from "d3-scale";
+import { rgb as d3Rgb } from "d3-color";
+import { map as d3Map } from "d3-map";
+import { max as d3Max, min as d3Min } from "d3-array";
+
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
 import Fill = powerbiVisualsApi.Fill;
@@ -439,7 +443,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private static getCustomSymbolType(shape: any): ShapeFunction {
-        const customSymbolTypes = d3.map<ShapeFunction>({
+        const customSymbolTypes = d3Map<ShapeFunction>({
             "circle": (size: number) => {
                 const r: number = Math.sqrt(size / Math.PI);
 
@@ -589,7 +593,7 @@ export class EnhancedScatterChart implements IVisual {
 
         this.adjustMargins();
 
-        this.svg = d3.select(this.element)
+        this.svg = d3Select(this.element)
             .append("svg")
             .classed(EnhancedScatterChart.ClassName, true);
 
@@ -670,7 +674,7 @@ export class EnhancedScatterChart implements IVisual {
         this.svg.on('contextmenu', () => {
             const mouseEvent: MouseEvent = getEvent();
             const eventTarget: EventTarget = mouseEvent.target;
-            let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
+            let dataPoint: any = d3Select(<d3BaseType>eventTarget).datum();
             this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
                 x: mouseEvent.clientX,
                 y: mouseEvent.clientY
@@ -1357,7 +1361,7 @@ export class EnhancedScatterChart implements IVisual {
                 const { size, colorFill, shapeSymbolType, image, rotation, backdrop, xStart, xEnd, yStart, yEnd } =
                     this.getValuesFromDataViewValueColumnById(measures, categoryIdx);
                 const parsedColorFill: string = colorFill
-                    ? colorHelper.getHighContrastColor("foreground", d3.rgb(colorFill).toString())
+                    ? colorHelper.getHighContrastColor("foreground", d3Rgb(colorFill).toString())
                     : undefined;
 
                 let color: string;
@@ -1401,7 +1405,7 @@ export class EnhancedScatterChart implements IVisual {
                     seriesData
                 );
                 const currentFill: string = parsedColorFill || color;
-                const stroke: string = settings.outline.show ? d3.rgb(currentFill).darker().toString() : currentFill;
+                const stroke: string = settings.outline.show ? d3Rgb(currentFill).darker().toString() : currentFill;
                 const fill: string = settings.fillPoint.show || settings.fillPoint.isHidden ? currentFill : null;
 
                 dataPoints.push({
@@ -2229,8 +2233,8 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         let crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
-            xScale = <ScaleLinear<number, number>>this.xAxisProperties.scale,
-            yScale = <ScaleLinear<number, number>>this.yAxisProperties.scale,
+            xScale = <d3ScaleLiear<number, number>>this.xAxisProperties.scale,
+            yScale = <d3ScaleLiear<number, number>>this.yAxisProperties.scale,
             xFormated: number,
             yFormated: number;
 
@@ -2328,9 +2332,9 @@ export class EnhancedScatterChart implements IVisual {
             const axisProperties = xAxis;
             const scale: any = axisProperties.scale;
             const ticksCount: number = axisProperties.values.length;
-            const format: any = (domainValue: d3.AxisDomain, value: any) => axisProperties.values[value];
+            const format: any = (domainValue: d3AxisDomain, value: any) => axisProperties.values[value];
 
-            let newAxis = d3.axisBottom(scale);
+            let newAxis = d3AxisBottom(scale);
             xAxis.axis = newAxis;
             this.xAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
@@ -2389,9 +2393,9 @@ export class EnhancedScatterChart implements IVisual {
         if (this.shouldRenderAxis(yAxis, yAxisSettings)) {
             const scale: any = yAxis.scale;
             const ticksCount: number = yAxis.values.length;
-            const format: any = (domainValue: d3.AxisDomain, value: any) => yAxis.values[value];
+            const format: any = (domainValue: d3AxisDomain, value: any) => yAxis.values[value];
 
-            let newAxis = this.yAxisOrientation == yAxisPosition.left ? d3.axisLeft(scale) : d3.axisRight(scale);
+            let newAxis = this.yAxisOrientation == yAxisPosition.left ? d3AxisLeft(scale) : d3AxisRight(scale);
             yAxis.axis = newAxis;
             this.yAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
@@ -2538,7 +2542,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.x)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const textSelection: Selection<any> = d3.select(this);
+                        const textSelection: Selection<any> = d3Select(this);
 
                         textSelection
                             .attr("class", EnhancedScatterChart.XAxisLabelSelector.className)
@@ -2565,7 +2569,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3.select(this);
+                        const text: Selection<any> = d3Select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2589,7 +2593,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y2)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3.select(this);
+                        const text: Selection<any> = d3Select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2711,7 +2715,7 @@ export class EnhancedScatterChart implements IVisual {
                     sizeRange,
                     thisVisual.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                d3.select(this)
+                d3Select(this)
                     .attr("width", bubbleRadius)
                     .attr("height", bubbleRadius);
             })
@@ -2905,10 +2909,10 @@ export class EnhancedScatterChart implements IVisual {
             maxX: number = EnhancedScatterChart.MaxAxisValue;
 
         if (dataPoints.length > 0) {
-            minY = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
-            maxY = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
-            minX = d3.min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
-            maxX = d3.max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
+            minY = d3Min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
+            maxY = d3Max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.y);
+            minX = d3Min<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
+            maxX = d3Max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
         }
 
         const xDomain: number[] = [minX, maxX];

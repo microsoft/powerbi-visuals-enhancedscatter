@@ -25,12 +25,11 @@
  */
 
 import powerbiVisualsApi from "powerbi-visuals-api";
-import * as d3 from "d3";
 import * as lodash from "lodash";
-import * as $ from "jquery";
 
 // d3
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+import { Selection as d3Selection } from "d3-selection";
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
 import DataView = powerbiVisualsApi.DataView;
@@ -184,7 +183,7 @@ describe("EnhancedScatterChart", () => {
             let rootElement: Selection<any>;
 
             beforeEach(() => {
-                rootElement = d3.select($(visualBuilder.element).get(0));
+                rootElement = d3Select($(visualBuilder.element).get(0));
             });
 
             it("arguments are null", () => {
