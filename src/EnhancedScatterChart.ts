@@ -35,7 +35,7 @@ import { BaseType as d3BaseType, Selection as d3Selection, select as d3Select } 
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
 import { rgb as d3Rgb } from "d3-color";
-import { map as d3Map } from "d3-map";
+import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
 
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
