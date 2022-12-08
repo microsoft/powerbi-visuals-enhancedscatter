@@ -47,8 +47,7 @@ module.exports = (config) => {
         frameworks: ["jasmine"],
         reporters: [
             "progress",
-            "junit",
-            "coverage-istanbul"
+            "junit"
         ],
         junitReporter: {
             outputDir: path.join(__dirname, coverageFolder),
@@ -64,7 +63,6 @@ module.exports = (config) => {
             "karma-sourcemap-loader",
             "karma-chrome-launcher",
             "karma-junit-reporter",
-            "karma-coverage-istanbul-reporter"
         ],
         files: [
             "node_modules/jquery/dist/jquery.min.js",
@@ -87,18 +85,6 @@ module.exports = (config) => {
         },
         typescriptPreprocessor: {
             options: tsconfig.compilerOptions
-        },
-        coverageIstanbulReporter: {
-            reports: ["html", "lcovonly", "text-summary", "cobertura"],
-            dir: path.join(__dirname, coverageFolder),
-            'report-config': {
-                html: {
-                    subdir: 'html-report'
-                }
-            },
-            combineBrowserReports: true,
-            fixWebpackSourcePaths: true,
-            verbose: false
         },
         coverageReporter: {
             dir: path.join(__dirname, coverageFolder),
