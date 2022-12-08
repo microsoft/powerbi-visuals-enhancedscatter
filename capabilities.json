@@ -775,5 +775,6 @@
             }
         }
     },
-    "supportsMultiVisualSelection": true
+    "supportsMultiVisualSelection": true,
+    "privileges": []
 }
