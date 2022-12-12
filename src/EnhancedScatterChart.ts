@@ -69,7 +69,6 @@ import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 
 // powerbi.visuals
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
-import ISelectionIdBuilder = powerbiVisualsApi.visuals.ISelectionIdBuilder;
 
 import IVisual = powerbiVisualsApi.extensibility.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
@@ -408,7 +407,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private set margin(value: IMargin) {
-        this._margin = $.extend({}, value);
+        this._margin = {...{}, ...value};
         this._viewportIn = EnhancedScatterChart.substractMargin(this.viewport, this.margin);
     }
 
@@ -418,7 +417,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private set viewport(value: IViewport) {
-        this._viewport = $.extend({}, value);
+        this._viewport = {...{}, ...value};
         this._viewportIn = EnhancedScatterChart.substractMargin(this.viewport, this.margin);
     }
 
@@ -561,10 +560,6 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     constructor(options: VisualConstructorOptions) {
-        if (window.location !== window.parent.location) {
-            require("core-js/stable");
-        }
-
         this.init(options);
         this.handleContextMenu();
     }
@@ -685,7 +680,7 @@ export class EnhancedScatterChart implements IVisual {
 
     private adjustMargins(): void {
         // Adjust margins if ticks are not going to be shown on either axis
-        const xAxis: JQuery = $(this.element).find(EnhancedScatterChart.XAxisSelector.selectorName);
+        const xAxis: HTMLElement = this.element.querySelector(EnhancedScatterChart.XAxisSelector.selectorName);
 
         if (axis.getRecommendedNumberOfTicksForXAxis(this.viewportIn.width) === EnhancedScatterChart.MinAmountOfTicks
             && axis.getRecommendedNumberOfTicksForYAxis(this.viewportIn.height) === EnhancedScatterChart.MinAmountOfTicks
@@ -698,9 +693,9 @@ export class EnhancedScatterChart implements IVisual {
                 left: EnhancedScatterChart.DefaultMarginValue
             };
 
-            xAxis.hide();
+            xAxis.hidden = true;
         } else {
-            xAxis.show();
+            xAxis.hidden = false;
         }
     }
 
