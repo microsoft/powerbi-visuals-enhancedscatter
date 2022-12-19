@@ -666,15 +666,13 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public handleContextMenu() {
-        this.svg.on('contextmenu', () => {
-            const mouseEvent: MouseEvent = getEvent();
-            const eventTarget: EventTarget = mouseEvent.target;
-            let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
-            this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
-                x: mouseEvent.clientX,
-                y: mouseEvent.clientY
+        this.svg.on('contextmenu', (event) => {
+            let dataPoint: any = d3.select(event.target).datum();
+            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.selectionId : {}, {
+                x: event.clientX,
+                y: event.clientY
             });
-            mouseEvent.preventDefault();
+            event.preventDefault();
         });
     }
 
@@ -2776,10 +2774,6 @@ export class EnhancedScatterChart implements IVisual {
         sizeRange: NumberRange,
         duration: number
     ): Selection<EnhancedScatterChartDataPoint> {
-
-        const xScale: any = this.xAxisProperties.scale,
-            yScale: any = this.yAxisProperties.scale,
-            viewport = this.viewport;
 
         let markers: Selection<EnhancedScatterChartDataPoint>;
         let markersMerged: Selection<EnhancedScatterChartDataPoint>;
