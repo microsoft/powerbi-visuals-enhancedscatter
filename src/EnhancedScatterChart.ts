@@ -89,7 +89,7 @@ import createClassAndSelector = SVGUtil.CssConstants.createClassAndSelector;
 import manipulation = SVGUtil.manipulation;
 
 // powerbi.extensibility.utils.chart
-import { legend as legendModule, legendInterfaces, OpacityLegendBehavior, legendBehavior, axisInterfaces, axis, dataLabelInterfaces, dataLabelUtils, legendData } from "powerbi-visuals-utils-chartutils";
+import { legend as legendModule, legendInterfaces, OpacityLegendBehavior, legendBehavior, axisInterfaces, axis, dataLabelInterfaces, dataLabelUtils } from "powerbi-visuals-utils-chartutils";
 import ILegend = legendInterfaces.ILegend;
 import LegendPosition = legendInterfaces.LegendPosition;
 import LegendData = legendInterfaces.LegendData;
@@ -114,7 +114,7 @@ import IInteractivityService = interactivityService.IInteractivityService;
 import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 
 // powerbi.extensibility.utils.formatting
-import { textMeasurementService as tms, valueFormatter, textUtil } from "powerbi-visuals-utils-formattingutils";
+import { textMeasurementService as tms, valueFormatter } from "powerbi-visuals-utils-formattingutils";
 import IValueFormatter = valueFormatter.IValueFormatter;
 import textMeasurementService = tms;
 import svgEllipsis = textMeasurementService.svgEllipsis;
@@ -127,7 +127,7 @@ import getTailoredTextOrDefault = textMeasurementService.getTailoredTextOrDefaul
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 
 // powerbi.extensibility.utils.tooltip
-import { createTooltipServiceWrapper, TooltipEventArgs, ITooltipServiceWrapper, TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
+import { createTooltipServiceWrapper, ITooltipServiceWrapper, TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 
 import { BehaviorOptions, VisualBehavior } from "./behavior";
 import { AxisSettings, DataPointSettings, LegendSettings, CategoryLabelsSettings, Settings } from "./settings";
@@ -554,9 +554,9 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private static getDefinedNumberByCategoryId(column: DataViewValueColumn, index: number, valueTypeDescriptor: ValueTypeDescriptor): number {
-        const columnValue = column.values[index];
-        const isDate = valueTypeDescriptor && valueTypeDescriptor.dateTime;
-        const value = isDate ? new Date(<any>columnValue) : columnValue;
+        const columnValue: PrimitiveValue = column.values[index];
+        const isDate: boolean = valueTypeDescriptor && valueTypeDescriptor.dateTime;
+        const value: PrimitiveValue = isDate ? new Date(<any>columnValue) : columnValue;
 
         return column
             && column.values
@@ -682,7 +682,7 @@ export class EnhancedScatterChart implements IVisual {
 
     public handleContextMenu() {
         this.svg.on('contextmenu', (event) => {
-            let dataPoint: any = d3.select(event.target).datum();
+            const dataPoint: any = d3.select(event.target).datum();
             this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.selectionId : {}, {
                 x: event.clientX,
                 y: event.clientY
@@ -726,8 +726,9 @@ export class EnhancedScatterChart implements IVisual {
 
         let categoryValues: any[],
             categoryFormatter: IValueFormatter,
-            categoryObjects: DataViewObjects[],
-            dataViewCategorical: DataViewCategorical = dataView.categorical,
+            categoryObjects: DataViewObjects[];
+
+        const dataViewCategorical: DataViewCategorical = dataView.categorical,
             categories: DataViewCategoryColumn[] = dataViewCategorical.categories || [],
             dataValues: DataViewValueColumns = dataViewCategorical.values,
             hasDynamicSeries: boolean = !!dataValues.source,
@@ -793,9 +794,9 @@ export class EnhancedScatterChart implements IVisual {
             interactivityService.applySelectionStateToData(dataPoints);
         }
 
-        const legendParseResult = this.parseLegend(visualHost, dataValues, dvSource, categories, categoryIndex, colorHelper, hasDynamicSeries);
-        let legendDataPoints: LegendDataPoint[] = legendParseResult.legendDataPoints;
-        let legendTitle: string = legendParseResult.legendTitle;
+        const legendParseResult = this.parseLegend(visualHost, dataValues, dvSource, categories, categoryIndex, colorHelper, hasDynamicSeries),
+              legendDataPoints: LegendDataPoint[] = legendParseResult.legendDataPoints,
+              legendTitle: string = legendParseResult.legendTitle;
 
         this.changeSettingsAndMetadata(dataPoints, scatterMetadata, settings, legendTitle);
         const hasGradientRole: boolean = gradientUtils.hasGradientRole(dataViewCategorical);
@@ -1027,7 +1028,7 @@ export class EnhancedScatterChart implements IVisual {
         categories: DataViewCategoryColumn[],
         grouped: DataViewValueColumnGroup[],
     ): EnhancedScatterChartMeasureMetadata {
-        let categoryIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnCategory),
+        const categoryIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnCategory),
             colorFillIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnColorFill),
             imageIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnImage),
             backdropIndex: number = getCategoryIndexOfRole(categories, EnhancedScatterChart.ColumnBackdrop),
@@ -1039,8 +1040,9 @@ export class EnhancedScatterChart implements IVisual {
             xStartIndex: number = getMeasureIndexOfRole(grouped, EnhancedScatterChart.ColumnXStart),
             xEndIndex: number = getMeasureIndexOfRole(grouped, EnhancedScatterChart.ColumnXEnd),
             yStartIndex: number = getMeasureIndexOfRole(grouped, EnhancedScatterChart.ColumnYStart),
-            yEndIndex: number = getMeasureIndexOfRole(grouped, EnhancedScatterChart.ColumnYEnd),
-            xCol: DataViewMetadataColumn,
+            yEndIndex: number = getMeasureIndexOfRole(grouped, EnhancedScatterChart.ColumnYEnd);
+
+        let xCol: DataViewMetadataColumn,
             yCol: DataViewMetadataColumn,
             sizeCol: DataViewMetadataColumn,
             xAxisLabel: string = EnhancedScatterChart.EmptyString,
@@ -1332,7 +1334,7 @@ export class EnhancedScatterChart implements IVisual {
             for (let seriesIdx: number = 0, len: number = grouped.length; seriesIdx < len; seriesIdx++) {
                 const grouping: DataViewValueColumnGroup = grouped[seriesIdx];
                 const seriesValues: DataViewValueColumn[] = grouping.values;
-                let measures: { [propertyName: string]: DataViewValueColumn } = this.calculateMeasures(seriesValues, indicies, categories);
+                const measures: { [propertyName: string]: DataViewValueColumn } = this.calculateMeasures(seriesValues, indicies, categories);
 
                 // TO BE CHANGED: need to update (refactor) these lines below.
                 const xVal: PrimitiveValue = EnhancedScatterChart.getDefinedNumberByCategoryId(measures.measureX, categoryIdx, metadata.cols.x.type);
@@ -1361,7 +1363,7 @@ export class EnhancedScatterChart implements IVisual {
                     color = colorHelper.getColorForMeasure(categoryObjects && categoryObjects[categoryIdx], measureSource, "foreground");
                 }
 
-                let category: DataViewCategoryColumn = categories && categories.length > EnhancedScatterChart.MinAmountOfCategories
+                const category: DataViewCategoryColumn = categories && categories.length > EnhancedScatterChart.MinAmountOfCategories
                     ? categories[indicies.category]
                     : null;
                 const identity: ISelectionId = visualHost.createSelectionIdBuilder()
@@ -1543,8 +1545,10 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private adjustViewportByBackdrop(): void {
-        const img: HTMLImageElement = new Image(),
-            that: EnhancedScatterChart = this;
+        const img: HTMLImageElement = new Image();
+
+        // eslint-disable-next-line
+        const that: EnhancedScatterChart = this;
 
         img.src = this.data.settings.backdrop.url;
         img.onload = function () {
@@ -1711,12 +1715,9 @@ export class EnhancedScatterChart implements IVisual {
 
             if (labels) {
                 labels.attr("transform", (d: EnhancedScatterChartDataPoint) => {
-                    let size: ISize = <ISize>d.size,
-                        dx: number,
-                        dy: number;
-
-                    dx = size.width / EnhancedScatterChart.DataLabelXOffset;
-                    dy = size.height / EnhancedScatterChart.DataLabelYOffset;
+                    const size: ISize = <ISize>d.size,
+                        dx: number = size.width / EnhancedScatterChart.DataLabelXOffset,
+                        dy: number = size.height / EnhancedScatterChart.DataLabelYOffset;
 
                     return manipulation.translate(dx, dy);
                 });
@@ -1891,7 +1892,7 @@ export class EnhancedScatterChart implements IVisual {
                     return EnhancedScatterChart.getDefinedNumberValue(xScale(dataPoint.x));
                 },
                 y: (dataPoint: EnhancedScatterChartDataPoint) => {
-                    const margin = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport)
+                    const margin: number = EnhancedScatterChart.getBubbleRadius(dataPoint.radius, sizeRange, viewport)
                         + EnhancedScatterChart.LabelMargin;
 
                     return yScale(dataPoint.y) - margin;
@@ -1915,8 +1916,9 @@ export class EnhancedScatterChart implements IVisual {
     ): number {
 
         let actualSizeDataRange: EnhancedScatterDataRange = null,
-            bubblePixelAreaSizeRange: EnhancedScatterDataRange = null,
-            measureSize: DataViewValueColumn = radiusData.sizeMeasure;
+            bubblePixelAreaSizeRange: EnhancedScatterDataRange = null;
+
+        const measureSize: DataViewValueColumn = radiusData.sizeMeasure;
 
         if (!measureSize) {
             return EnhancedScatterChart.BubbleRadius;
@@ -1926,7 +1928,7 @@ export class EnhancedScatterChart implements IVisual {
             ? sizeRange.min
             : EnhancedScatterChart.DefaultBubbleRadius;
 
-        const maxSize = sizeRange.max
+        const maxSize: number = sizeRange.max
             ? sizeRange.max
             : EnhancedScatterChart.DefaultBubbleRadius;
 
@@ -1974,7 +1976,7 @@ export class EnhancedScatterChart implements IVisual {
             ratio = (minSize * minSize) / EnhancedScatterChart.AreaOf300By300Chart;
         }
 
-        let minRange: number = Math.round(minSizeRange * ratio),
+        const minRange: number = Math.round(minSizeRange * ratio),
             maxRange: number = Math.round(maxSizeRange * ratio);
 
         return {
@@ -2165,13 +2167,14 @@ export class EnhancedScatterChart implements IVisual {
         this.axisGraphicsContextScrollable
             .on("mousemove", () => {
                 const event: MouseEvent = <MouseEvent>getEvent();
-                let currentTarget = <SVGAElement>event.currentTarget,
+                const currentTarget = <SVGAElement>event.currentTarget,
                     svgNode: SVGElement = currentTarget.viewportElement,
                     scaledRect: ClientRect = svgNode.getBoundingClientRect(),
                     domRect: SVGRect = (<any>svgNode).getBBox(),
                     ratioX: number = scaledRect.width / domRect.width,
-                    ratioY: number = scaledRect.height / domRect.height,
-                    x: number = event.pageX,
+                    ratioY: number = scaledRect.height / domRect.height;
+
+                let x: number = event.pageX,
                     y: number = event.pageY;
 
                 if (domRect.width > EnhancedScatterChart.MinViewport.width
@@ -2215,11 +2218,9 @@ export class EnhancedScatterChart implements IVisual {
             return;
         }
 
-        let crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
+        const crosshairTextMargin: number = EnhancedScatterChart.CrosshairTextMargin,
             xScale = <d3ScaleLiear<number, number>>this.xAxisProperties.scale,
-            yScale = <d3ScaleLiear<number, number>>this.yAxisProperties.scale,
-            xFormated: number,
-            yFormated: number;
+            yScale = <d3ScaleLiear<number, number>>this.yAxisProperties.scale;
 
         this.crosshairHorizontalLineSelection
             .attr("x1", EnhancedScatterChart.CrosshairStartPosition)
@@ -2233,10 +2234,10 @@ export class EnhancedScatterChart implements IVisual {
             .attr("x2", x)
             .attr("y2", this.viewportIn.height);
 
-        xFormated = Math.round(xScale.invert(x) * EnhancedScatterChart.CrosshairScaleFactor)
+        const xFormated: number = Math.round(xScale.invert(x) * EnhancedScatterChart.CrosshairScaleFactor)
             / EnhancedScatterChart.CrosshairScaleFactor;
 
-        yFormated = Math.round(yScale.invert(y) * EnhancedScatterChart.CrosshairScaleFactor)
+        const yFormated: number = Math.round(yScale.invert(y) * EnhancedScatterChart.CrosshairScaleFactor)
             / EnhancedScatterChart.CrosshairScaleFactor;
 
         this.crosshairTextSelection
@@ -2257,25 +2258,21 @@ export class EnhancedScatterChart implements IVisual {
             return null;
         }
 
-        let elementSelection: Selection<any>,
-            elementUpdateSelection: Selection<any>;
-
-        elementSelection = rootElement.selectAll(properties.selector);
-
-        elementUpdateSelection = elementSelection.data(properties.data || [[]]);
+        const elementSelection: Selection<any> = rootElement.selectAll(properties.selector),
+                elementUpdateSelection: Selection<any> = elementSelection.data(properties.data || [[]]);
 
         const elementUpdateSelectionMerged = elementUpdateSelection
             .enter()
             .append(properties.name)
             .merge(elementUpdateSelection);
 
-        const propertiesAttributes = properties.attributes ? Object.keys(properties.attributes) : [];
-        for (let propKey of propertiesAttributes) {
+        const propertiesAttributes: string[] = properties.attributes ? Object.keys(properties.attributes) : [];
+        for (const propKey of propertiesAttributes) {
             elementUpdateSelectionMerged.attr(propKey, properties.attributes[propKey]);
         }
 
         const propertiesStyles = properties.styles ? Object.keys(properties.styles) : [];
-        for (let propKey of propertiesStyles) {
+        for (const propKey of propertiesStyles) {
             elementUpdateSelectionMerged.attr(propKey, properties.styles[propKey]);
         }
 
@@ -2317,7 +2314,7 @@ export class EnhancedScatterChart implements IVisual {
             const ticksCount: number = axisProperties.values.length;
             const format: any = (domainValue: d3AxisDomain, value: any) => axisProperties.values[value];
 
-            let newAxis = d3AxisBottom(scale);
+            const newAxis = d3AxisBottom(scale);
             xAxis.axis = newAxis;
             this.xAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
@@ -2378,7 +2375,7 @@ export class EnhancedScatterChart implements IVisual {
             const ticksCount: number = yAxis.values.length;
             const format: any = (domainValue: d3AxisDomain, value: any) => yAxis.values[value];
 
-            let newAxis = this.yAxisOrientation == yAxisPosition.left ? d3AxisLeft(scale) : d3AxisRight(scale);
+            const newAxis = this.yAxisOrientation == yAxisPosition.left ? d3AxisLeft(scale) : d3AxisRight(scale);
             yAxis.axis = newAxis;
             this.yAxisGraphicsContext.call(newAxis.tickArguments([ticksCount]).tickFormat(format));
 
@@ -2675,7 +2672,9 @@ export class EnhancedScatterChart implements IVisual {
             .classed(EnhancedScatterChart.ImageSelector.className, true)
             .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
 
+        // eslint-disable-next-line
         const thisVisual = this;
+
         markersMerged
             .attr("xlink:href", (dataPoint: EnhancedScatterChartDataPoint) => {
                 if (dataPoint.svgurl !== undefined
@@ -2790,15 +2789,17 @@ export class EnhancedScatterChart implements IVisual {
         duration: number
     ): Selection<EnhancedScatterChartDataPoint> {
 
-        let markers: Selection<EnhancedScatterChartDataPoint>;
-        let markersMerged: Selection<EnhancedScatterChartDataPoint>;
-        let markersChanged = this.data.useShape ? this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration) :
-            this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
 
-        markers = markersChanged.markers;
-        markersMerged = markersChanged.markersMerged;
+        let markers: Selection<EnhancedScatterChartDataPoint>,
+            markersMerged: Selection<EnhancedScatterChartDataPoint>;
 
-        markers
+        const markersChanged = this.data.useShape ? this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration) :
+                this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
+
+        const newMarkers: Selection<EnhancedScatterChartDataPoint> = markersChanged.markers,
+            newMarkersMerged: Selection<EnhancedScatterChartDataPoint> = markersChanged.markersMerged;
+
+        newMarkers
             .exit()
             .remove();
 
@@ -2806,7 +2807,7 @@ export class EnhancedScatterChart implements IVisual {
             return (<ISelectionId>dataPoint.identity).getKey();
         });
 
-        return markersMerged;
+        return newMarkersMerged;
     }
 
     public static GET_BUBBLE_OPACITY(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
