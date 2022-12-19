@@ -31,14 +31,14 @@ import lodashClone from "lodash.clone";
 import powerbiVisualsApi from "powerbi-visuals-api";
 
 // d3
-import { BaseType as d3BaseType, Selection as d3Selection, select as d3Select } from "d3-selection";
+import * as d3 from "d3";
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
 import { rgb as d3Rgb } from "d3-color";
 import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
 
-type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
+type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
 
 // powerbi
 import Fill = powerbiVisualsApi.Fill;
@@ -586,9 +586,7 @@ export class EnhancedScatterChart implements IVisual {
 
         this.yAxisOrientation = yAxisPosition.left;
 
-        this.adjustMargins();
-
-        this.svg = d3Select(this.element)
+        this.svg = d3.select(this.element)
             .append("svg")
             .classed(EnhancedScatterChart.ClassName, true);
 
@@ -663,13 +661,15 @@ export class EnhancedScatterChart implements IVisual {
 
         this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
         this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
+
+        this.adjustMargins();
     }
 
     public handleContextMenu() {
         this.svg.on('contextmenu', () => {
             const mouseEvent: MouseEvent = getEvent();
             const eventTarget: EventTarget = mouseEvent.target;
-            let dataPoint: any = d3Select(<d3BaseType>eventTarget).datum();
+            let dataPoint: any = d3.select(<d3.BaseType>eventTarget).datum();
             this.selectionManager.showContextMenu(dataPoint ? dataPoint.selectionId : {}, {
                 x: mouseEvent.clientX,
                 y: mouseEvent.clientY
@@ -680,7 +680,7 @@ export class EnhancedScatterChart implements IVisual {
 
     private adjustMargins(): void {
         // Adjust margins if ticks are not going to be shown on either axis
-        const xAxis: HTMLElement = this.element.querySelector(EnhancedScatterChart.XAxisSelector.selectorName);
+        const xAxis: HTMLElement = this.element.getElementsByClassName(EnhancedScatterChart.XAxisSelector.className).item(0) as HTMLElement;
 
         if (axis.getRecommendedNumberOfTicksForXAxis(this.viewportIn.width) === EnhancedScatterChart.MinAmountOfTicks
             && axis.getRecommendedNumberOfTicksForYAxis(this.viewportIn.height) === EnhancedScatterChart.MinAmountOfTicks
@@ -697,29 +697,6 @@ export class EnhancedScatterChart implements IVisual {
         } else {
             xAxis.hidden = false;
         }
-    }
-
-    private static getXGrouping(
-        categories: DataViewCategoryColumn[]
-    ): DataViewCategoryColumn {
-        return <DataViewCategoryColumn>categories.reduce(
-            (previousValue: DataViewCategoryColumn, currentValue: DataViewCategoryColumn) => {
-                if (!previousValue
-                    && currentValue.source.roles.X
-                    && currentValue.source.roles["X as Grouping"]
-                ) {
-                    return currentValue;
-                } else {
-                    return previousValue;
-                }
-            },
-            undefined
-        );
-    }
-
-    private static isXGroupingExists(categories: DataViewCategoryColumn[]): boolean {
-        const xGrouping = EnhancedScatterChart.getXGrouping(categories);
-        return typeof xGrouping !== undefined && !!xGrouping.values;
     }
 
     public parseData(
@@ -1849,9 +1826,7 @@ export class EnhancedScatterChart implements IVisual {
     private bindTooltip(selection: Selection<TooltipEnabledDataPoint>): void {
         this.tooltipServiceWrapper.addTooltip(
             selection,
-            (tooltipEvent: TooltipEventArgs<TooltipEnabledDataPoint>) => {
-                return tooltipEvent.data.tooltipInfo;
-            });
+            (tooltipEvent: TooltipEnabledDataPoint) => tooltipEvent.tooltipInfo);
     }
 
     private bindInteractivityService(
@@ -2537,7 +2512,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.x)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const textSelection: Selection<any> = d3Select(this);
+                        const textSelection: Selection<any> = d3.select(this);
 
                         textSelection
                             .attr("class", EnhancedScatterChart.XAxisLabelSelector.className)
@@ -2564,7 +2539,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3Select(this);
+                        const text: Selection<any> = d3.select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2588,7 +2563,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y2)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3Select(this);
+                        const text: Selection<any> = d3.select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2710,7 +2685,7 @@ export class EnhancedScatterChart implements IVisual {
                     sizeRange,
                     thisVisual.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                d3Select(this)
+                d3.select(this)
                     .attr("width", bubbleRadius)
                     .attr("height", bubbleRadius);
             })
