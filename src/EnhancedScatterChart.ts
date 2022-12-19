@@ -147,8 +147,6 @@ import { tooltipBuilder } from "./tooltipBuilder";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 import { yAxisPosition } from "./yAxisPosition";
 
-const getEvent = () => require("d3-selection").event;
-
 interface ShapeFunction {
     (value: any): string;
 }
@@ -2165,11 +2163,10 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         this.axisGraphicsContextScrollable
-            .on("mousemove", () => {
-                const event: MouseEvent = <MouseEvent>getEvent();
+            .on("mousemove", (event) => {
                 const currentTarget = <SVGAElement>event.currentTarget,
                     svgNode: SVGElement = currentTarget.viewportElement,
-                    scaledRect: ClientRect = svgNode.getBoundingClientRect(),
+                    scaledRect: DOMRect = svgNode.getBoundingClientRect(),
                     domRect: SVGRect = (<any>svgNode).getBBox(),
                     ratioX: number = scaledRect.width / domRect.width,
                     ratioY: number = scaledRect.height / domRect.height;
