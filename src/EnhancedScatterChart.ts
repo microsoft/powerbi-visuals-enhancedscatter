@@ -401,6 +401,13 @@ export class EnhancedScatterChart implements IVisual {
 
     private keyArray: string[] = [];
 
+    private isHighContrast: boolean;
+
+    private foregroundColor: string;
+    private backgroundColor: string;
+    private foregroundSelectedColor: string;
+    private hyperlinkColor: string;
+
     private _margin: IMargin;
     private get margin(): IMargin {
         return this._margin || { left: 0, right: 0, top: 0, bottom: 0 };
@@ -568,6 +575,14 @@ export class EnhancedScatterChart implements IVisual {
         this.element = options.element;
         this.visualHost = options.host;
         this.colorPalette = options.host.colorPalette;
+
+        this.isHighContrast = this.colorPalette.isHighContrast;
+        if (this.isHighContrast) {
+            this.foregroundColor = this.colorPalette.foreground.value;
+            this.backgroundColor = this.colorPalette.background.value;
+            this.foregroundSelectedColor = this.colorPalette.foregroundSelected.value;
+            this.hyperlinkColor = this.colorPalette.hyperlink.value;
+        }
 
         this.tooltipServiceWrapper = createTooltipServiceWrapper(
             this.visualHost.tooltipService,
