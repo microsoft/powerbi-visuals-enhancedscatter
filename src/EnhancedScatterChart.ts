@@ -1420,9 +1420,6 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, options.dataViews);
-
         const dataView: DataView = options
             && options.dataViews
             && options.dataViews[0];
@@ -1439,7 +1436,10 @@ export class EnhancedScatterChart implements IVisual {
         );
 
         this.eventService.renderingStarted(options);
+
         this.renderLegend();
+
+        this.formattingSettings.enableDataPointCardSettings.initializeColorPickers(this.data.legendDataPoints);
 
         this.render();
 
@@ -3016,8 +3016,6 @@ export class EnhancedScatterChart implements IVisual {
                     },
                 };
             });
-
-        dataPointSettings.initializeColorPickers(this.data.legendDataPoints);
     }
 
     private removeArrayItem<T>(array: T[], item: T)

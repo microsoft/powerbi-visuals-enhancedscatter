@@ -83,15 +83,22 @@ export class EnableDataPointCardSettings extends Card {
 
     public initializeColorPickers(dataPointsLegends: LegendDataPoint[])
     {
+        let functionThis = this;
         let newSlices = [];
         dataPointsLegends.forEach(dataPointLegend => {
-            newSlices.push(new formattingSettings.ColorPicker({
-                name: `${dataPointLegend.label}_color`,
-                displayName: dataPointLegend.label,
-                value: { value: dataPointLegend.color },
-                selector: ColorHelper.normalizeSelector((<ISelectionId>dataPointLegend.identity).getSelector())
-            }));
+            if(functionThis[`${dataPointLegend.label}_color`] === undefined){
+                let newColorPicker = new formattingSettings.ColorPicker({
+                    name: `${dataPointLegend.label}_color`,
+                    displayName: dataPointLegend.label,
+                    value: { value: dataPointLegend.color },
+                    selector: ColorHelper.normalizeSelector((<ISelectionId>dataPointLegend.identity).getSelector())
+                });
+
+                functionThis[`${dataPointLegend.label}_color`] = newColorPicker;
+            }
+            newSlices.push(functionThis[`${dataPointLegend.label}_color`]);
         });
+
         this.slices = newSlices;
     }
 }
