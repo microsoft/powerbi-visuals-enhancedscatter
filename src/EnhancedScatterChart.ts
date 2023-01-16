@@ -2772,8 +2772,8 @@ export class EnhancedScatterChart implements IVisual {
             viewport: this.viewport,
             margin: this.margin,
             forcedXDomain: [
-                categoryAxisSettings.start,
-                categoryAxisSettings.end,
+                categoryAxisSettings.start.value,
+                categoryAxisSettings.end.value,
             ],
             forceMerge: false,
             showCategoryAxisLabel: false,
@@ -2787,8 +2787,8 @@ export class EnhancedScatterChart implements IVisual {
 
         visualOptions.forcedYDomain = axis.applyCustomizedDomain(
             [
-                valueAxisSettings.start,
-                valueAxisSettings.end
+                valueAxisSettings.start.value,
+                valueAxisSettings.end.value
             ],
             visualOptions.forcedYDomain
         );
@@ -2845,6 +2845,8 @@ export class EnhancedScatterChart implements IVisual {
             this.optimizeTranslateValues(options.forcedXDomain),
             xDomain
         );
+
+        console.log(this.viewportIn.width);
 
         const xAxisFormatString: string = valueFormatter.getFormatStringByColumn(data.xCol);
 
