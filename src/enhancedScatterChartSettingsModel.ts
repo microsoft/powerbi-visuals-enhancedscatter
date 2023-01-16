@@ -81,7 +81,7 @@ export class EnableDataPointCardSettings extends Card {
     displayNameKey: string = "Visual_DataPoint";
     slices = [];
 
-    public InitializeColorPickers(dataPointsLegends: LegendDataPoint[])
+    public initializeColorPickers(dataPointsLegends: LegendDataPoint[])
     {
         let newSlices = [];
         dataPointsLegends.forEach(dataPointLegend => {

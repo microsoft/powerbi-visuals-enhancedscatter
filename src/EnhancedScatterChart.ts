@@ -1545,7 +1545,6 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public render(): void {
-        debugger;
         this.viewport.height -= this.legendViewport.height;
         this.viewport.width -= this.legendViewport.width;
 
@@ -2536,7 +2535,6 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private updateAxis(): void {
-        debugger;
         this.adjustMargins();
 
         const yAxisOrientation: string = this.yAxisOrientation,
@@ -3019,7 +3017,7 @@ export class EnhancedScatterChart implements IVisual {
                 };
             });
 
-        dataPointSettings.InitializeColorPickers(this.data.legendDataPoints);
+        dataPointSettings.initializeColorPickers(this.data.legendDataPoints);
     }
 
     private removeArrayItem<T>(array: T[], item: T)
