@@ -2780,8 +2780,8 @@ export class EnhancedScatterChart implements IVisual {
             showValueAxisLabel: true,
             categoryAxisScaleType: null,
             valueAxisScaleType: null,
-            valueAxisDisplayUnits: DisplayUnitsType[valueAxisSettings.labelDisplayUnits.value.value],
-            categoryAxisDisplayUnits: DisplayUnitsType[categoryAxisSettings.labelDisplayUnits.value.value],
+            valueAxisDisplayUnits: +valueAxisSettings.labelDisplayUnits.value.value.toString(),
+            categoryAxisDisplayUnits: +categoryAxisSettings.labelDisplayUnits.value.value.toString(),
             trimOrdinalDataOnOverflow: false
         };
 
@@ -2845,8 +2845,6 @@ export class EnhancedScatterChart implements IVisual {
             this.optimizeTranslateValues(options.forcedXDomain),
             xDomain
         );
-
-        console.log(this.viewportIn.width);
 
         const xAxisFormatString: string = valueFormatter.getFormatStringByColumn(data.xCol);
 

@@ -22,12 +22,12 @@ export enum DisplayUnitsType {
 }
 
 const displayUnitsOptions : IEnumMember[] = [
-    {value: DisplayUnitsType.Auto, displayName : DisplayUnitsType[DisplayUnitsType.Auto]},
-    {value: DisplayUnitsType.None, displayName : DisplayUnitsType[DisplayUnitsType.None]},
-    {value: DisplayUnitsType.Thousands, displayName : DisplayUnitsType[DisplayUnitsType.Thousands]},
-    {value: DisplayUnitsType.Millions, displayName : DisplayUnitsType[DisplayUnitsType.Millions]},
-    {value: DisplayUnitsType.Billions, displayName : DisplayUnitsType[DisplayUnitsType.Billions]},
-    {value: DisplayUnitsType.Triilions, displayName : DisplayUnitsType[DisplayUnitsType.Triilions]}
+    {value: DisplayUnitsType.Auto.toString(), displayName : DisplayUnitsType[DisplayUnitsType.Auto]},
+    {value: DisplayUnitsType.None.toString(), displayName : DisplayUnitsType[DisplayUnitsType.None]},
+    {value: DisplayUnitsType.Thousands.toString(), displayName : DisplayUnitsType[DisplayUnitsType.Thousands]},
+    {value: DisplayUnitsType.Millions.toString(), displayName : DisplayUnitsType[DisplayUnitsType.Millions]},
+    {value: DisplayUnitsType.Billions.toString(), displayName : DisplayUnitsType[DisplayUnitsType.Billions]},
+    {value: DisplayUnitsType.Triilions.toString(), displayName : DisplayUnitsType[DisplayUnitsType.Triilions]}
 ]
 
 const positionOptions : IEnumMember[] = [
