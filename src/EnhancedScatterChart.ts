@@ -128,7 +128,7 @@ import { createTooltipServiceWrapper, ITooltipServiceWrapper, TooltipEnabledData
 import { BehaviorOptions, VisualBehavior } from "./behavior";
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
-import { DisplayUnitsType, EnableCategoryLabelsCardSettings, EnableDataPointCardSettings, EnableFillPointCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
+import { EnableCategoryLabelsCardSettings, EnableDataPointCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
 
 import {
     EnhancedScatterChartData,
@@ -721,7 +721,6 @@ export class EnhancedScatterChart implements IVisual {
         visualHost: IVisualHost,
         interactivityService: IInteractivityService<BaseDataPoint>,
     ): EnhancedScatterChartData {
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, [dataView]);
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
         if (!this.isDataViewValid(dataView)) {
@@ -1420,6 +1419,9 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+
+        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, options.dataViews);
+
         const dataView: DataView = options
             && options.dataViews
             && options.dataViews[0];
@@ -1435,11 +1437,11 @@ export class EnhancedScatterChart implements IVisual {
             this.interactivityService,
         );
 
+        this.formattingSettings.populateColorSelector(this.data.legendDataPoints, this.data.dataPoints);
+
         this.eventService.renderingStarted(options);
 
         this.renderLegend();
-
-        this.formattingSettings.enableDataPointCardSettings.initializeColorPickers(this.data.legendDataPoints);
 
         this.render();
 
@@ -2946,7 +2948,7 @@ export class EnhancedScatterChart implements IVisual {
 
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
-        let newCards = [...settings.cards];
+        const newCards = [...settings.cards];
 
         settings.cards.forEach(element => {
             switch (element.name) {
@@ -2955,7 +2957,6 @@ export class EnhancedScatterChart implements IVisual {
                         this.removeArrayItem(newCards, settings.enableDataPointCardSettings);
                     }
 
-                    this.enumerateDataPoints(settings.enableDataPointCardSettings);
                     break;
                 }
                 case "fillPoint": {
@@ -2977,45 +2978,6 @@ export class EnhancedScatterChart implements IVisual {
 
         settings.cards = newCards;
         this.formattingSettings = settings;
-    }
-
-    private enumerateDataPoints(dataPointSettings: EnableDataPointCardSettings)
-    {
-        if (!this.data) {
-            return;
-        }
-
-        if (this.data.hasDynamicSeries) {
-            this.data.legendDataPoints.map((legendDataPoint: LegendDataPoint) => {
-                return {
-                    objectName: "dataPoint",
-                    displayName: legendDataPoint.label,
-                    selector: ColorHelper.normalizeSelector((<ISelectionId>legendDataPoint.identity).getSelector()),
-                    properties: {
-                        fill: { solid: { color: legendDataPoint.color } }
-                    },
-                };
-            });
-        }
-
-        if (!dataPointSettings.showAllDataPoints) {
-            return;
-        }
-
-        this.data.dataPoints
-            .map((seriesDataPoints: EnhancedScatterChartDataPoint) => {
-                return {
-                    objectName: "dataPoint",
-                    displayName: seriesDataPoints.formattedCategory(),
-                    selector: ColorHelper.normalizeSelector(
-                        (<ISelectionId>seriesDataPoints.identity).getSelector(),
-                        true
-                    ),
-                    properties: {
-                        fill: { solid: { color: seriesDataPoints.fill } },
-                    },
-                };
-            });
     }
 
     private removeArrayItem<T>(array: T[], item: T)

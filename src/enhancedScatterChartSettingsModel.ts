@@ -11,6 +11,7 @@ import Card = formattingSettings.Card;
 import Model = formattingSettings.Model;
 
 import IEnumMember = powerbi.IEnumMember;
+import { EnhancedScatterChartDataPoint } from "./dataInterfaces";
 
 export enum DisplayUnitsType {
     Auto = 0,
@@ -79,28 +80,7 @@ export class EnableDataPointCardSettings extends Card {
 
     name: string = "dataPoint";
     displayNameKey: string = "Visual_DataPoint";
-    slices = [];
-
-    public initializeColorPickers(dataPointsLegends: LegendDataPoint[])
-    {
-        let functionThis = this;
-        let newSlices = [];
-        dataPointsLegends.forEach(dataPointLegend => {
-            if(functionThis[`${dataPointLegend.label}_color`] === undefined){
-                let newColorPicker = new formattingSettings.ColorPicker({
-                    name: `${dataPointLegend.label}_color`,
-                    displayName: dataPointLegend.label,
-                    value: { value: dataPointLegend.color },
-                    selector: ColorHelper.normalizeSelector((<ISelectionId>dataPointLegend.identity).getSelector())
-                });
-
-                functionThis[`${dataPointLegend.label}_color`] = newColorPicker;
-            }
-            newSlices.push(functionThis[`${dataPointLegend.label}_color`]);
-        });
-
-        this.slices = newSlices;
-    }
+    slices = [this.defaultColor, this.showAllDataPoints];
 }
 
 export class ScatterChartAxisCardSettings extends Card {
@@ -283,7 +263,7 @@ export class EnableBackdropCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Show",
-        value: true,
+        value: false,
         topLevelToggle: true
     });
 
@@ -306,14 +286,13 @@ export class EnableCrosshairCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Crosshair",
-        value: true,
+        value: false,
         topLevelToggle: true
     });
 
     name: string = "crosshair";
     displayNameKey: string = "Visual_Crosshair";
     slices = [this.show];
-    formattingGroup: boolean = false;
 }
 
 export class EnableOutlineCardSettings extends Card {
@@ -321,14 +300,13 @@ export class EnableOutlineCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Outline",
-        value: true,
+        value: false,
         topLevelToggle: true
     });
 
     name: string = "outline";
     displayNameKey: string = "Visual_Outline";
     slices = [this.show];
-    formattingGroup: boolean = false;
 }
 
 export class EnhancedScatterChartSettingsModel extends Model {
@@ -345,4 +323,38 @@ export class EnhancedScatterChartSettingsModel extends Model {
     cards = [this.enableDataPointCardSettings, this.enableCategoryAxisCardSettings, this.enableValueAxisCardSettings,
         this.enableLegendCardSettings, this.enableCategoryLabelsCardSettings, this.enableFillPointCardSettings,
         this.enableBackdropCardSettings, this.enableCrosshairCardSettings, this.enableOutlineCardSettings];
+
+    /**
+     * populate colorSelector object categories formatting properties
+     * @param dataPoints
+     */
+    populateColorSelector(dataPointsLegends: LegendDataPoint[], seriesDataPoints: EnhancedScatterChartDataPoint[]) {
+        let slices = this.enableDataPointCardSettings.slices;
+        if (dataPointsLegends && dataPointsLegends.length > 0) {
+            slices = [];
+            dataPointsLegends.forEach(dataPointsLegend => {
+                slices.push(new formattingSettings.ColorPicker({
+                    name: "fill",
+                    displayName: dataPointsLegend.label,
+                    value: { value: dataPointsLegend.color },
+                    selector: ColorHelper.normalizeSelector((<ISelectionId>dataPointsLegend.identity).getSelector())
+                }));
+            });
+        }
+
+        else {
+            if(this.enableDataPointCardSettings.showAllDataPoints.value)
+            {
+                seriesDataPoints.forEach(dataPoint => {
+                    slices.push(new formattingSettings.ColorPicker({
+                        name: "fill",
+                        displayName: dataPoint.formattedCategory(),
+                        value: { value: dataPoint.stroke },
+                        selector: ColorHelper.normalizeSelector((<ISelectionId>dataPoint.identity).getSelector(), true)
+                    }));
+                });
+            }
+        }
+        this.enableDataPointCardSettings.slices = slices;
+    }
 }
