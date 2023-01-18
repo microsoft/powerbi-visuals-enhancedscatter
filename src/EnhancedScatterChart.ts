@@ -723,6 +723,8 @@ export class EnhancedScatterChart implements IVisual {
     ): EnhancedScatterChartData {
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
+        this.parseSettings(new ColorHelper(colorPalette));
+
         if (!this.isDataViewValid(dataView)) {
             return this.getDefaultData(settings);
         }
@@ -901,6 +903,68 @@ export class EnhancedScatterChart implements IVisual {
 
     private isDataViewValid(dataView: DataView): boolean {
         return !!(dataView && dataView.metadata);
+    }
+
+    private parseSettings(colorHelper: ColorHelper): EnhancedScatterChartSettingsModel {
+        const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
+
+        settings.enableDataPointCardSettings.defaultColor.value.value = colorHelper.getHighContrastColor(
+            "foreground",
+            settings.enableDataPointCardSettings.defaultColor.value.value,
+        );
+
+        settings.enableDataPointCardSettings.StrokeWidth = colorHelper.isHighContrast
+            ? 2
+            : settings.enableDataPointCardSettings.StrokeWidth;
+
+        settings.enableLegendCardSettings.labelColor.value.value = colorHelper.getHighContrastColor(
+            "foreground",
+            settings.enableLegendCardSettings.labelColor.value.value
+        );
+
+        settings.enableCategoryLabelsCardSettings.show.value = settings.enableCategoryLabelsCardSettings.show.value || colorHelper.isHighContrast;
+
+        settings.enableCategoryLabelsCardSettings.color.value.value = colorHelper.getHighContrastColor(
+            "foreground",
+            settings.enableCategoryLabelsCardSettings.color.value.value
+        );
+
+        settings.enableFillPointCardSettings.show.value = colorHelper.isHighContrast
+            ? true
+            : settings.enableFillPointCardSettings.show.value;
+
+        settings.enableOutlineCardSettings.show.value = colorHelper.isHighContrast
+            ? false
+            : settings.enableOutlineCardSettings.show.value;
+
+        settings.enableCrosshairCardSettings.Color = colorHelper.getHighContrastColor(
+            "foreground",
+            settings.enableCrosshairCardSettings.Color
+        );
+
+        this.parseAxisSettings(settings.enableCategoryAxisCardSettings, colorHelper);
+        this.parseAxisSettings(settings.enableValueAxisCardSettings, colorHelper);
+
+        settings.enableBackdropCardSettings.show.value = settings.enableBackdropCardSettings.show.value && !colorHelper.isHighContrast;
+
+        return settings;
+    }
+
+    private parseAxisSettings(axisSettings: ScatterChartAxisCardSettings, colorHelper: ColorHelper): void {
+        axisSettings.axisColor.value.value = colorHelper.getHighContrastColor(
+            "foreground",
+            axisSettings.axisColor.value.value
+        );
+
+        axisSettings.ZeroLineColor = colorHelper.getHighContrastColor(
+            "foreground",
+            axisSettings.ZeroLineColor
+        );
+
+        axisSettings.LineColor = colorHelper.getHighContrastColor(
+            "foreground",
+            axisSettings.LineColor
+        );
     }
 
     private static createSeriesLegend(

@@ -250,7 +250,7 @@ export class EnableFillPointCardSettings extends Card {
         name: "show",
         displayNameKey: "Visual_Fill",
         value: true,
-        topLevelToggle: false
+        topLevelToggle: true
     });
 
     name: string = "fillPoint";
