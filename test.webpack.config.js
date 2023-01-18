@@ -4,7 +4,8 @@ const webpack = require("webpack");
 module.exports = {
     devtool: 'source-map',
     mode: 'development',
-    optimization: {
+    optimization : {
+        concatenateModules: false,
         minimize: false
     },
     module: {
@@ -13,10 +14,6 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            },
-            {
-                test: /\.json$/,
-                loader: 'json-loader'
             },
             {
                 test: /\.less$/,
@@ -28,11 +25,15 @@ module.exports = {
                         loader: 'css-loader'
                     },
                     {
-                        loader: 'less-loader',
+                        loader: "less-loader",
                         options: {
-                            paths: [path.resolve(__dirname, 'node_modules')]
-                        }
-                    }
+                          lessOptions: () => {
+                            return {
+                                paths: [path.resolve(__dirname, 'node_modules')],
+                            };
+                          },
+                        },
+                    },
                 ]
             }
         ]
