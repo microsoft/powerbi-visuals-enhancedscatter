@@ -1501,8 +1501,6 @@ export class EnhancedScatterChart implements IVisual {
             this.interactivityService,
         );
 
-        this.formattingSettings.populateColorSelector(this.data.legendDataPoints, this.data.dataPoints);
-
         this.eventService.renderingStarted(options);
 
         this.renderLegend();
@@ -3020,6 +3018,7 @@ export class EnhancedScatterChart implements IVisual {
                     if (this.data && this.data.hasGradientRole) {
                         this.removeArrayItem(newCards, settings.enableDataPointCardSettings);
                     }
+                    settings.populateColorSelector(this.data.legendDataPoints, this.data.dataPoints);
 
                     break;
                 }
