@@ -128,7 +128,7 @@ import { createTooltipServiceWrapper, ITooltipServiceWrapper, TooltipEnabledData
 import { BehaviorOptions, VisualBehavior } from "./behavior";
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
-import { EnableCategoryLabelsCardSettings, EnableDataPointCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
+import { EnableCategoryLabelsCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
 
 import {
     EnhancedScatterChartData,
