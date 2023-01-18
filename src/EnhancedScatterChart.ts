@@ -721,6 +721,7 @@ export class EnhancedScatterChart implements IVisual {
         visualHost: IVisualHost,
         interactivityService: IInteractivityService<BaseDataPoint>,
     ): EnhancedScatterChartData {
+        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, [dataView]);
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
         this.parseSettings(new ColorHelper(colorPalette));
@@ -1483,8 +1484,6 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, options.dataViews);
 
         const dataView: DataView = options
             && options.dataViews
