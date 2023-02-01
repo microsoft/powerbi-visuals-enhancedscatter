@@ -216,6 +216,7 @@ export interface EnhancedScatterChartData {
     colorByCategory?: boolean;
     selectedIds: ISelectionId[];
     settings: EnhancedScatterChartSettingsModel;
+    hasHighlights: boolean;
 }
 
 export interface EnhancedScatterDataRange {

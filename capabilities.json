@@ -652,5 +652,6 @@
         }
     },
     "supportsMultiVisualSelection": true,
+    "supportsHighlight": true,
     "privileges": []
 }

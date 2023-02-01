@@ -125,7 +125,7 @@ import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 // powerbi.extensibility.utils.tooltip
 import { createTooltipServiceWrapper, ITooltipServiceWrapper, TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 
-import { BehaviorOptions, VisualBehavior } from "./behavior";
+import { BehaviorOptions, VisualBehavior, getFillOpacity } from "./behavior";
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 import { EnableCategoryLabelsCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
@@ -351,6 +351,8 @@ export class EnhancedScatterChart implements IVisual {
 
     private formattingSettings: EnhancedScatterChartSettingsModel;
     private formattingSettingsService: FormattingSettingsService;
+
+    private hasHighlights: boolean;
 
     private legend: ILegend;
 
@@ -765,6 +767,8 @@ export class EnhancedScatterChart implements IVisual {
             categoryFormatter = valueFormatter.createDefaultFormatter(null);
         }
 
+        this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
+
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
             scatterMetadata.idx.size
@@ -794,6 +798,7 @@ export class EnhancedScatterChart implements IVisual {
             hasDynamicSeries,
             colorHelper,
             settings,
+            this.hasHighlights
         );
 
         if (interactivityService) {
@@ -821,6 +826,7 @@ export class EnhancedScatterChart implements IVisual {
             axesLabels: scatterMetadata.axesLabels,
             selectedIds: [],
             size: scatterMetadata.cols.size,
+            hasHighlights: this.hasHighlights
         };
     }
 
@@ -1317,6 +1323,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
+    // eslint-disable-next-line max-lines-per-function
     private createDataPoints(
         visualHost: IVisualHost,
         dataValues: DataViewValueColumns,
@@ -1327,7 +1334,8 @@ export class EnhancedScatterChart implements IVisual {
         categoryObjects: DataViewObjects[],
         hasDynamicSeries: boolean,
         colorHelper: ColorHelper,
-        settings: EnhancedScatterChartSettingsModel
+        settings: EnhancedScatterChartSettingsModel,
+        hasHighlights: boolean = false
     ): EnhancedScatterChartDataPoint[] {
         const dataPoints: EnhancedScatterChartDataPoint[] = [];
         const indicies: EnhancedScatterChartMeasureMetadataIndexes = metadata.idx;
@@ -1401,6 +1409,13 @@ export class EnhancedScatterChart implements IVisual {
                 const stroke: string = settings.enableOutlineCardSettings.show.value ? d3Rgb(currentFill).darker().toString() : currentFill;
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.IsHidden ? currentFill : null;
 
+                let highlight: number = null;
+
+                debugger;
+                if (hasHighlights) {
+                    highlight = <number>dataValues.filter(dataValue => dataValue.highlights.findIndex(h => h!=null) == categoryIdx).length;
+                }
+
                 dataPoints.push({
                     size,
                     rotation,
@@ -1422,6 +1437,7 @@ export class EnhancedScatterChart implements IVisual {
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                     contentPosition: EnhancedScatterChart.DefaultContentPosition,
                     svgurl: image,
+                    highlight: hasHighlights && !!highlight,
                 });
             }
         }
@@ -1480,6 +1496,7 @@ export class EnhancedScatterChart implements IVisual {
             hasDynamicSeries: false,
             useShape: false,
             useCustomColor: false,
+            hasHighlights: false
         };
     }
 
@@ -1869,7 +1886,7 @@ export class EnhancedScatterChart implements IVisual {
 
         this.interactivityService.bind(behaviorOptions);
 
-        this.behavior.renderSelection(false);
+        this.behavior.renderSelection(this.hasHighlights);
     }
 
     private cloneDataPoints(dataPoints: EnhancedScatterChartDataPoint[]): EnhancedScatterChartDataPoint[] {
