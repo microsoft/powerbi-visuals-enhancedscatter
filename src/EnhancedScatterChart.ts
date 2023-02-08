@@ -1409,11 +1409,11 @@ export class EnhancedScatterChart implements IVisual {
                 const stroke: string = settings.enableOutlineCardSettings.show.value ? d3Rgb(currentFill).darker().toString() : currentFill;
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.IsHidden ? currentFill : null;
 
-                let highlight: number = null;
+                let highlight: number = null;                
 
-                debugger;
                 if (hasHighlights) {
-                    highlight = <number>dataValues.filter(dataValue => dataValue.highlights.findIndex(h => h!=null) == categoryIdx).length;
+                    const notNullIndex = seriesValues.findIndex(value => value.highlights && value.values[categoryIdx] != null);
+                    if (notNullIndex != -1) highlight = <number>seriesValues[notNullIndex].highlights[categoryIdx];
                 }
 
                 dataPoints.push({
