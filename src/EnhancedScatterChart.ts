@@ -31,14 +31,15 @@ import lodashClone from "lodash.clone";
 import powerbiVisualsApi from "powerbi-visuals-api";
 
 // d3
-import * as d3 from "d3";
+import { Selection as d3Selection, select as d3Select } from "d3-selection";
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
 import { rgb as d3Rgb } from "d3-color";
 import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
+import "d3-transition";
 
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
 import Fill = powerbiVisualsApi.Fill;
@@ -125,7 +126,7 @@ import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 // powerbi.extensibility.utils.tooltip
 import { createTooltipServiceWrapper, ITooltipServiceWrapper, TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 
-import { BehaviorOptions, VisualBehavior, getFillOpacity } from "./behavior";
+import { BehaviorOptions, VisualBehavior } from "./behavior";
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 import { EnableCategoryLabelsCardSettings, EnableLegendCardSettings, EnhancedScatterChartSettingsModel, ScatterChartAxisCardSettings } from "./enhancedScatterChartSettingsModel";
@@ -606,7 +607,7 @@ export class EnhancedScatterChart implements IVisual {
 
         this.yAxisOrientation = yAxisPosition.left;
 
-        this.svg = d3.select(this.element)
+        this.svg = d3Select(this.element)
             .append("svg")
             .classed(EnhancedScatterChart.ClassName, true);
 
@@ -687,7 +688,7 @@ export class EnhancedScatterChart implements IVisual {
 
     public handleContextMenu() {
         this.svg.on('contextmenu', (event) => {
-            const dataPoint: any = d3.select(event.target).datum();
+            const dataPoint: any = d3Select(event.target).datum();
             this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.selectionId : {}, {
                 x: event.clientX,
                 y: event.clientY
@@ -2546,7 +2547,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.x)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const textSelection: Selection<any> = d3.select(this);
+                        const textSelection: Selection<any> = d3Select(this);
 
                         textSelection
                             .attr("class", EnhancedScatterChart.XAxisLabelSelector.className)
@@ -2573,7 +2574,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3.select(this);
+                        const text: Selection<any> = d3Select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2597,7 +2598,7 @@ export class EnhancedScatterChart implements IVisual {
                 .text(axisLabels.y2)
                 .call((text: Selection<any>) => {
                     text.each(function () {
-                        const text: Selection<any> = d3.select(this);
+                        const text: Selection<any> = d3Select(this);
 
                         text.attr("class", EnhancedScatterChart.YAxisLabelSelector.className)
                             .attr("transform", EnhancedScatterChart.YAxisLabelTransformRotate)
@@ -2721,7 +2722,7 @@ export class EnhancedScatterChart implements IVisual {
                     sizeRange,
                     thisVisual.viewport) * EnhancedScatterChart.BubbleRadiusDivider;
 
-                d3.select(this)
+                d3Select(this)
                     .attr("width", bubbleRadius)
                     .attr("height", bubbleRadius);
             })

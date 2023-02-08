@@ -28,8 +28,8 @@ import powerbiVisualsApi from "powerbi-visuals-api";
 import lodashLast from "lodash.last";
 
 // d3
-import * as d3 from "d3";
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+import { Selection as d3Selection, select as d3Select } from "d3-selection";
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
 import DataView = powerbiVisualsApi.DataView;
@@ -184,7 +184,7 @@ describe("EnhancedScatterChart", () => {
             let rootElement: Selection<any>;
 
             beforeEach(() => {
-                rootElement = d3.select(visualBuilder.element);
+                rootElement = d3Select(visualBuilder.element);
             });
 
             it("arguments are null", () => {
