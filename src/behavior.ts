@@ -76,20 +76,20 @@ export class VisualBehavior implements IInteractiveBehavior {
         });
     }
 
-    public renderSelection(hasSelection: boolean) {
+    public renderSelection(hasHighlights: boolean) {
         const {
             dataPointsSelection,
             interactivityService,
         } = this.options;
 
-        const hasHighlights: boolean = interactivityService.hasSelection();
+        const hasSelection: boolean = interactivityService.hasSelection();
 
         dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
             return getFillOpacity(
                 dataPoint.selected,
                 dataPoint.highlight,
-                !dataPoint.highlight && hasSelection,
-                !dataPoint.selected && hasHighlights
+                !dataPoint.highlight && hasHighlights,
+                !dataPoint.selected && hasSelection
             );
         });
     }
