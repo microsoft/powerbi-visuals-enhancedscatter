@@ -653,5 +653,6 @@
     },
     "supportsMultiVisualSelection": true,
     "supportsHighlight": true,
+    "supportsKeyboardFocus": true,
     "privileges": []
 }
