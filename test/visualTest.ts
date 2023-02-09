@@ -58,7 +58,7 @@ import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalet
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
-import { EnhancedScatterChartSettingsModel } from "../src/enhancedScatterChartSettingsModel";
+import { DefaultOpacity, DimmedOpacity } from "../src/behavior";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -1070,6 +1070,53 @@ describe("EnhancedScatterChart", () => {
                     return areColorsEqual(currentColor, color);
                 });
             }
+        });
+    });
+
+    describe("Highlight test", () => {
+        const defaultOpacity: string = DefaultOpacity.toString();
+        const dimmedOpacity: string = DimmedOpacity.toString();
+
+        it("Highlights property should not be received", (done) => {
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(dataView.categorical?.values?.findIndex(value => value.highlights!=null)).toBe(-1);
+
+                const dataPoints = visualBuilder.dots;
+
+                dataPoints.forEach((element: HTMLElement) => {
+                    const opacity: string = element.style.opacity;
+                    expect(opacity).toBe(defaultOpacity);
+                });
+
+                done();
+            });
+        });
+
+        it("Elements should be highlighted", (done) => {
+            const dataViewWithHighLighted: DataView = defaultDataViewBuilder.getDataView(undefined, true);
+            visualBuilder.updateRenderTimeout(dataViewWithHighLighted, () => {
+                expect(dataViewWithHighLighted.categorical?.values?.findIndex(value => value.highlights!=null)).not.toBe(-1);
+
+                const dataPoints = visualBuilder.dots;
+
+                let highligtedCount: number = 0;
+                let nonHighlightedCount: number = 0;
+                const expectedHighligtedCount: number = 1;
+
+                dataPoints.forEach((element: HTMLElement) => {
+                    const opacity: string = element.style.opacity;
+                    if (opacity === defaultOpacity)
+                        highligtedCount++;
+                    if (opacity === dimmedOpacity)
+                        nonHighlightedCount++;
+                });
+
+                const expectedNonHighligtedCount: number = dataPoints.length - expectedHighligtedCount;
+                expect(highligtedCount).toBe(expectedHighligtedCount);
+                expect(nonHighlightedCount).toBe(expectedNonHighligtedCount);
+
+                done();
+            });
         });
     });
 });

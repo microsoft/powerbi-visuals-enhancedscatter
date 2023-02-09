@@ -38,7 +38,7 @@ import { valueType } from "powerbi-visuals-utils-typeutils";
 import ValueType = valueType.ValueType;
 
 // powerbi.extensibility.utils.test
-import { testDataViewBuilder, getRandomNumbers } from "powerbi-visuals-utils-testutils";
+import { testDataViewBuilder, getRandomNumbers, getRandomNumber } from "powerbi-visuals-utils-testutils";
 import TestDataViewBuilder = testDataViewBuilder.TestDataViewBuilder;
 
 export class EnhancedScatterChartData extends TestDataViewBuilder {
@@ -96,7 +96,40 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
             .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
     }
 
-    public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns): DataView {
+    public generateHightLightedValues(length: number, hightlightedElementNumber?: number): number[] {
+        let array: any[] = [];
+        for (let i: number = 0; i < length; i++) {
+            array[i] = null;
+        }
+        if (hightlightedElementNumber == undefined)
+            return array;
+
+        if (hightlightedElementNumber >= length || hightlightedElementNumber < 0) {
+            array[0] = getRandomNumbers(this.valuesCategory.length, 10, 100)[0];
+        } else {
+            array[hightlightedElementNumber] = getRandomNumbers(this.valuesCategory.length, 10, 100)[0];
+        }
+
+        return array;
+    }
+
+    public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns, withHighlights: boolean = false): DataView {
+        const hightlightedElementNumber: number = Math.round(getRandomNumber(0, this.valuesCategory.length - 1));
+        const highlightedValuesCount: number = this.valuesCategory.length;
+
+        let column1Highlight: number[] = [];
+        let column2Highlight: number[] = [];
+        let column3Highlight: number[] = [];
+        let column4Highlight: number[] = [];
+
+        if (withHighlights)
+        {
+            column1Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column2Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column3Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column4Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+        }
+
         return this.createCategoricalDataViewBuilder([
             {
                 source: {
@@ -152,7 +185,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                                 : {}
                         )
                     },
-                    values: this.valuesX
+                    values: this.valuesX,
+                    highlights: column1Highlight.length > 0 ? column1Highlight : undefined
                 },
                 {
                     source: {
@@ -166,7 +200,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                                 : {}
                         )
                     },
-                    values: this.valuesY
+                    values: this.valuesY,
+                    highlights: column2Highlight.length > 0 ? column2Highlight : undefined
                 },
                 {
                     source: {
@@ -175,7 +210,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                         isMeasure: true,
                         roles: { [EnhancedScatterChartData.ColumnSize]: true }
                     },
-                    values: this.valuesSize
+                    values: this.valuesSize,
+                    highlights: column3Highlight.length > 0 ? column3Highlight : undefined
                 },
                 {
                     source: {
@@ -184,7 +220,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                         isMeasure: true,
                         roles: { [EnhancedScatterChartData.ColumnRotation]: true },
                     },
-                    values: this.rotationValues
+                    values: this.rotationValues,
+                    highlights: column4Highlight.length > 0 ? column4Highlight : undefined
                 }
             ], columnNames).build();
     }
