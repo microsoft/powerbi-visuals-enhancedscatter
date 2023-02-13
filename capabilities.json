@@ -654,5 +654,11 @@
     "supportsMultiVisualSelection": true,
     "supportsHighlight": true,
     "supportsKeyboardFocus": true,
-    "privileges": []
+    "privileges": [
+        {
+            "name": "WebAccess",
+            "essential": true,
+            "parameters": ["https://*", "ftp://*"]
+        }
+    ]
 }
