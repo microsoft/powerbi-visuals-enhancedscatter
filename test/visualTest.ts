@@ -38,7 +38,7 @@ import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
 // powerbi.extensibility.visual
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
-import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
+import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 // powerbi.extensibility.visual.test
 import { helpers } from "./helpers/helpers";
@@ -1115,6 +1115,45 @@ describe("EnhancedScatterChart", () => {
                 expect(highligtedCount).toBe(expectedHighligtedCount);
                 expect(nonHighlightedCount).toBe(expectedNonHighligtedCount);
 
+                done();
+            });
+        });
+    });
+
+    describe("Telemetry", () => {
+        beforeEach(() => {
+            dataView.metadata.objects = {
+                backdrop: {
+                    show: true
+                }
+            };
+        });
+
+        it("Trace method is called with no link", (done) => {
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                done();
+            });
+        });
+
+        it("Trace method is called with unsupported link", (done) => {
+
+            (<any>dataView.metadata.objects).backdrop.url = "http://test.url";
+            (<any>dataView.metadata.objects).backdrop.show = true;
+
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                done();
+            });
+        });
+
+        it("Trace method is called with supported link", (done) => {
+
+            (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
+            (<any>dataView.metadata.objects).backdrop.show = true;
+
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(true);
                 done();
             });
         });

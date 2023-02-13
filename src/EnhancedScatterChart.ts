@@ -355,6 +355,8 @@ export class EnhancedScatterChart implements IVisual {
 
     private hasHighlights: boolean;
 
+    private ExternalImageTelemetryTraced: boolean = false;
+
     private legend: ILegend;
 
     private element: HTMLElement;
@@ -1517,6 +1519,18 @@ export class EnhancedScatterChart implements IVisual {
             this.visualHost,
             this.interactivityService,
         );
+
+        if (!this.getExternalImageTelemetryTracedProperty()) {
+            let hasExternalImageLink: boolean = false;
+            if (this.formattingSettings.enableBackdropCardSettings.show)
+            {
+                hasExternalImageLink = EnhancedScatterChart.IS_EXTERNAL_LINK(this.formattingSettings.enableBackdropCardSettings.url.value);
+            }
+
+            if (hasExternalImageLink) {
+                this.telemetryTrace();
+            }
+        }
 
         this.eventService.renderingStarted(options);
 
@@ -3067,5 +3081,23 @@ export class EnhancedScatterChart implements IVisual {
         {
             array.splice(index, 1);
         }
+    }
+
+    protected telemetryTrace()
+    {
+        this.visualHost.telemetry.trace(powerbiVisualsApi.VisualEventType.Trace, "External image link detected");
+        this.externalImageTelemetryTraced();
+    }
+
+    public static IS_EXTERNAL_LINK(link: string): boolean {
+        return /^(ftp|https):\/\/[^ "]+$/.test(link);
+    }
+
+    public getExternalImageTelemetryTracedProperty(): boolean {
+        return this.ExternalImageTelemetryTraced;
+    }
+
+    public externalImageTelemetryTraced(): void {
+        this.ExternalImageTelemetryTraced = true;
     }
 }

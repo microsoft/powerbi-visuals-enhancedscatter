@@ -31,7 +31,7 @@ import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualC
 import { VisualBuilderBase } from "powerbi-visuals-utils-testutils";
 
 // EnhancedScatterChart1443994985041
-import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
+import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
     constructor(width: number, height: number) {
@@ -146,5 +146,9 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
         });
 
         return legendTexts;
+    }
+
+    public get externalImageTelemetryTracedProperty(): boolean {
+        return this.visual.getExternalImageTelemetryTracedProperty();
     }
 }
