@@ -777,7 +777,7 @@ export class EnhancedScatterChart implements IVisual {
             scatterMetadata.idx.size
         );
 
-        settings.enableFillPointCardSettings.IsHidden = !!(sizeRange && sizeRange.min);
+        settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
@@ -923,9 +923,9 @@ export class EnhancedScatterChart implements IVisual {
             settings.enableDataPointCardSettings.defaultColor.value.value,
         );
 
-        settings.enableDataPointCardSettings.StrokeWidth = colorHelper.isHighContrast
+        settings.enableDataPointCardSettings.strokeWidth = colorHelper.isHighContrast
             ? 2
-            : settings.enableDataPointCardSettings.StrokeWidth;
+            : settings.enableDataPointCardSettings.strokeWidth;
 
         settings.enableLegendCardSettings.labelColor.value.value = colorHelper.getHighContrastColor(
             "foreground",
@@ -947,9 +947,9 @@ export class EnhancedScatterChart implements IVisual {
             ? false
             : settings.enableOutlineCardSettings.show.value;
 
-        settings.enableCrosshairCardSettings.Color = colorHelper.getHighContrastColor(
+        settings.enableCrosshairCardSettings.color = colorHelper.getHighContrastColor(
             "foreground",
-            settings.enableCrosshairCardSettings.Color
+            settings.enableCrosshairCardSettings.color
         );
 
         this.parseAxisSettings(settings.enableCategoryAxisCardSettings, colorHelper);
@@ -966,14 +966,14 @@ export class EnhancedScatterChart implements IVisual {
             axisSettings.axisColor.value.value
         );
 
-        axisSettings.ZeroLineColor = colorHelper.getHighContrastColor(
+        axisSettings.zeroLineColor = colorHelper.getHighContrastColor(
             "foreground",
-            axisSettings.ZeroLineColor
+            axisSettings.zeroLineColor
         );
 
-        axisSettings.LineColor = colorHelper.getHighContrastColor(
+        axisSettings.lineColor = colorHelper.getHighContrastColor(
             "foreground",
-            axisSettings.LineColor
+            axisSettings.lineColor
         );
     }
 
@@ -1410,7 +1410,7 @@ export class EnhancedScatterChart implements IVisual {
                 );
                 const currentFill: string = parsedColorFill || color;
                 const stroke: string = settings.enableOutlineCardSettings.show.value ? d3Rgb(currentFill).darker().toString() : currentFill;
-                const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.IsHidden ? currentFill : null;
+                const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
 
                 let highlight: number = null;                
 
@@ -1435,7 +1435,7 @@ export class EnhancedScatterChart implements IVisual {
                     x: xVal,
                     y: yVal,
                     radius: { sizeMeasure: measures.measureSize, index: categoryIdx },
-                    strokeWidth: settings.enableDataPointCardSettings.StrokeWidth,
+                    strokeWidth: settings.enableDataPointCardSettings.strokeWidth,
                     formattedCategory: EnhancedScatterChart.CREATE_LAZY_FORMATTED_CATEGORY(categoryFormatter, categoryValue),
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                     contentPosition: EnhancedScatterChart.DefaultContentPosition,
@@ -2103,7 +2103,7 @@ export class EnhancedScatterChart implements IVisual {
         this.crosshairCanvasSelection = this.addCrosshairCanvasToDOM(this.mainGraphicsSVGSelection);
 
         if (data && data.settings.enableCrosshairCardSettings.show.value) {
-            const color: string = data.settings.enableCrosshairCardSettings.Color;
+            const color: string = data.settings.enableCrosshairCardSettings.color;
 
             this.crosshairVerticalLineSelection = this.addCrosshairLineToDOM(
                 this.crosshairCanvasSelection,
@@ -2492,12 +2492,12 @@ export class EnhancedScatterChart implements IVisual {
     private applyAxisColor(selection: Selection<any>, axisSettings: ScatterChartAxisCardSettings): void {
         selection
             .selectAll("line")
-            .style("stroke", axisSettings.LineColor)
+            .style("stroke", axisSettings.lineColor)
             .style("stroke-width", null);
 
         selection
             .selectAll("path")
-            .style("stroke", axisSettings.LineColor);
+            .style("stroke", axisSettings.lineColor);
 
         selection
             .selectAll("text")
@@ -2513,8 +2513,8 @@ export class EnhancedScatterChart implements IVisual {
             if (xZeroColor) {
                 xZeroTick
                     .selectAll("line")
-                    .style("stroke", axisSettings.ZeroLineColor)
-                    .style("stroke-width", PixelConverter.toString(axisSettings.ZeroLineStrokeWidth));
+                    .style("stroke", axisSettings.zeroLineColor)
+                    .style("stroke-width", PixelConverter.toString(axisSettings.zeroLineStrokeWidth));
             }
         }
 
@@ -3054,7 +3054,7 @@ export class EnhancedScatterChart implements IVisual {
                     break;
                 }
                 case "fillPoint": {
-                    if (settings.enableFillPointCardSettings.IsHidden) {
+                    if (settings.enableFillPointCardSettings.isHidden) {
                         this.removeArrayItem(newCards, settings.enableFillPointCardSettings);
                     }
 

@@ -50,7 +50,7 @@ class FontSizeSettings {
 
 export class EnableDataPointCardSettings extends Card {
 
-    public StrokeWidth: number = 1;
+    public strokeWidth: number = 1;
 
     defaultColor = new formattingSettings.ColorPicker({
         name: "defaultColor",
@@ -85,9 +85,9 @@ export class EnableDataPointCardSettings extends Card {
 
 export class ScatterChartAxisCardSettings extends Card {
 
-    public LineColor: string = "#777777";
-    public ZeroLineColor: string = "#333";
-    public ZeroLineStrokeWidth: number = 2;
+    public lineColor: string = "#777777";
+    public zeroLineColor: string = "#333";
+    public zeroLineStrokeWidth: number = 2;
 
     show = new formattingSettings.ToggleSwitch({
         name: "show",
@@ -244,7 +244,7 @@ export class EnableCategoryLabelsCardSettings extends Card {
 
 export class EnableFillPointCardSettings extends Card {
 
-    public IsHidden: boolean = true
+    public isHidden: boolean = true
 
     show = new formattingSettings.ToggleSwitch({
         name: "show",
@@ -281,7 +281,7 @@ export class EnableBackdropCardSettings extends Card {
 
 export class EnableCrosshairCardSettings extends Card {
 
-    public Color: string = "#808080";
+    public color: string = "#808080";
 
     show = new formattingSettings.ToggleSwitch({
         name: "show",
