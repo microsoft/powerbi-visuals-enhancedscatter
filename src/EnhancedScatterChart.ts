@@ -1588,15 +1588,15 @@ export class EnhancedScatterChart implements IVisual {
         const img: HTMLImageElement = new Image();
 
         // eslint-disable-next-line
-        const that: EnhancedScatterChart = this;
+        const self: EnhancedScatterChart = this;
 
         img.src = this.data.settings.enableBackdropCardSettings.url.value;
         img.onload = function () {
             const imageElement: HTMLImageElement = <HTMLImageElement>this;
 
-            if (that.oldBackdrop !== imageElement.src) {
-                that.render();
-                that.oldBackdrop = imageElement.src;
+            if (self.oldBackdrop !== imageElement.src) {
+                self.render();
+                self.oldBackdrop = imageElement.src;
             }
         };
 
