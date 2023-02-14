@@ -3090,7 +3090,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public static IS_EXTERNAL_LINK(link: string): boolean {
-        return /^(ftp|https):\/\/[^ "]+$/.test(link);
+        return /^(https):\/\/[^ "]+$/.test(link);
     }
 
     public getExternalImageTelemetryTracedProperty(): boolean {
