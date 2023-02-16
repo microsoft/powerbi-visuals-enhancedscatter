@@ -24,7 +24,8 @@
  *  THE SOFTWARE.
  */
 
-export module yAxisPosition {
+// eslint-disable-next-line
+export namespace yAxisPosition {
     export const left: string = "Left";
     export const right: string = "Right";
 }

@@ -23,9 +23,8 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-// d3
-import * as d3 from "d3";
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+import { Selection as d3Selection } from "d3-selection";
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi.extensibility.utils.interactivity
 import { interactivityBaseService as interactivityService, interactivityUtils } from "powerbi-visuals-utils-interactivityutils";
@@ -77,20 +76,20 @@ export class VisualBehavior implements IInteractiveBehavior {
         });
     }
 
-    public renderSelection(hasSelection: boolean) {
+    public renderSelection(hasHighlights: boolean) {
         const {
             dataPointsSelection,
             interactivityService,
         } = this.options;
 
-        const hasHighlights: boolean = interactivityService.hasSelection();
+        const hasSelection: boolean = interactivityService.hasSelection();
 
         dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
             return getFillOpacity(
                 dataPoint.selected,
                 dataPoint.highlight,
-                !dataPoint.highlight && hasSelection,
-                !dataPoint.selected && hasHighlights
+                !dataPoint.highlight && hasHighlights,
+                !dataPoint.selected && hasSelection
             );
         });
     }

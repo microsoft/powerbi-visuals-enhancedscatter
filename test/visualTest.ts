@@ -25,12 +25,11 @@
  */
 
 import powerbiVisualsApi from "powerbi-visuals-api";
-import * as d3 from "d3";
-import * as lodash from "lodash";
-import * as $ from "jquery";
+import lodashLast from "lodash.last";
 
 // d3
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+import { Selection as d3Selection, select as d3Select } from "d3-selection";
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
 import DataView = powerbiVisualsApi.DataView;
@@ -39,7 +38,7 @@ import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
 // powerbi.extensibility.visual
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
-import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
+import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 // powerbi.extensibility.visual.test
 import { helpers } from "./helpers/helpers";
@@ -59,6 +58,7 @@ import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalet
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
+import { DefaultOpacity, DimmedOpacity } from "../src/behavior";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -88,7 +88,7 @@ describe("EnhancedScatterChart", () => {
 
     describe("DOM tests", () => {
         it("should create svg element", () => {
-            expect(visualBuilder.mainElement[0]).toBeInDOM();
+            expect(visualBuilder.mainElement).toBeTruthy();
         });
 
         it("should draw right amount of dots", done => {
@@ -116,12 +116,13 @@ describe("EnhancedScatterChart", () => {
             };
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                let selector: string = ".enhancedScatterChart .mainGraphicsContext .ScatterMarkers .dot";
+                const selector: string = ".enhancedScatterChart .mainGraphicsContext .ScatterMarkers .dot";
 
-                $(selector).each((_, elem) => {
-                    let fill: string = $(elem).css("fill");
+                const elements: NodeListOf<HTMLElement> = visualBuilder.element.querySelectorAll(selector);
 
-                    expect(fill).toBe("rgba(0, 0, 0, 0)");
+                elements.forEach(element => {
+                    let fill: string = element.style.fill;
+                    expect(fill).toBeFalsy();
                 });
 
                 done();
@@ -149,12 +150,12 @@ describe("EnhancedScatterChart", () => {
             };
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                const labels: HTMLElement[] = <any[]>visualBuilder.dataLabelsText.get();
+                const labels: HTMLElement[] = visualBuilder.dataLabelsText;
 
                 labels.forEach((label: HTMLElement) => {
-                    let jqueryLabel: JQuery = $(label),
-                        x: number = Number(jqueryLabel.attr("x")),
-                        y: number = Number(jqueryLabel.attr("y"));
+                    let HTMLElementLabel: HTMLElement = label[0],
+                        x: number = Number(HTMLElementLabel.getAttribute("x")),
+                        y: number = Number(HTMLElementLabel.getAttribute("y"));
 
                     expect(x).toBeGreaterThan(0);
                     expect(y).toBeGreaterThan(0);
@@ -176,15 +177,14 @@ describe("EnhancedScatterChart", () => {
 
             visualBuilder.updateFlushAllD3Transitions(dataView);
 
-            expect(visualBuilder.legendItemText.length)
-                .toEqual(dataView.categorical.values.grouped().length);
+            expect(visualBuilder.legendItemText.length).toEqual(dataView.categorical.values.grouped().length);
         });
 
         describe("addElementToDOM", () => {
             let rootElement: Selection<any>;
 
             beforeEach(() => {
-                rootElement = d3.select($(visualBuilder.element).get(0));
+                rootElement = d3Select(visualBuilder.element);
             });
 
             it("arguments are null", () => {
@@ -211,7 +211,7 @@ describe("EnhancedScatterChart", () => {
                     name: "g"
                 });
 
-                expect(element.node()).toBeInDOM();
+                expect(element.node()).toBeTruthy();
             });
 
             function callAddElementToDOMAndResultShouldBeNull(
@@ -254,19 +254,19 @@ describe("EnhancedScatterChart", () => {
                 event.pageY = visualBuilder.viewport.height / MiddleViewportFactor;
                 event.pageX = visualBuilder.viewport.width / MiddleViewportFactor;
 
-                visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(new Event("mouseover"));
-                visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(event);
+                visualBuilder.svgScrollableAxisGraphicsContext.dispatchEvent(new Event("mouseover"));
+                visualBuilder.svgScrollableAxisGraphicsContext.dispatchEvent(event);
 
-                expect(visualBuilder.crosshair.css("display")).not.toBe("none");
+                expect(visualBuilder.crosshair.style.display).not.toBe("none");
 
-                visualBuilder.crosshair.children("line").toArray().map($).forEach((element: JQuery) => {
-                    expect(parseFloat(element.attr("x2"))).toBeGreaterThan(0);
-                    expect(parseFloat(element.attr("y2"))).toBeGreaterThan(0);
+                visualBuilder.crosshair.querySelectorAll("line").forEach((element: SVGLineElement) => {
+                    expect(parseFloat(element.getAttribute("x2") ?? "0")).toBeGreaterThan(0);
+                    expect(parseFloat(element.getAttribute("y2") ?? "0")).toBeGreaterThan(0);
                 });
 
-                visualBuilder.svgScrollableAxisGraphicsContext[0].dispatchEvent(new Event("mouseout"));
+                visualBuilder.svgScrollableAxisGraphicsContext.dispatchEvent(new Event("mouseout"));
 
-                expect(visualBuilder.crosshair.css("display")).toBe("none");
+                expect(visualBuilder.crosshair.style.display).toBe("none");
             });
         });
     });
@@ -283,12 +283,12 @@ describe("EnhancedScatterChart", () => {
 
             it("show", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.xAxisTicks).toBeInDOM();
+                expect(visualBuilder.xAxisTicks).toBeTruthy();
 
                 (<any>dataView.metadata.objects).categoryAxis.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.xAxisTicks).not.toBeInDOM();
+                expect(visualBuilder.xAxisTicks.length).toBe(0);
             });
 
             it("date formatting", () => {
@@ -301,12 +301,12 @@ describe("EnhancedScatterChart", () => {
                 let localDataView = localDataViewBuilder.getDataView();
 
                 visualBuilder.updateFlushAllD3Transitions(localDataView);
-                expect(visualBuilder.xAxisTicks).toBeInDOM();
+                expect(visualBuilder.xAxisTicks).toBeTruthy();
 
                 for (let i = 1; i > localDataViewBuilder.valuesX.length; i++) {
                     // first tick expects to be hidden
                     expect(
-                        visualBuilder.xAxisTicks.get(i)[0].children().text())
+                        visualBuilder.xAxisTicks.item(i)[0].children.text())
                         .toMatch(VisualClass.displayTimestamp(localDataViewBuilder.valuesX[i])
                         );
                 }
@@ -321,8 +321,10 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                expect(parseFloat(visualBuilder.xAxisTicks.first().children().text())).toBe(start);
-                expect(parseFloat(visualBuilder.xAxisTicks.last().children().text())).toBe(end);
+                const lastIndex: number = visualBuilder.xAxisTicks.length - 1;
+
+                expect(parseFloat(visualBuilder.xAxisTicks.item(0).querySelector('text')?.innerHTML)).toBe(start);
+                expect(parseFloat(visualBuilder.xAxisTicks.item(lastIndex).querySelector('text')?.innerHTML)).toBe(end);
             });
 
             it("display Units", () => {
@@ -331,8 +333,8 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).categoryAxis.labelDisplayUnits = displayUnits;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                visualBuilder.xAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(lodash.last(element.text())).toEqual("K");
+                visualBuilder.xAxisTicks.forEach((element: HTMLElement) => {
+                    expect(lodashLast(element.querySelector('text')?.innerHTML)).toEqual("K");
                 });
             });
 
@@ -340,12 +342,12 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).categoryAxis.showAxisTitle = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.xAxisLabel).toBeInDOM();
+                expect(visualBuilder.xAxisLabel).toBeTruthy();
 
                 (<any>dataView.metadata.objects).categoryAxis.showAxisTitle = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.xAxisLabel).not.toBeInDOM();
+                expect(visualBuilder.xAxisLabel).not.toBeTruthy();
             });
         });
 
@@ -362,12 +364,12 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).valueAxis.show = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.yAxisTicks).toBeInDOM();
+                expect(visualBuilder.yAxisTicks).toBeTruthy();
 
                 (<any>dataView.metadata.objects).valueAxis.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.yAxisTicks).not.toBeInDOM();
+                expect(visualBuilder.yAxisTicks.length).toBe(0);
             });
 
             it("date formatting", () => {
@@ -380,12 +382,12 @@ describe("EnhancedScatterChart", () => {
                 let localDataView = localDataViewBuilder.getDataView();
 
                 visualBuilder.updateFlushAllD3Transitions(localDataView);
-                expect(visualBuilder.yAxisTicks).toBeInDOM();
+                expect(visualBuilder.yAxisTicks).toBeTruthy();
 
                 for (let i = 1; i > localDataViewBuilder.valuesY.length; i++) {
                     // first tick expects to be hidden
                     expect(
-                        visualBuilder.yAxisTicks.get(i)[0].children().text())
+                        visualBuilder.yAxisTicks.item(i)[0].children.text())
                         .toMatch(VisualClass.displayTimestamp(localDataViewBuilder.valuesY[i])
                         );
                 }
@@ -400,8 +402,10 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                const actualStart: number = parseFloat(visualBuilder.yAxisTicks.first().children().text()),
-                    actualEnd: number = parseFloat(visualBuilder.yAxisTicks.last().children().text());
+                const lastIndex: number = visualBuilder.yAxisTicks.length - 1;
+
+                const actualStart: number = parseFloat(visualBuilder.yAxisTicks.item(0).querySelector('text')?.innerHTML),
+                    actualEnd: number = parseFloat(visualBuilder.yAxisTicks.item(lastIndex).querySelector('text')?.innerHTML);
 
                 expect(actualStart).toBe(start);
                 expect(actualEnd).toBe(end);
@@ -413,8 +417,8 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).valueAxis.labelDisplayUnits = displayUnits;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                visualBuilder.yAxisTicks.toArray().map($).forEach((element: JQuery) => {
-                    expect(lodash.last(element.text())).toEqual("K");
+                visualBuilder.yAxisTicks.forEach((element: HTMLElement) => {
+                    expect(lodashLast(element.querySelector('text')?.innerHTML)).toEqual("K");
                 });
             });
 
@@ -422,12 +426,12 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).valueAxis.showAxisTitle = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.yAxisLabel).toBeInDOM();
+                expect(visualBuilder.yAxisLabel).toBeTruthy();
 
                 (<any>dataView.metadata.objects).valueAxis.showAxisTitle = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.yAxisLabel).not.toBeInDOM();
+                expect(visualBuilder.yAxisLabel).not.toBeTruthy();
             });
         });
 
@@ -447,8 +451,8 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).categoryLabels.fontSize = fontSize;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
-                    expect(element.css("font-size")).toBe(expectedFontSize);
+                visualBuilder.dataLabelsText.forEach((element: HTMLElement) => {
+                    expect(element[0].style.fontSize).toBe(expectedFontSize);
                 });
             });
 
@@ -458,8 +462,8 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).categoryLabels.color = getSolidColorStructuralObject(color);
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                visualBuilder.dataLabelsText.toArray().map($).forEach((element: JQuery) => {
-                    assertColorsMatch(element.css("fill"), color);
+                visualBuilder.dataLabelsText.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element[0].style.fill, color);
                 });
             });
 
@@ -467,12 +471,12 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).categoryLabels.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                expect(visualBuilder.dataLabels).toBeInDOM();
+                expect(visualBuilder.dataLabels).toBeTruthy();
 
                 (<any>dataView.metadata.objects).categoryLabels.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                expect(visualBuilder.dataLabels).not.toBeInDOM();
+                expect(visualBuilder.dataLabels.length).toBe(0);
             });
         });
 
@@ -491,15 +495,15 @@ describe("EnhancedScatterChart", () => {
                 };
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                    expect(element.css("fill")).not.toBe("rgba(0, 0, 0, 0)");
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(element.style.fill).not.toBe("rgba(0, 0, 0, 0)");
                 });
 
                 (<any>dataView.metadata.objects).fillPoint.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                    expect(element.css("fill")).toBe("rgba(0, 0, 0, 0)");
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(element.style.fill).toBeFalsy();
                 });
             });
         });
@@ -518,14 +522,14 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).backdrop.show = true;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBeGreaterThan(0);
-                expect(parseFloat(visualBuilder.backdropImage.attr("width"))).toBeGreaterThan(0);
+                expect(parseFloat(visualBuilder.backdropImage.getAttribute("height"))).toBeGreaterThan(0);
+                expect(parseFloat(visualBuilder.backdropImage.getAttribute("width"))).toBeGreaterThan(0);
 
                 (<any>dataView.metadata.objects).backdrop.show = false;
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(parseFloat(visualBuilder.backdropImage.attr("height"))).toBe(0);
-                expect(parseFloat(visualBuilder.backdropImage.attr("width"))).toBe(0);
+                expect(parseFloat(visualBuilder.backdropImage.getAttribute("height"))).toBe(0);
+                expect(parseFloat(visualBuilder.backdropImage.getAttribute("width"))).toBe(0);
             });
 
             it("url", () => {
@@ -534,7 +538,7 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).backdrop.url = url;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                expect(visualBuilder.backdropImage.attr("href")).toBe(url);
+                expect(visualBuilder.backdropImage.getAttribute("href")).toBe(url);
             });
         });
 
@@ -550,11 +554,11 @@ describe("EnhancedScatterChart", () => {
             it("show", () => {
                 (<any>dataView.metadata.objects).crosshair.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.crosshair.children("text")).toBeInDOM();
+                expect(visualBuilder.crosshair.querySelector("text")).toBeTruthy();
 
                 (<any>dataView.metadata.objects).crosshair.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.crosshair.children("text")).not.toBeInDOM();
+                expect(visualBuilder.crosshair.querySelector("text")).not.toBeTruthy();
             });
         });
 
@@ -571,15 +575,15 @@ describe("EnhancedScatterChart", () => {
                 (<any>dataView.metadata.objects).outline.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                    assertColorsMatch(element.css("fill"), element.css("stroke"), true);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke, true);
                 });
 
                 (<any>dataView.metadata.objects).outline.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                visualBuilder.dots.toArray().map($).forEach((element: JQuery) => {
-                    assertColorsMatch(element.css("fill"), element.css("stroke"));
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke);
                 });
             });
         });
@@ -602,11 +606,11 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                const dots: JQuery<any>[] = visualBuilder.dots.toArray().map($);
+                const dots: NodeListOf<HTMLElement> = visualBuilder.dots;
 
                 colors.forEach((color: string) => {
-                    expect(dots.some((dot: JQuery) => {
-                        return areColorsEqual(dot.css("fill"), color);
+                    expect(Array.from(dots).some((dot: HTMLElement) => {
+                        return areColorsEqual(dot.style.fill, color);
                     })).toBeTruthy();
                 });
             });
@@ -624,21 +628,21 @@ describe("EnhancedScatterChart", () => {
             it("show", () => {
                 (<any>dataView.metadata.objects).legend.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.legendGroup.children()).toBeInDOM();
+                expect(visualBuilder.legendGroup.children).toBeTruthy();
 
                 (<any>dataView.metadata.objects).legend.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.legendGroup.children()).not.toBeInDOM();
+                expect(visualBuilder.legendGroup.children.length).toBe(0);
             });
 
             it("show title", () => {
                 (<any>dataView.metadata.objects).legend.showTitle = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.legendTitle).toBeInDOM();
+                expect(visualBuilder.legendTitle).toBeTruthy();
 
                 (<any>dataView.metadata.objects).legend.showTitle = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
-                expect(visualBuilder.legendTitle).not.toBeInDOM();
+                expect(visualBuilder.legendTitle).not.toBeTruthy();
             });
 
             it("title text", () => {
@@ -649,8 +653,8 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                let legendTitleText: string = visualBuilder.legendTitle.get(0).firstChild.textContent,
-                    legendTitleTitle: string = visualBuilder.legendTitle.children("title").text();
+                let legendTitleText: string = visualBuilder.legendTitle.childNodes[0].textContent,
+                    legendTitleTitle: string = (visualBuilder.legendTitle.children.item(0) as HTMLElement).innerHTML
 
                 expect(legendTitleText).toEqual(titleText);
                 expect(legendTitleTitle).toEqual(titleText);
@@ -664,10 +668,10 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                assertColorsMatch(visualBuilder.legendTitle.css("fill"), color);
+                assertColorsMatch(visualBuilder.legendTitle.style.fill, color);
 
-                visualBuilder.legendItemText.toArray().map($).forEach((element: JQuery) => {
-                    assertColorsMatch(element.css("fill"), color);
+                visualBuilder.legendItemText.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element[0].style.fill, color);
                 });
             });
 
@@ -680,10 +684,10 @@ describe("EnhancedScatterChart", () => {
 
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
-                expect(visualBuilder.legendTitle.css("font-size")).toBe(expectedFontSize);
+                expect(visualBuilder.legendTitle.style.fontSize).toBe(expectedFontSize);
 
-                visualBuilder.legendItemText.toArray().map($).forEach((element: JQuery) => {
-                    expect(element.css("font-size")).toBe(expectedFontSize);
+                visualBuilder.legendItemText.forEach((element: HTMLElement) => {
+                    expect(element[0].style.fontSize).toBe(expectedFontSize);
                 });
             });
         });
@@ -800,9 +804,7 @@ describe("EnhancedScatterChart", () => {
 
     describe("Capabilities tests", () => {
         it("all items having displayName should have displayNameKey property", () => {
-            jasmine.getJSONFixtures().fixturesPath = "base";
-
-            let jsonData = getJSONFixture("capabilities.json");
+            const jsonData = require("../capabilities.json");
 
             let objectsChecker: Function = (obj) => {
                 const objKeys = Object.keys(obj);
@@ -825,44 +827,46 @@ describe("EnhancedScatterChart", () => {
 
     describe("converter", () => {
         let colorPalette: IColorPalette,
-            visualHost: IVisualHost;
+            visualHost: IVisualHost,
+            instance: VisualClass;
 
         beforeEach(() => {
             colorPalette = createColorPalette();
             visualHost = createVisualHost();
+            instance = visualBuilder.instance;
         });
 
         it("arguments are null", () => {
-            callParseDataAndExpectExceptions(visualBuilder.instance, null, null, null, null);
+            callParseDataAndExpectExceptions(instance, null, null, null, null);
         });
 
         it("arguments are undefined", () => {
-            callParseDataAndExpectExceptions(visualBuilder.instance, undefined, undefined, undefined, undefined);
+            callParseDataAndExpectExceptions(instance, undefined, undefined, undefined, undefined);
         });
 
         it("arguments are correct", () => {
-            callParseDataAndExpectExceptions(visualBuilder.instance, dataView, colorPalette, visualHost);
+            callParseDataAndExpectExceptions(instance, dataView, colorPalette, visualHost);
         });
 
         it("backdrop", () => {
             let enhancedScatterChartData: IEnhancedScatterChartData = callConverterWithAdditionalColumns(
-                visualBuilder.instance,
+                instance,
                 colorPalette,
                 visualHost,
                 [EnhancedScatterChartData.ColumnBackdrop]
             );
 
-            expect(enhancedScatterChartData.settings.backdrop.url).toBeDefined();
-            expect(enhancedScatterChartData.settings.backdrop.url).not.toBeNull();
+            expect(enhancedScatterChartData.settings.enableBackdropCardSettings.url.value).toBeDefined();
+            expect(enhancedScatterChartData.settings.enableBackdropCardSettings.url.value).not.toBeNull();
 
-            expect(enhancedScatterChartData.settings.backdrop.url).toBe(defaultDataViewBuilder.imageValues[0]);
-            expect(enhancedScatterChartData.settings.backdrop.show).toBeTruthy();
+            expect(enhancedScatterChartData.settings.enableBackdropCardSettings.url.value).toBe(defaultDataViewBuilder.imageValues[0]);
+            expect(enhancedScatterChartData.settings.enableBackdropCardSettings.show.value).toBeDefined();
         });
 
         describe("dataPoints", () => {
             it("x should be defined", () => {
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint) => {
                         valueToBeDefinedAndNumber(dataPoint.x);
                     },
@@ -874,7 +878,7 @@ describe("EnhancedScatterChart", () => {
 
             it("y should be defined", () => {
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint) => {
                         valueToBeDefinedAndNumber(dataPoint.y);
                     },
@@ -885,7 +889,7 @@ describe("EnhancedScatterChart", () => {
 
             it("color fill", () => {
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
                         const areColorsEqualResult = areColorsEqual(dataPoint.fill, defaultDataViewBuilder.colorValues[index]);
                         expect(areColorsEqualResult).toBeTruthy();
@@ -899,7 +903,7 @@ describe("EnhancedScatterChart", () => {
 
             it("images", () => {
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
                         expect(dataPoint.svgurl).toBe(defaultDataViewBuilder.imageValues[index]);
                     },
@@ -911,7 +915,7 @@ describe("EnhancedScatterChart", () => {
 
             it("rotate should be defined", () => {
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index) => {
                         valueToBeDefinedAndNumber(dataPoint.rotation);
                     },
@@ -927,7 +931,7 @@ describe("EnhancedScatterChart", () => {
                 });
 
                 checkDataPointProperty(
-                    visualBuilder.instance,
+                    instance,
                     (dataPoint: EnhancedScatterChartDataPoint) => {
                         let rotation: number = dataPoint.rotation;
 
@@ -963,7 +967,6 @@ describe("EnhancedScatterChart", () => {
             visualHost: IVisualHost,
             interactivityService?: IInteractivityService<BaseDataPoint>
         ): IEnhancedScatterChartData {
-
             let enhancedScatterChartData: IEnhancedScatterChartData;
 
             expect(() => {
@@ -1019,10 +1022,10 @@ describe("EnhancedScatterChart", () => {
             ]);
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                const images: JQuery<any>[] = visualBuilder.images.toArray().map($);
+                const images: NodeListOf<HTMLElement> = visualBuilder.images;
 
-                images.forEach((image: JQuery) => {
-                    const altText: string = image.attr("title");
+                images.forEach((image: HTMLElement) => {
+                    const altText: string | null = image.getAttribute("title");
 
                     expect(altText).toBeDefined();
                 });
@@ -1044,7 +1047,7 @@ describe("EnhancedScatterChart", () => {
 
             it("dots should use fill style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const dots: JQuery<any>[] = visualBuilder.dots.toArray().map($);
+                    const dots: NodeListOf<HTMLElement> = visualBuilder.dots;
 
                     expect(isColorAppliedToElements(dots, null, "fill"));
 
@@ -1053,12 +1056,12 @@ describe("EnhancedScatterChart", () => {
             });
 
             function isColorAppliedToElements(
-                elements: JQuery[],
+                elements: NodeListOf<HTMLElement>,
                 color?: string,
                 colorStyleName: string = "fill"
             ): boolean {
-                return elements.some((element: JQuery) => {
-                    const currentColor: string = element.css(colorStyleName);
+                return Array.from(elements).some((element: HTMLElement) => {
+                    const currentColor: string = element.style.getPropertyValue(colorStyleName);
 
                     if (!currentColor || !color) {
                         return currentColor === color;
@@ -1067,6 +1070,92 @@ describe("EnhancedScatterChart", () => {
                     return areColorsEqual(currentColor, color);
                 });
             }
+        });
+    });
+
+    describe("Highlight test", () => {
+        const defaultOpacity: string = DefaultOpacity.toString();
+        const dimmedOpacity: string = DimmedOpacity.toString();
+
+        it("Highlights property should not be received", (done) => {
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(dataView.categorical?.values?.findIndex(value => value.highlights!=null)).toBe(-1);
+
+                const dataPoints = visualBuilder.dots;
+
+                dataPoints.forEach((element: HTMLElement) => {
+                    const opacity: string = element.style.opacity;
+                    expect(opacity).toBe(defaultOpacity);
+                });
+
+                done();
+            });
+        });
+
+        it("Elements should be highlighted", (done) => {
+            const dataViewWithHighLighted: DataView = defaultDataViewBuilder.getDataView(undefined, true);
+            visualBuilder.updateRenderTimeout(dataViewWithHighLighted, () => {
+                expect(dataViewWithHighLighted.categorical?.values?.findIndex(value => value.highlights!=null)).not.toBe(-1);
+
+                const dataPoints = visualBuilder.dots;
+
+                let highligtedCount: number = 0;
+                let nonHighlightedCount: number = 0;
+                const expectedHighligtedCount: number = 1;
+
+                dataPoints.forEach((element: HTMLElement) => {
+                    const opacity: string = element.style.opacity;
+                    if (opacity === defaultOpacity)
+                        highligtedCount++;
+                    if (opacity === dimmedOpacity)
+                        nonHighlightedCount++;
+                });
+
+                const expectedNonHighligtedCount: number = dataPoints.length - expectedHighligtedCount;
+                expect(highligtedCount).toBe(expectedHighligtedCount);
+                expect(nonHighlightedCount).toBe(expectedNonHighligtedCount);
+
+                done();
+            });
+        });
+    });
+
+    describe("Telemetry", () => {
+        beforeEach(() => {
+            dataView.metadata.objects = {
+                backdrop: {
+                    show: true
+                }
+            };
+        });
+
+        it("Trace method is called with no link", (done) => {
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                done();
+            });
+        });
+
+        it("Trace method is called with unsupported link", (done) => {
+
+            (<any>dataView.metadata.objects).backdrop.url = "http://test.url";
+            (<any>dataView.metadata.objects).backdrop.show = true;
+
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                done();
+            });
+        });
+
+        it("Trace method is called with supported link", (done) => {
+
+            (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
+            (<any>dataView.metadata.objects).backdrop.show = true;
+
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(true);
+                done();
+            });
         });
     });
 });
