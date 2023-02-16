@@ -553,8 +553,7 @@
                 "positionDropDown": {
                     "type": {
                         "text": true
-                    },
-                    "suppressFormatPainterCopy": true
+                    }
                 },
                 "showTitle": {
                     "type": {
