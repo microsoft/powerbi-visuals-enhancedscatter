@@ -345,6 +345,7 @@ export class EnhancedScatterChartSettingsModel extends Model {
         else {
             if(this.enableDataPointCardSettings.showAllDataPoints.value)
             {
+                slices = [this.enableDataPointCardSettings.defaultColor, this.enableDataPointCardSettings.showAllDataPoints];
                 seriesDataPoints.forEach(dataPoint => {
                     slices.push(new formattingSettings.ColorPicker({
                         name: "fill",
