@@ -1,3 +1,14 @@
+## 3.0.1
+* Console error bug fixes
+
+## 3.0.0
+* API 5.2.0+
+* Dependencies update
+* Major bugs fixes
+* Support Highlight feature add
+* Eslint support
+* Puppeeter support
+
 ## 2.0.1
 * Backdrop URL field was restored
 * API 3.2.0
