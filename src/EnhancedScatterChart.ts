@@ -912,6 +912,21 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private isDataViewValid(dataView: DataView): boolean {
+
+        const categories: DataViewCategoryColumn[] = dataView?.categorical?.categories?.length && dataView.categorical.categories;
+
+        const values: DataViewValueColumns = dataView?.categorical?.values;
+
+        if (values === undefined || values.length == 0) {
+            return;
+        }
+
+        const metadata: EnhancedScatterChartMeasureMetadata = EnhancedScatterChart.getMetadata(categories, values.grouped());
+        
+        if (!metadata.cols.x || !metadata.cols.y) {
+            return;
+        }
+
         return !!(dataView && dataView.metadata);
     }
 
@@ -1504,7 +1519,7 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-
+        
         const dataView: DataView = options
             && options.dataViews
             && options.dataViews[0];
