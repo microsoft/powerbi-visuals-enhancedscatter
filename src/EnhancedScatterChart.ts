@@ -2949,6 +2949,8 @@ export class EnhancedScatterChart implements IVisual {
             maxX = d3Max<EnhancedScatterChartDataPoint, number>(dataPoints, dataPoint => dataPoint.x);
         }
 
+        this.setAxesStartEndValues(minX, maxX, minY, maxY);
+
         const xDomain: number[] = [minX, maxX];
 
         const combinedXDomain: number[] = axis.combineDomain(
@@ -3043,6 +3045,15 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         return value;
+    }
+
+    public setAxesStartEndValues(startX: number, endX: number, startY: number, endY: number) {
+        const { enableCategoryAxisCardSettings, enableValueAxisCardSettings } = this.formattingSettings;
+        
+        enableCategoryAxisCardSettings.start.value ??= startX;
+        enableCategoryAxisCardSettings.end.value ??= endX;
+        enableValueAxisCardSettings.start.value ??= startY;
+        enableValueAxisCardSettings.end.value ??= endY;
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {

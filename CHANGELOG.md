@@ -1,3 +1,8 @@
+## 3.0.2
+* Category and Value axes default coordinates load fix
+* FillPoint default value fix
+* powerbi-visuals-tools 4.2.0+
+
 ## 3.0.1
 * Console error bug fixes
 
