@@ -7,6 +7,8 @@ import { LegendDataPoint } from "powerbi-visuals-utils-chartutils/lib/legend/leg
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 import LegendPosition = legendInterfaces.LegendPosition;
 
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
+
 import Card = formattingSettings.Card;
 import Model = formattingSettings.Model;
 
@@ -19,27 +21,27 @@ export enum DisplayUnitsType {
     Thousands = 1000,
     Millions = 1000000,
     Billions = 1000000000,
-    Triilions = 1000000000000
+    Trillions = 1000000000000
 }
 
 const displayUnitsOptions : IEnumMember[] = [
-    {value: DisplayUnitsType.Auto, displayName : DisplayUnitsType[DisplayUnitsType.Auto]},
-    {value: DisplayUnitsType.None, displayName : DisplayUnitsType[DisplayUnitsType.None]},
-    {value: DisplayUnitsType.Thousands, displayName : DisplayUnitsType[DisplayUnitsType.Thousands]},
-    {value: DisplayUnitsType.Millions, displayName : DisplayUnitsType[DisplayUnitsType.Millions]},
-    {value: DisplayUnitsType.Billions, displayName : DisplayUnitsType[DisplayUnitsType.Billions]},
-    {value: DisplayUnitsType.Triilions, displayName : DisplayUnitsType[DisplayUnitsType.Triilions]}
+    {value: DisplayUnitsType.Auto, displayName : "Visual_DisplayUnits_Auto"},
+    {value: DisplayUnitsType.None, displayName : "Visual_DisplayUnits_None"},
+    {value: DisplayUnitsType.Thousands, displayName : "Visual_DisplayUnits_Thousands"},
+    {value: DisplayUnitsType.Millions, displayName : "Visual_DisplayUnits_Millions"},
+    {value: DisplayUnitsType.Billions, displayName : "Visual_DisplayUnits_Billions"},
+    {value: DisplayUnitsType.Trillions, displayName : "Visual_DisplayUnits_Trillions"}
 ]
 
 const positionOptions : IEnumMember[] = [
-    {value : LegendPosition[LegendPosition.Top], displayName : LegendPosition[LegendPosition.Top]},
-    {value : LegendPosition[LegendPosition.Bottom], displayName : LegendPosition[LegendPosition.Bottom]},
-    {value : LegendPosition[LegendPosition.Left], displayName : LegendPosition[LegendPosition.Left]},
-    {value : LegendPosition[LegendPosition.Right], displayName : LegendPosition[LegendPosition.Right]},
-    {value : LegendPosition[LegendPosition.TopCenter], displayName : LegendPosition[LegendPosition.TopCenter]},
-    {value : LegendPosition[LegendPosition.BottomCenter], displayName : LegendPosition[LegendPosition.BottomCenter]},
-    {value : LegendPosition[LegendPosition.LeftCenter], displayName : LegendPosition[LegendPosition.LeftCenter]},
-    {value : LegendPosition[LegendPosition.RightCenter], displayName : LegendPosition[LegendPosition.RightCenter]},
+    {value : LegendPosition[LegendPosition.Top], displayName : "Visual_LegendPosition_Top"},
+    {value : LegendPosition[LegendPosition.Bottom], displayName : "Visual_LegendPosition_Bottom"},
+    {value : LegendPosition[LegendPosition.Left], displayName : "Visual_LegendPosition_Left"},
+    {value : LegendPosition[LegendPosition.Right], displayName : "Visual_LegendPosition_Right"},
+    {value : LegendPosition[LegendPosition.TopCenter], displayName : "Visual_LegendPosition_TopCenter"},
+    {value : LegendPosition[LegendPosition.BottomCenter], displayName : "Visual_LegendPosition_BottomCenter"},
+    {value : LegendPosition[LegendPosition.LeftCenter], displayName : "Visual_LegendPosition_LeftCenter"},
+    {value : LegendPosition[LegendPosition.RightCenter], displayName : "Visual_LegendPosition_RightCenter"},
 ];
 
 class FontSizeSettings {
@@ -323,6 +325,17 @@ export class EnhancedScatterChartSettingsModel extends Model {
     cards = [this.enableDataPointCardSettings, this.enableCategoryAxisCardSettings, this.enableValueAxisCardSettings,
         this.enableLegendCardSettings, this.enableCategoryLabelsCardSettings, this.enableFillPointCardSettings,
         this.enableBackdropCardSettings, this.enableCrosshairCardSettings, this.enableOutlineCardSettings];
+
+    setLocalizedOptions(localizationManager: ILocalizationManager) { 
+        this.setLocalizedDisplayName(positionOptions, localizationManager);
+        this.setLocalizedDisplayName(displayUnitsOptions, localizationManager);
+    }
+
+    public setLocalizedDisplayName(options: IEnumMember[], localizationManager: ILocalizationManager) {
+        options.forEach(option => {
+            option.displayName = localizationManager.getDisplayName(option.displayName.toString())
+        });
+    }
 
     /**
      * populate colorSelector object categories formatting properties

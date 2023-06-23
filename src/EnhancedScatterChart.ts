@@ -63,6 +63,7 @@ import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipData
 import ISandboxExtendedColorPalette = powerbiVisualsApi.extensibility.ISandboxExtendedColorPalette;
 import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
 import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 // powerbi.visuals
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
@@ -413,6 +414,8 @@ export class EnhancedScatterChart implements IVisual {
     private foregroundSelectedColor: string;
     private hyperlinkColor: string;
 
+    private localizationManager: ILocalizationManager;
+
     private _margin: IMargin;
     private get margin(): IMargin {
         return this._margin || { left: 0, right: 0, top: 0, bottom: 0 };
@@ -581,8 +584,8 @@ export class EnhancedScatterChart implements IVisual {
         this.visualHost = options.host;
         this.colorPalette = options.host.colorPalette;
 
-        const localizationManager = options.host.createLocalizationManager();
-        this.formattingSettingsService = new FormattingSettingsService(localizationManager);
+        this.localizationManager = options.host.createLocalizationManager();
+        this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
 
         this.isHighContrast = this.colorPalette.isHighContrast;
         if (this.isHighContrast) {
@@ -3059,6 +3062,7 @@ export class EnhancedScatterChart implements IVisual {
     public getFormattingModel(): powerbi.visuals.FormattingModel {
 
         this.filterSettingsCards();
+        this.formattingSettings.setLocalizedOptions(this.localizationManager);
 
         return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
     }
