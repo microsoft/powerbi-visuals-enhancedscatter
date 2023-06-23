@@ -694,7 +694,7 @@ export class EnhancedScatterChart implements IVisual {
     public handleContextMenu() {
         this.svg.on('contextmenu', (event) => {
             const dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.selectionId : {}, {
+            this.selectionManager.showContextMenu((dataPoint && dataPoint.identity) ? dataPoint.identity : {}, {
                 x: event.clientX,
                 y: event.clientY
             });
