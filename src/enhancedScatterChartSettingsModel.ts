@@ -1,10 +1,10 @@
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
 import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { LegendDataPoint } from "powerbi-visuals-utils-chartutils/lib/legend/legendInterfaces";
 
-import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import ISelectionId = powerbi.visuals.ISelectionId;
 import LegendPosition = legendInterfaces.LegendPosition;
 
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
@@ -193,11 +193,11 @@ export class EnableLegendCardSettings extends Card {
         value: FontSizeSettings.DefaultFontSize,
         options: {
             minValue: {
-                type: powerbiVisualsApi.visuals.ValidatorType.Min,
+                type: powerbi.visuals.ValidatorType.Min,
                 value: FontSizeSettings.MinFontSize,
             },
             maxValue: {
-                type: powerbiVisualsApi.visuals.ValidatorType.Max,
+                type: powerbi.visuals.ValidatorType.Max,
                 value: FontSizeSettings.MaxFontSize,
             }
         }
@@ -229,11 +229,11 @@ export class EnableCategoryLabelsCardSettings extends Card {
         value: FontSizeSettings.DefaultFontSize,
         options: {
             minValue: {
-                type: powerbiVisualsApi.visuals.ValidatorType.Min,
+                type: powerbi.visuals.ValidatorType.Min,
                 value: FontSizeSettings.MinFontSize,
             },
             maxValue: {
-                type: powerbiVisualsApi.visuals.ValidatorType.Max,
+                type: powerbi.visuals.ValidatorType.Max,
                 value: FontSizeSettings.MaxFontSize,
             }
         }
