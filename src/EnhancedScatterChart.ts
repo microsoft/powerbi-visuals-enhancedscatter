@@ -28,7 +28,7 @@ import "./../style/visual.less";
 
 import lodashClone from "lodash.clone";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 
 // d3
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
@@ -39,39 +39,41 @@ import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
 import "d3-transition";
 
+import { ExternalLinksTelemetry } from "./telemetry";
+
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
-import Fill = powerbiVisualsApi.Fill;
-import DataView = powerbiVisualsApi.DataView;
-import IViewport = powerbiVisualsApi.IViewport;
-import ValueRange = powerbiVisualsApi.ValueRange;
-import NumberRange = powerbiVisualsApi.NumberRange;
-import DataViewObject = powerbiVisualsApi.DataViewObject;
-import DataViewObjects = powerbiVisualsApi.DataViewObjects;
-import DataViewCategorical = powerbiVisualsApi.DataViewCategorical;
-import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
-import DataViewValueColumns = powerbiVisualsApi.DataViewValueColumns;
-import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
-import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
-import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
-import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import Fill = powerbi.Fill;
+import DataView = powerbi.DataView;
+import IViewport = powerbi.IViewport;
+import ValueRange = powerbi.ValueRange;
+import NumberRange = powerbi.NumberRange;
+import DataViewObject = powerbi.DataViewObject;
+import DataViewObjects = powerbi.DataViewObjects;
+import DataViewCategorical = powerbi.DataViewCategorical;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import DataViewValueColumns = powerbi.DataViewValueColumns;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
+import PrimitiveValue = powerbi.PrimitiveValue;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
-import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
-import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
-import ISandboxExtendedColorPalette = powerbiVisualsApi.extensibility.ISandboxExtendedColorPalette;
-import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
-import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 // powerbi.visuals
-import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
-import IVisual = powerbiVisualsApi.extensibility.IVisual;
-import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
-import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
-import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import IVisual = powerbi.extensibility.IVisual;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.dataview
 import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
@@ -356,8 +358,6 @@ export class EnhancedScatterChart implements IVisual {
 
     private hasHighlights: boolean;
 
-    private ExternalImageTelemetryTraced: boolean = false;
-
     private legend: ILegend;
 
     private element: HTMLElement;
@@ -415,6 +415,8 @@ export class EnhancedScatterChart implements IVisual {
     private hyperlinkColor: string;
 
     private localizationManager: ILocalizationManager;
+
+    private telemetry: ExternalLinksTelemetry;
 
     private _margin: IMargin;
     private get margin(): IMargin {
@@ -687,6 +689,8 @@ export class EnhancedScatterChart implements IVisual {
 
         this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
         this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
+
+        this.telemetry = new ExternalLinksTelemetry(this.visualHost.telemetry);
 
         this.adjustMargins();
     }
@@ -1127,7 +1131,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    public static CREATE_LAZY_FORMATTED_CATEGORY(formatter: IValueFormatter, value: string): () => string {
+    public static createLazyFormattedCategory(formatter: IValueFormatter, value: string): () => string {
         return () => formatter.format(value);
     }
 
@@ -1138,7 +1142,7 @@ export class EnhancedScatterChart implements IVisual {
         return valueFormatter.format(value, "dd MMM yyyy");
     }
 
-    public static IS_DATE_TYPE_COLUMN(
+    public static isDateTypeColumn(
         source: DataViewMetadataColumn
     ): boolean {
         return (source && source.type && source.type.dateTime);
@@ -1217,7 +1221,7 @@ export class EnhancedScatterChart implements IVisual {
         categoryIdx: number) {
         if (measures.measureX) {
             seriesData.push({
-                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureX.source)
+                value: EnhancedScatterChart.isDateTypeColumn(measures.measureX.source)
                     ? EnhancedScatterChart.displayTimestamp(<number>xVal)
                     : xVal,
                 metadata: measures.measureX
@@ -1226,7 +1230,7 @@ export class EnhancedScatterChart implements IVisual {
 
         if (measures.measureY) {
             seriesData.push({
-                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureY.source)
+                value: EnhancedScatterChart.isDateTypeColumn(measures.measureY.source)
                     ? EnhancedScatterChart.displayTimestamp(<number>yVal)
                     : yVal,
                 metadata: measures.measureY
@@ -1454,7 +1458,7 @@ export class EnhancedScatterChart implements IVisual {
                     y: yVal,
                     radius: { sizeMeasure: measures.measureSize, index: categoryIdx },
                     strokeWidth: settings.enableDataPointCardSettings.strokeWidth,
-                    formattedCategory: EnhancedScatterChart.CREATE_LAZY_FORMATTED_CATEGORY(categoryFormatter, categoryValue),
+                    formattedCategory: EnhancedScatterChart.createLazyFormattedCategory(categoryFormatter, categoryValue),
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                     contentPosition: EnhancedScatterChart.DefaultContentPosition,
                     svgurl: image,
@@ -1538,18 +1542,6 @@ export class EnhancedScatterChart implements IVisual {
             this.interactivityService,
         );
 
-        if (!this.getExternalImageTelemetryTracedProperty()) {
-            let hasExternalImageLink: boolean = false;
-            if (this.formattingSettings.enableBackdropCardSettings.show)
-            {
-                hasExternalImageLink = EnhancedScatterChart.IS_EXTERNAL_LINK(this.formattingSettings.enableBackdropCardSettings.url.value);
-            }
-
-            if (hasExternalImageLink) {
-                this.telemetryTrace();
-            }
-        }
-
         this.eventService.renderingStarted(options);
 
         this.renderLegend();
@@ -1557,6 +1549,8 @@ export class EnhancedScatterChart implements IVisual {
         this.render();
 
         this.eventService.renderingFinished(options);
+
+        this.telemetry.detectExternalImages(this.formattingSettings.enableBackdropCardSettings.url.value);
     }
 
     private renderLegend(): void {
@@ -2008,7 +2002,7 @@ export class EnhancedScatterChart implements IVisual {
             const sizeValue: number = <number>measureSize.values[radiusData.index];
 
             if (sizeValue != null) {
-                return EnhancedScatterChart.PROJECT_SIZE_TO_PIXELS(
+                return EnhancedScatterChart.projectSizeToPixels(
                     sizeValue,
                     actualSizeDataRange,
                     bubblePixelAreaSizeRange) / EnhancedScatterChart.BubbleRadiusDivider;
@@ -2044,7 +2038,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    public static PROJECT_SIZE_TO_PIXELS(
+    public static projectSizeToPixels(
         size: number,
         actualSizeDataRange: EnhancedScatterDataRange,
         bubblePixelAreaSizeRange: EnhancedScatterDataRange
@@ -2083,7 +2077,7 @@ export class EnhancedScatterChart implements IVisual {
         if (actualSizeDataRange.delta === EnhancedScatterChart.MinDelta
             || bubblePixelAreaSizeRange.delta === EnhancedScatterChart.MinDelta) {
 
-            return (EnhancedScatterChart.RANGE_CONTAINS(actualSizeDataRange, value))
+            return (EnhancedScatterChart.rangeContains(actualSizeDataRange, value))
                 ? bubblePixelAreaSizeRange.minRange
                 : null;
         }
@@ -2094,7 +2088,7 @@ export class EnhancedScatterChart implements IVisual {
             + relativeX * bubblePixelAreaSizeRange.delta;
     }
 
-    public static RANGE_CONTAINS(range: EnhancedScatterDataRange, value: number): boolean {
+    public static rangeContains(range: EnhancedScatterDataRange, value: number): boolean {
         return range.minRange <= value && value <= range.maxRange;
     }
 
@@ -2867,7 +2861,7 @@ export class EnhancedScatterChart implements IVisual {
         return newMarkersMerged;
     }
 
-    public static GET_BUBBLE_OPACITY(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
+    public static getBubbleOpacity(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
         if (hasSelection && !d.selected) {
             return EnhancedScatterChart.DimmedBubbleOpacity;
         }
@@ -3111,23 +3105,5 @@ export class EnhancedScatterChart implements IVisual {
         {
             array.splice(index, 1);
         }
-    }
-
-    protected telemetryTrace()
-    {
-        this.visualHost.telemetry.trace(powerbiVisualsApi.VisualEventType.Trace, "External image link detected");
-        this.externalImageTelemetryTraced();
-    }
-
-    public static IS_EXTERNAL_LINK(link: string): boolean {
-        return /^(https):\/\/[^ "]+$/.test(link);
-    }
-
-    public getExternalImageTelemetryTracedProperty(): boolean {
-        return this.ExternalImageTelemetryTraced;
-    }
-
-    public externalImageTelemetryTraced(): void {
-        this.ExternalImageTelemetryTraced = true;
     }
 }

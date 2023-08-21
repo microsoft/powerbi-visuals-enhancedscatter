@@ -24,7 +24,7 @@
  *  THE SOFTWARE.
  */
 
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 import lodashLast from "lodash.last";
 
 // d3
@@ -32,12 +32,12 @@ import { Selection as d3Selection, select as d3Select } from "d3-selection";
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
-import DataView = powerbiVisualsApi.DataView;
-import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
+import DataView = powerbi.DataView;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
 
 // powerbi.extensibility.visual
-import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
-import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 // powerbi.extensibility.visual.test
@@ -59,6 +59,8 @@ import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalet
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 import { DefaultOpacity, DimmedOpacity } from "../src/behavior";
+
+import { ExternalLinksTelemetry } from "../src/telemetry";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -1120,42 +1122,50 @@ describe("EnhancedScatterChart", () => {
         });
     });
 
-    describe("Telemetry", () => {
-        beforeEach(() => {
-            dataView.metadata.objects = {
-                backdrop: {
-                    show: true
-                }
-            };
-        });
+    describe("URL link", () => {
+        // beforeEach(() => {
+        //     dataView.metadata.objects = {
+        //         backdrop: {
+        //             show: true
+        //         }
+        //     };
+        // });
 
-        it("Trace method is called with no link", (done) => {
+        it("with empty link", (done) => {
             visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                let link = "";
+
+                expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
                 done();
             });
         });
 
-        it("Trace method is called with unsupported link", (done) => {
+        it("matches to https pattern", (done) => {
 
-            (<any>dataView.metadata.objects).backdrop.url = "http://test.url";
-            (<any>dataView.metadata.objects).backdrop.show = true;
+            // (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
+            // (<any>dataView.metadata.objects).backdrop.show = true;
+
+            let link = "https://powerbi.com";
 
             visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
+                expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(true);
                 done();
             });
         });
 
-        it("Trace method is called with supported link", (done) => {
+        it("matches to ftp pattern", () => {
+            let link = "ftp://microsoft@ftp.someserver.com/program.exe";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(true);
+        });
 
-            (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
-            (<any>dataView.metadata.objects).backdrop.show = true;
+        it("does not matches to http, https or ftp pattern", () => {
+            let link = "powerbi.com";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
+        });
 
-            visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(true);
-                done();
-            });
+        it("base64 image does not matches to http, https or ftp pattern", () => {
+            let link = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII=";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
         });
     });
 });
