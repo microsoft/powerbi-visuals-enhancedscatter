@@ -23,7 +23,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-import { Selection as d3Selection } from "d3-selection";
+import { Selection as d3Selection, select as d3Select } from "d3-selection";
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi.extensibility.utils.interactivity
@@ -43,6 +43,9 @@ export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
     interactivityService: IInteractivityService<BaseDataPoint>;
 }
 
+const EnterCode = "Enter";
+const SpaceCode = "Space";
+
 export const DefaultOpacity: number = 0.85;
 export const DimmedOpacity: number = 0.4;
 
@@ -60,10 +63,12 @@ export function getFillOpacity(
 }
 
 export class VisualBehavior implements IInteractiveBehavior {
-    public options: BehaviorOptions;
+    private options: BehaviorOptions;
+    private selectionHandler: ISelectionHandler;
 
     public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
         this.options = options;
+        this.selectionHandler = selectionHandler;
 
         const {
             dataPointsSelection,
@@ -74,6 +79,9 @@ export class VisualBehavior implements IInteractiveBehavior {
         options.clearCatcher.on("click", () => {
             selectionHandler.handleClearSelection();
         });
+
+        this.bindKeyboardEventToDataPoints();
+        this.bindContexMenu();
     }
 
     public renderSelection(hasHighlights: boolean) {
@@ -91,6 +99,41 @@ export class VisualBehavior implements IInteractiveBehavior {
                 !dataPoint.highlight && hasHighlights,
                 !dataPoint.selected && hasSelection
             );
+        });
+    }
+
+    private bindKeyboardEventToDataPoints(): void {
+        this.options.dataPointsSelection.on("keydown", (event: KeyboardEvent, dataPoint: EnhancedScatterChartDataPoint) => {
+            if (event.code !== EnterCode && event.code !== SpaceCode) {
+                return;
+            }
+            this.selectionHandler.handleSelection(dataPoint, event.ctrlKey || event.metaKey);
+        });
+    }
+
+    private bindContexMenu(): void {
+        this.options.dataPointsSelection.on("contextmenu", (event: PointerEvent, dataPoint: EnhancedScatterChartDataPoint) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    dataPoint,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
+        });
+
+        this.options.clearCatcher.on("contextmenu", (event: PointerEvent) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    null,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
         });
     }
 }

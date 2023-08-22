@@ -578,7 +578,6 @@ export class EnhancedScatterChart implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         this.init(options);
-        this.handleContextMenu();
     }
 
     public init(options: VisualConstructorOptions): void {
@@ -693,17 +692,6 @@ export class EnhancedScatterChart implements IVisual {
         this.telemetry = new ExternalLinksTelemetry(this.visualHost.telemetry);
 
         this.adjustMargins();
-    }
-
-    public handleContextMenu() {
-        this.svg.on('contextmenu', (event) => {
-            const dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.identity) ? dataPoint.identity : {}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
     }
 
     private adjustMargins(): void {
@@ -2815,6 +2803,8 @@ export class EnhancedScatterChart implements IVisual {
 
                 return dataPoint.shapeSymbolType(area);
             })
+            .attr("tabindex", 0)
+            .attr("focusable", true)
             .transition()
             .duration((dataPoint: EnhancedScatterChartDataPoint) => {
                 if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
