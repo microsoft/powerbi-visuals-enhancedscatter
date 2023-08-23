@@ -81,7 +81,7 @@ export class VisualBehavior implements IInteractiveBehavior {
         });
 
         this.bindKeyboardEventToDataPoints();
-        this.bindContexMenu();
+        this.bindContextMenu();
     }
 
     public renderSelection(hasHighlights: boolean) {
@@ -111,7 +111,7 @@ export class VisualBehavior implements IInteractiveBehavior {
         });
     }
 
-    private bindContexMenu(): void {
+    private bindContextMenu(): void {
         this.options.dataPointsSelection.on("contextmenu", (event: PointerEvent, dataPoint: EnhancedScatterChartDataPoint) => {
             if (event) {
                 this.selectionHandler.handleContextMenu(
