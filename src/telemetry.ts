@@ -4,7 +4,7 @@ import ITelemetryService = powerbi.extensibility.ITelemetryService;
 
 export class ExternalLinksTelemetry {
     private telemetry: ITelemetryService;
-    private isTraced = false;
+    private isTraced: boolean = false;
 
     constructor(telemetry: ITelemetryService) {
         this.telemetry = telemetry;
