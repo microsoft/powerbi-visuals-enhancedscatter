@@ -43,8 +43,8 @@ export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
     interactivityService: IInteractivityService<BaseDataPoint>;
 }
 
-const EnterCode = "Enter";
-const SpaceCode = "Space";
+const EnterCode: string = "Enter";
+const SpaceCode: string = "Space";
 
 export const DefaultOpacity: number = 0.85;
 export const DimmedOpacity: number = 0.4;
