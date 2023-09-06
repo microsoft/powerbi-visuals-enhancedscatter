@@ -50,9 +50,13 @@ class FontSizeSettings {
     public static readonly MaxFontSize: number = 60;
 }
 
-export class EnableDataPointCardSettings extends Card {
+class StrokeWidthSettings {
+    public static readonly DefaultStrokeWidth: number = 1;
+    public static readonly MinStrokeWidth: number = 1;
+    public static readonly MaxStrokeWidth: number = 5;
+}
 
-    public strokeWidth: number = 1;
+export class EnableDataPointCardSettings extends Card {
 
     defaultColor = new formattingSettings.ColorPicker({
         name: "defaultColor",
@@ -306,9 +310,25 @@ export class EnableOutlineCardSettings extends Card {
         topLevelToggle: true
     });
 
+    strokeWidth = new formattingSettings.NumUpDown({
+        name: "strokeWidth",
+        displayNameKey: "Visual_StrokeWidth",
+        value: StrokeWidthSettings.DefaultStrokeWidth,
+        options: {
+            minValue: {
+                type: powerbi.visuals.ValidatorType.Min,
+                value: StrokeWidthSettings.MinStrokeWidth,
+            },
+            maxValue: {
+                type: powerbi.visuals.ValidatorType.Max,
+                value: StrokeWidthSettings.MaxStrokeWidth,
+            }
+        }
+    });
+
     name: string = "outline";
     displayNameKey: string = "Visual_Outline";
-    slices = [this.show];
+    slices = [this.show, this.strokeWidth];
 }
 
 export class EnhancedScatterChartSettingsModel extends Model {

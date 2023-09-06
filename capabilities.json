@@ -646,6 +646,11 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "strokeWidth": {
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         }

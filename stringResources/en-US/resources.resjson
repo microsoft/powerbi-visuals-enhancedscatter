@@ -47,6 +47,7 @@
     "Visual_Backdrop_ImageURL": "Image URL",
     "Visual_Crosshair": "Crosshair",
     "Visual_Outline": "Outline",
+    "Visual_StrokeWidth": "Stroke Width"
     "Visual_ColorSaturation": "Color saturation",
     "Visual_Description_LegendPosition": "Select the location for the legend",
     "Visual_Description_LegendShowTitle": "Display a title for legend symbols",

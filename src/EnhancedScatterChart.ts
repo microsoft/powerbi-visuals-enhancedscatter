@@ -933,10 +933,6 @@ export class EnhancedScatterChart implements IVisual {
             settings.enableDataPointCardSettings.defaultColor.value.value,
         );
 
-        settings.enableDataPointCardSettings.strokeWidth = colorHelper.isHighContrast
-            ? 2
-            : settings.enableDataPointCardSettings.strokeWidth;
-
         settings.enableLegendCardSettings.labelColor.value.value = colorHelper.getHighContrastColor(
             "foreground",
             settings.enableLegendCardSettings.labelColor.value.value
@@ -952,10 +948,6 @@ export class EnhancedScatterChart implements IVisual {
         settings.enableFillPointCardSettings.show.value = colorHelper.isHighContrast
             ? true
             : settings.enableFillPointCardSettings.show.value;
-
-        settings.enableOutlineCardSettings.show.value = colorHelper.isHighContrast
-            ? false
-            : settings.enableOutlineCardSettings.show.value;
 
         settings.enableCrosshairCardSettings.color = colorHelper.getHighContrastColor(
             "foreground",
@@ -1419,8 +1411,9 @@ export class EnhancedScatterChart implements IVisual {
                     seriesData
                 );
                 const currentFill: string = parsedColorFill || color;
-                const stroke: string = settings.enableOutlineCardSettings.show.value ? d3Rgb(currentFill).darker().toString() : currentFill;
+                const stroke: string = d3Rgb(currentFill).darker().toString();
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
+                const strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
 
                 let highlight: number = null;                
 
@@ -1445,7 +1438,7 @@ export class EnhancedScatterChart implements IVisual {
                     x: xVal,
                     y: yVal,
                     radius: { sizeMeasure: measures.measureSize, index: categoryIdx },
-                    strokeWidth: settings.enableDataPointCardSettings.strokeWidth,
+                    strokeWidth: strokeWidth,
                     formattedCategory: EnhancedScatterChart.createLazyFormattedCategory(categoryFormatter, categoryValue),
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                     contentPosition: EnhancedScatterChart.DefaultContentPosition,
