@@ -2702,7 +2702,9 @@ export class EnhancedScatterChart implements IVisual {
 
         markersMerged
             .classed(EnhancedScatterChart.ImageSelector.className, true)
-            .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
+            .attr("id", EnhancedScatterChart.MarkerImageSelector.className)
+            .attr("tabindex", 0)
+            .attr("focusable", true);
 
         // eslint-disable-next-line
         const thisVisual = this;
