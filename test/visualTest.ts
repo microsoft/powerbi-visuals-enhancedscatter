@@ -1123,13 +1123,6 @@ describe("EnhancedScatterChart", () => {
     });
 
     describe("URL link", () => {
-        // beforeEach(() => {
-        //     dataView.metadata.objects = {
-        //         backdrop: {
-        //             show: true
-        //         }
-        //     };
-        // });
 
         it("with empty link", (done) => {
             visualBuilder.updateRenderTimeout(dataView, () => {
@@ -1141,9 +1134,6 @@ describe("EnhancedScatterChart", () => {
         });
 
         it("matches to https pattern", (done) => {
-
-            // (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
-            // (<any>dataView.metadata.objects).backdrop.show = true;
 
             let link = "https://powerbi.com";
 

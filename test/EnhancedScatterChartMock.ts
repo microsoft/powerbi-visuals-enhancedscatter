@@ -7,7 +7,4 @@ export interface SelectionState {
 
 export class EnhancedScatterChartMock extends EnhancedScatterChart{
 
-    protected telemetryTrace(): void {
-        //this.externalImageTelemetryTraced();
-    }
 }
