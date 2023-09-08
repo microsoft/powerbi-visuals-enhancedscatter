@@ -329,7 +329,6 @@ export class EnhancedScatterChartSettingsModel extends Model {
 
     setLocalizedOptions(localizationManager: ILocalizationManager) { 
         this.setLocalizedDisplayName(positionOptions, localizationManager);
-        this.setLocalizedDisplayName(displayUnitsOptions, localizationManager);
     }
 
     public setLocalizedDisplayName(options: IEnumMember[], localizationManager: ILocalizationManager) {
