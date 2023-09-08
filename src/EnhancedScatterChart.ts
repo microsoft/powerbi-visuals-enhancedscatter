@@ -2870,8 +2870,8 @@ export class EnhancedScatterChart implements IVisual {
             showValueAxisLabel: true,
             categoryAxisScaleType: null,
             valueAxisScaleType: null,
-            valueAxisDisplayUnits: +valueAxisSettings.labelDisplayUnits.value.value.toString(),
-            categoryAxisDisplayUnits: +categoryAxisSettings.labelDisplayUnits.value.value.toString(),
+            valueAxisDisplayUnits: +valueAxisSettings.labelDisplayUnits.value,
+            categoryAxisDisplayUnits: +categoryAxisSettings.labelDisplayUnits.value,
             trimOrdinalDataOnOverflow: false
         };
 

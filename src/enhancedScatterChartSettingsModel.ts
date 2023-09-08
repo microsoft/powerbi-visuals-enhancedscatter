@@ -15,24 +15,6 @@ import Model = formattingSettings.Model;
 import IEnumMember = powerbi.IEnumMember;
 import { EnhancedScatterChartDataPoint } from "./dataInterfaces";
 
-export enum DisplayUnitsType {
-    Auto = 0,
-    None = 1,
-    Thousands = 1000,
-    Millions = 1000000,
-    Billions = 1000000000,
-    Trillions = 1000000000000
-}
-
-const displayUnitsOptions : IEnumMember[] = [
-    {value: DisplayUnitsType.Auto, displayName : "Visual_DisplayUnits_Auto"},
-    {value: DisplayUnitsType.None, displayName : "Visual_DisplayUnits_None"},
-    {value: DisplayUnitsType.Thousands, displayName : "Visual_DisplayUnits_Thousands"},
-    {value: DisplayUnitsType.Millions, displayName : "Visual_DisplayUnits_Millions"},
-    {value: DisplayUnitsType.Billions, displayName : "Visual_DisplayUnits_Billions"},
-    {value: DisplayUnitsType.Trillions, displayName : "Visual_DisplayUnits_Trillions"}
-]
-
 const positionOptions : IEnumMember[] = [
     {value : LegendPosition[LegendPosition.Top], displayName : "Visual_LegendPosition_Top"},
     {value : LegendPosition[LegendPosition.Bottom], displayName : "Visual_LegendPosition_Bottom"},
@@ -114,11 +96,10 @@ export class ScatterChartAxisCardSettings extends Card {
         value: undefined
     });
 
-    labelDisplayUnits = new formattingSettings.ItemDropdown({
+    labelDisplayUnits = new formattingSettings.AutoDropdown({
         name: "labelDisplayUnits",
         displayNameKey: "Visual_DisplayUnits",
-        items: displayUnitsOptions,
-        value: displayUnitsOptions[0]
+        value: 0
     });
 
     axisColor = new formattingSettings.ColorPicker({
