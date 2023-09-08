@@ -1887,6 +1887,8 @@ export class EnhancedScatterChart implements IVisual {
             clearCatcher: this.clearCatcher,
             interactivityService: this.interactivityService,
             behavior: this.behavior,
+            contextMenuSvg: this.svg,
+            selectionManager: this.selectionManager,
             dataPoints
         };
 
