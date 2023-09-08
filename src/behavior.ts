@@ -41,10 +41,8 @@ import { EnhancedScatterChartDataPoint } from "./dataInterfaces";
 
 export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
     clearCatcher: Selection<any>;
-    contextMenuSvg: Selection<any>;
     dataPointsSelection: Selection<EnhancedScatterChartDataPoint>;
     interactivityService: IInteractivityService<BaseDataPoint>;
-    selectionManager: ISelectionManager;
 }
 
 const EnterCode: string = "Enter";
@@ -116,13 +114,28 @@ export class VisualBehavior implements IInteractiveBehavior {
     }
 
     private bindContextMenu(): void {
-        this.options.contextMenuSvg.on('contextmenu', (event) => {
-            const dataPoint: any = d3Select(event.target).datum();
-            this.options.selectionManager.showContextMenu((dataPoint && dataPoint.identity) ? dataPoint.identity : {}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
+        this.options.dataPointsSelection.on("contextmenu", (event: PointerEvent, dataPoint: EnhancedScatterChartDataPoint) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    dataPoint,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
+        });
+
+        this.options.clearCatcher.on("contextmenu", (event: PointerEvent) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    null,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
         });
     }
 }
