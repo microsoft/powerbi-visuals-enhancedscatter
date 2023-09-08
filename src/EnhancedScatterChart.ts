@@ -957,6 +957,8 @@ export class EnhancedScatterChart implements IVisual {
         this.parseAxisSettings(settings.enableCategoryAxisCardSettings, colorHelper);
         this.parseAxisSettings(settings.enableValueAxisCardSettings, colorHelper);
 
+        settings.enableBackdropCardSettings.show.value = settings.enableBackdropCardSettings.show.value && !colorHelper.isHighContrast;
+
         return settings;
     }
 
