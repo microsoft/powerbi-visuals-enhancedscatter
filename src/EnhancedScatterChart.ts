@@ -551,7 +551,6 @@ export class EnhancedScatterChart implements IVisual {
 
         const shapeNames: string[] = Object.values(Shape);
         const customShape = shapeNames[Math.floor(shape)] as Shape;
-        console.log(customSymbolTypes);
         const result = customSymbolTypes[customShape] || defaultValue;
 
         return result;
