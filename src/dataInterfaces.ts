@@ -246,3 +246,17 @@ export interface CalculateScaleAndDomainOptions {
     valueAxisDisplayUnits?: number;
     valueAxisPrecision?: number;
 }
+
+export enum Shape {
+    Circle = "circle",
+    Cross = "cross",
+    Diamond = "diamond",
+    Square = "square",
+    TriangleDown = "triangle-down",
+    TriangleUp = "triangle-up",
+    Star = "star",
+    Hexagon = "hexagon",
+    X = "x",
+    UpArrow = "uparrow",
+    DownArrow = "downarrow"
+}

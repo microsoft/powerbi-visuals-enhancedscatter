@@ -35,7 +35,6 @@ import { Selection as d3Selection, select as d3Select } from "d3-selection";
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
 import { rgb as d3Rgb } from "d3-color";
-import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
 import "d3-transition";
 
@@ -143,7 +142,8 @@ import {
     EnhancedScatterChartRadiusData,
     CalculateScaleAndDomainOptions,
     ChartAxesLabels,
-    ElementProperties
+    ElementProperties,
+    Shape
 } from "./dataInterfaces";
 import * as gradientUtils from "./gradientUtils";
 import { tooltipBuilder } from "./tooltipBuilder";
@@ -152,11 +152,6 @@ import { yAxisPosition } from "./yAxisPosition";
 
 interface ShapeFunction {
     (value: any): string;
-}
-
-interface ShapeEntry {
-    key: string;
-    value: ShapeFunction;
 }
 
 interface TextProperties {
@@ -459,47 +454,47 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private static getCustomSymbolType(shape: any): ShapeFunction {
-        const customSymbolTypes = d3Map<ShapeFunction>({
-            "circle": (size: number) => {
+        const customSymbolTypes: Record<Shape, ShapeFunction> = {
+            [Shape.Circle]: (size: number) => {
                 const r: number = Math.sqrt(size / Math.PI);
 
                 return `M0,${r}A${r},${r} 0 1,1 0,${-r}A${r},${r} 0 1,1 0,${r}Z`;
             },
 
-            "cross": (size: number) => {
+            [Shape.Cross]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R5) / EnhancedScatterChart.R2;
 
                 return `M${-EnhancedScatterChart.R3 * r},${-r}H${-r}V${-EnhancedScatterChart.R3 * r}H${r}V${-r}H${EnhancedScatterChart.R3 * r}V${r}H${r}V${EnhancedScatterChart.R3 * r}H${-r}V${r}H${-EnhancedScatterChart.R3 * r}Z`;
             },
 
-            "diamond": (size: number) => {
+            [Shape.Diamond]: (size: number) => {
                 const ry: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.tan(Math.PI / EnhancedScatterChart.R6))),
                     rx: number = ry * Math.tan(Math.PI / EnhancedScatterChart.R6);
 
                 return `M0,${-ry}L${rx},0 0,${ry} ${-rx},0Z`;
             },
 
-            "square": (size: number) => {
+            [Shape.Square]: (size: number) => {
                 const r: number = Math.sqrt(size) / EnhancedScatterChart.R2;
 
                 return `M${-r},${-r}L${r},${-r} ${r},${r} ${-r},${r}Z`;
             },
 
-            "triangle-up": (size: number) => {
+            [Shape.TriangleUp]: (size: number) => {
                 const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                     ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                 return `M0,${-ry}L${rx},${ry} ${-rx},${ry}Z`;
             },
 
-            "triangle-down": (size: number) => {
+            [Shape.TriangleDown]: (size: number) => {
                 const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                     ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                 return `M0,${ry}L${rx},${-ry} ${-rx},${-ry}Z`;
             },
 
-            "star": (size: number) => {
+            [Shape.Star]: (size: number) => {
                 const outerRadius: number = Math.sqrt(size / EnhancedScatterChart.R2),
                     innerRadius: number = Math.sqrt(size / EnhancedScatterChart.R10),
                     angle: number = Math.PI / EnhancedScatterChart.R5;
@@ -520,41 +515,46 @@ export class EnhancedScatterChart implements IVisual {
                 return `${results}Z`;
             },
 
-            "hexagon": (size: number) => {
+            [Shape.Hexagon]: (size: number) => {
                 const r: number = Math.sqrt(size / (EnhancedScatterChart.R6 * Math.sqrt(EnhancedScatterChart.R3))),
                     r2: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.sqrt(EnhancedScatterChart.R3)));
 
                 return `M0,${EnhancedScatterChart.R2 * r}L${-r2},${r} ${-r2},${-r} 0,${-EnhancedScatterChart.R2 * r} ${r2},${-r} ${r2},${r}Z`;
             },
 
-            "x": (size: number) => {
+            [Shape.X]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R10);
 
                 return `M0,${r}L${-r},${EnhancedScatterChart.R2 * r} ${-EnhancedScatterChart.R2 * r},${r} ${-r},0 ${-EnhancedScatterChart.R2 * r},${-r} ${-r},${-EnhancedScatterChart.R2 * r} 0,${-r} ${r},${-EnhancedScatterChart.R2 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},0 ${EnhancedScatterChart.R2 * r},${r} ${r},${EnhancedScatterChart.R2 * r}Z`;
             },
 
-            "uparrow": (size: number) => {
+            [Shape.UpArrow]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                 return `M${r},${EnhancedScatterChart.R3 * r}L${-r},${EnhancedScatterChart.R3 * r} ${-r},${-r} ${-EnhancedScatterChart.R2 * r},${-r} 0,${-EnhancedScatterChart.R3 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},${-r}Z`;
             },
 
-            "downarrow": (size: number) => {
+            [Shape.DownArrow]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                 return `M0,${EnhancedScatterChart.R3 * r}L${(-EnhancedScatterChart.R2 * r)},${r} ${-r},${r} ${-r},${-EnhancedScatterChart.R3 * r} ${r},${-EnhancedScatterChart.R3 * r} ${r},${r} ${EnhancedScatterChart.R2 * r},${r}Z`;
             }
-        });
+        };
 
-        const defaultValue: ShapeFunction = customSymbolTypes.entries()[0].value;
+        const defaultValue: ShapeFunction = customSymbolTypes[Shape.Circle];
         if (!shape) {
             return defaultValue;
         } else if (isNaN(shape)) {
-            return customSymbolTypes[shape && shape.toString().toLowerCase()] || defaultValue;
+            const current = shape && (<string>shape).toLowerCase() as Shape;
+            return customSymbolTypes[current] || defaultValue;
         }
-        const result: ShapeEntry = customSymbolTypes.entries()[Math.floor(shape)];
 
-        return result ? result.value : defaultValue;
+        const shapeNames: string[] = Object.values(Shape);
+        const customShape = shapeNames[Math.floor(shape)] as Shape;
+        console.log(customSymbolTypes);
+        const result = customSymbolTypes[customShape] || defaultValue;
+
+        return result;
     }
 
     private static getDefinedNumberValue(value: any): number {
