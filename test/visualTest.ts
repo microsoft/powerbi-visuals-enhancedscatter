@@ -621,23 +621,27 @@ describe("EnhancedScatterChart", () => {
                 });
             });
 
-            it("focus-visible state during keyboard navigation", () => {
-                const focusedElementOutlineStrokeWidth: number = 8;
+            it("checks focus-visible state during keyboard navigation", () => {
+                const defaultFocusedStrokeWidth: number = 8;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 const firstElement: HTMLElement = visualBuilder.dots[0];
                 firstElement.focus();
 
-                const computedStyles = getComputedStyle(firstElement);
-                const stroke = computedStyles.getPropertyValue("stroke");
-                const strokeWidth = computedStyles.getPropertyValue("stroke-width");
-                const fill = computedStyles.getPropertyValue("fill");
+                const computedStyles: CSSStyleDeclaration = getComputedStyle(firstElement);
 
-                expect(strokeWidth).toBe(`${focusedElementOutlineStrokeWidth}px`);
+                const stroke: string = computedStyles.getPropertyValue("stroke");
+                const fill: string = computedStyles.getPropertyValue("fill");
+
                 assertColorsMatch(fill, stroke, true);
 
+                const firstElementStrokeWidth: number = +computedStyles.getPropertyValue("stroke-width").split("px")[0];
+
+                expect(firstElementStrokeWidth).toBe(defaultFocusedStrokeWidth);
+
                 for(let index = 1; index < visualBuilder.dots.length; index++){
-                    expect(strokeWidth).not.toBe(visualBuilder.dots[index].style.strokeWidth)
+                    const currentElementStrokeWidth: number = +visualBuilder.dots[index].style.strokeWidth.split("px")[0];
+                    expect(firstElementStrokeWidth).toBeGreaterThan(currentElementStrokeWidth)
                 };
             });
         });
