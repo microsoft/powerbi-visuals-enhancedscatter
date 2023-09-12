@@ -453,7 +453,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    private static getCustomSymbolType(shape: any): ShapeFunction {
+    private static getCustomSymbolType(shape: powerbi.PrimitiveValue): ShapeFunction {
         const customSymbolTypes: Record<Shape, ShapeFunction> = {
             [Shape.Circle]: (size: number) => {
                 const r: number = Math.sqrt(size / Math.PI);
@@ -544,13 +544,13 @@ export class EnhancedScatterChart implements IVisual {
         const defaultValue: ShapeFunction = customSymbolTypes[Shape.Circle];
         if (!shape) {
             return defaultValue;
-        } else if (isNaN(shape)) {
+        } else if (typeof shape !== "number") {
             const current = shape && (<string>shape).toLowerCase() as Shape;
             return customSymbolTypes[current] || defaultValue;
         }
 
         const shapeNames: string[] = Object.values(Shape);
-        const customShape = shapeNames[Math.floor(shape)] as Shape;
+        const customShape = shapeNames[Math.floor(<number>shape)] as Shape;
         const result = customSymbolTypes[customShape] || defaultValue;
 
         return result;
@@ -1299,19 +1299,19 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private getValuesFromDataViewValueColumnById(measures, categoryIdx: number): { [property: string]: any } {
-        const size: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureSize, categoryIdx);
-        const colorFill: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureColorFill, categoryIdx);
+        const size: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureSize, categoryIdx);
+        const colorFill: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureColorFill, categoryIdx);
 
         const shapeSymbolType: ShapeFunction = EnhancedScatterChart.getCustomSymbolType(
             EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureShape, categoryIdx));
 
-        const image: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureImage, categoryIdx);
-        const rotation: number = EnhancedScatterChart.getNumberFromDataViewValueColumnById(measures.measureRotation, categoryIdx);
-        const backdrop: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureBackdrop, categoryIdx);
-        const xStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXStart, categoryIdx);
-        const xEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXEnd, categoryIdx);
-        const yStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYStart, categoryIdx);
-        const yEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYEnd, categoryIdx);
+        const image: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureImage, categoryIdx);
+        const rotation: number = <number>EnhancedScatterChart.getNumberFromDataViewValueColumnById(measures.measureRotation, categoryIdx);
+        const backdrop: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureBackdrop, categoryIdx);
+        const xStart: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXStart, categoryIdx);
+        const xEnd: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXEnd, categoryIdx);
+        const yStart: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYStart, categoryIdx);
+        const yEnd: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYEnd, categoryIdx);
 
         return {
             size,
@@ -1465,7 +1465,7 @@ export class EnhancedScatterChart implements IVisual {
         dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
         index: number
     ): number {
-        const value: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(
+        const value: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(
             dataViewValueColumn,
             index
         );
@@ -1478,7 +1478,7 @@ export class EnhancedScatterChart implements IVisual {
     private static getValueFromDataViewValueColumnById(
         dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
         index: number
-    ): any {
+    ): powerbi.PrimitiveValue {
 
         return dataViewValueColumn && dataViewValueColumn.values
             ? dataViewValueColumn.values[index]
