@@ -54,7 +54,7 @@ import { interactivityBaseService as interactivityService } from "powerbi-visual
 import IInteractivityService = interactivityService.IInteractivityService;
 
 // powerbi.extensibility.utils.test
-import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId } from "powerbi-visuals-utils-testutils";
+import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId, getRandomNumber } from "powerbi-visuals-utils-testutils";
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
@@ -574,19 +574,71 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("show", () => {
-                (<any>dataView.metadata.objects).outline.show = true;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke, true);
+                    expect(element.style.strokeWidth).not.toBe("0px");
                 });
 
                 (<any>dataView.metadata.objects).outline.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke);
+                    expect(element.style.strokeWidth).toBe("0px");
                 });
+            });
+
+            it("stroke width", () => {
+                const strokeWidth: number = getRandomNumber(1, 5);
+
+                (<any>dataView.metadata.objects).outline.strokeWidth = strokeWidth;
+
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(element.style.strokeWidth).toBe(`${strokeWidth}px`);
+                });
+            });
+
+            it("stroke before and after apply of high-contrast", () => {
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke, true)
+                });
+
+                const backgroundColor: string = "#000000";
+                const foregroundColor: string = "#ffff00";
+    
+                visualBuilder.visualHost.colorPalette.isHighContrast = true;
+                visualBuilder.visualHost.colorPalette.background = { value: backgroundColor };
+                visualBuilder.visualHost.colorPalette.foreground = { value: foregroundColor };
+
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke, true)
+                });
+            });
+
+            it("focus-visible state during keyboard navigation", () => {
+                const focusedElementOutlineStrokeWidth: number = 8;
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                const firstElement: HTMLElement = visualBuilder.dots[0];
+                firstElement.focus();
+
+                const computedStyles = getComputedStyle(firstElement);
+                const stroke = computedStyles.getPropertyValue("stroke");
+                const strokeWidth = computedStyles.getPropertyValue("stroke-width");
+                const fill = computedStyles.getPropertyValue("fill");
+
+                expect(strokeWidth).toBe(`${focusedElementOutlineStrokeWidth}px`);
+                assertColorsMatch(fill, stroke, true);
+
+                for(let index = 1; index < visualBuilder.dots.length; index++){
+                    expect(strokeWidth).not.toBe(visualBuilder.dots[index].style.strokeWidth)
+                };
             });
         });
 
