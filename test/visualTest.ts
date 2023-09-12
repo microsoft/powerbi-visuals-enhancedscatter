@@ -573,7 +573,7 @@ describe("EnhancedScatterChart", () => {
                 };
             });
 
-            it("show", () => {
+            it("checks stroke width after outline enabled", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
@@ -588,7 +588,7 @@ describe("EnhancedScatterChart", () => {
                 });
             });
 
-            it("stroke width", () => {
+            it("checks outline stroke width", () => {
                 const strokeWidth: number = getRandomNumber(1, 5);
 
                 (<any>dataView.metadata.objects).outline.strokeWidth = strokeWidth;
@@ -600,7 +600,7 @@ describe("EnhancedScatterChart", () => {
                 });
             });
 
-            it("stroke before and after apply of high-contrast", () => {
+            it("checks stroke before and after apply of high-contrast", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
