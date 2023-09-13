@@ -602,9 +602,10 @@ describe("EnhancedScatterChart", () => {
 
             it("checks stroke before and after apply of high-contrast", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
+                const areNotSame: boolean = true;
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke, true)
+                    assertColorsMatch(element.style.fill, element.style.stroke, areNotSame)
                 });
 
                 const backgroundColor: string = "#000000";
@@ -617,7 +618,7 @@ describe("EnhancedScatterChart", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke, true)
+                    assertColorsMatch(element.style.fill, element.style.stroke, areNotSame)
                 });
             });
 
@@ -632,8 +633,9 @@ describe("EnhancedScatterChart", () => {
 
                 const stroke: string = computedStyles.getPropertyValue("stroke");
                 const fill: string = computedStyles.getPropertyValue("fill");
-
-                assertColorsMatch(fill, stroke, true);
+                
+                const areNotSame: boolean = true;
+                assertColorsMatch(fill, stroke, areNotSame);
 
                 const firstElementStrokeWidth: number = +computedStyles.getPropertyValue("stroke-width").split("px")[0];
 
@@ -959,7 +961,7 @@ describe("EnhancedScatterChart", () => {
                 );
             });
 
-            it("images", () => {
+            it("images url", () => {
                 checkDataPointProperty(
                     instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
