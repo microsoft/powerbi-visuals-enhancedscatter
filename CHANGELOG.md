@@ -1,3 +1,10 @@
+## 3.0.3.0
+* Include / exclude features added to context menu
+* Dropdown options localization fixed
+* Outline stroke width setting added
+* Keyboard navigation support added
+* README updated with shapes usage explanation
+
 ## 3.0.2
 * Category and Value axes default coordinates load fix
 * FillPoint default value fix

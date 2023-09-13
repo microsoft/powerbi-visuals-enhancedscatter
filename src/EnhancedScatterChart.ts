@@ -28,49 +28,51 @@ import "./../style/visual.less";
 
 import lodashClone from "lodash.clone";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 
 // d3
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
 import { rgb as d3Rgb } from "d3-color";
-import { map as d3Map } from "d3-collection";
 import { max as d3Max, min as d3Min } from "d3-array";
 import "d3-transition";
+
+import { ExternalLinksTelemetry } from "./telemetry";
 
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
-import Fill = powerbiVisualsApi.Fill;
-import DataView = powerbiVisualsApi.DataView;
-import IViewport = powerbiVisualsApi.IViewport;
-import ValueRange = powerbiVisualsApi.ValueRange;
-import NumberRange = powerbiVisualsApi.NumberRange;
-import DataViewObject = powerbiVisualsApi.DataViewObject;
-import DataViewObjects = powerbiVisualsApi.DataViewObjects;
-import DataViewCategorical = powerbiVisualsApi.DataViewCategorical;
-import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
-import DataViewValueColumns = powerbiVisualsApi.DataViewValueColumns;
-import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
-import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
-import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
-import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import Fill = powerbi.Fill;
+import DataView = powerbi.DataView;
+import IViewport = powerbi.IViewport;
+import ValueRange = powerbi.ValueRange;
+import NumberRange = powerbi.NumberRange;
+import DataViewObject = powerbi.DataViewObject;
+import DataViewObjects = powerbi.DataViewObjects;
+import DataViewCategorical = powerbi.DataViewCategorical;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import DataViewValueColumns = powerbi.DataViewValueColumns;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
+import PrimitiveValue = powerbi.PrimitiveValue;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 
-import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
-import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
-import ISandboxExtendedColorPalette = powerbiVisualsApi.extensibility.ISandboxExtendedColorPalette;
-import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
-import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
 // powerbi.visuals
-import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
-import IVisual = powerbiVisualsApi.extensibility.IVisual;
-import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
-import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
-import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import IVisual = powerbi.extensibility.IVisual;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.dataview
 import { dataRoleHelper as DataRoleHelper } from "powerbi-visuals-utils-dataviewutils";
@@ -140,7 +142,8 @@ import {
     EnhancedScatterChartRadiusData,
     CalculateScaleAndDomainOptions,
     ChartAxesLabels,
-    ElementProperties
+    ElementProperties,
+    Shape
 } from "./dataInterfaces";
 import * as gradientUtils from "./gradientUtils";
 import { tooltipBuilder } from "./tooltipBuilder";
@@ -149,11 +152,6 @@ import { yAxisPosition } from "./yAxisPosition";
 
 interface ShapeFunction {
     (value: any): string;
-}
-
-interface ShapeEntry {
-    key: string;
-    value: ShapeFunction;
 }
 
 interface TextProperties {
@@ -355,8 +353,6 @@ export class EnhancedScatterChart implements IVisual {
 
     private hasHighlights: boolean;
 
-    private ExternalImageTelemetryTraced: boolean = false;
-
     private legend: ILegend;
 
     private element: HTMLElement;
@@ -413,6 +409,10 @@ export class EnhancedScatterChart implements IVisual {
     private foregroundSelectedColor: string;
     private hyperlinkColor: string;
 
+    private localizationManager: ILocalizationManager;
+
+    private telemetry: ExternalLinksTelemetry;
+
     private _margin: IMargin;
     private get margin(): IMargin {
         return this._margin || { left: 0, right: 0, top: 0, bottom: 0 };
@@ -453,48 +453,48 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    private static getCustomSymbolType(shape: any): ShapeFunction {
-        const customSymbolTypes = d3Map<ShapeFunction>({
-            "circle": (size: number) => {
+    private static getCustomSymbolType(shape: powerbi.PrimitiveValue): ShapeFunction {
+        const customSymbolTypes: Record<Shape, ShapeFunction> = {
+            [Shape.Circle]: (size: number) => {
                 const r: number = Math.sqrt(size / Math.PI);
 
                 return `M0,${r}A${r},${r} 0 1,1 0,${-r}A${r},${r} 0 1,1 0,${r}Z`;
             },
 
-            "cross": (size: number) => {
+            [Shape.Cross]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R5) / EnhancedScatterChart.R2;
 
                 return `M${-EnhancedScatterChart.R3 * r},${-r}H${-r}V${-EnhancedScatterChart.R3 * r}H${r}V${-r}H${EnhancedScatterChart.R3 * r}V${r}H${r}V${EnhancedScatterChart.R3 * r}H${-r}V${r}H${-EnhancedScatterChart.R3 * r}Z`;
             },
 
-            "diamond": (size: number) => {
+            [Shape.Diamond]: (size: number) => {
                 const ry: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.tan(Math.PI / EnhancedScatterChart.R6))),
                     rx: number = ry * Math.tan(Math.PI / EnhancedScatterChart.R6);
 
                 return `M0,${-ry}L${rx},0 0,${ry} ${-rx},0Z`;
             },
 
-            "square": (size: number) => {
+            [Shape.Square]: (size: number) => {
                 const r: number = Math.sqrt(size) / EnhancedScatterChart.R2;
 
                 return `M${-r},${-r}L${r},${-r} ${r},${r} ${-r},${r}Z`;
             },
 
-            "triangle-up": (size: number) => {
+            [Shape.TriangleUp]: (size: number) => {
                 const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                     ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                 return `M0,${-ry}L${rx},${ry} ${-rx},${ry}Z`;
             },
 
-            "triangle-down": (size: number) => {
+            [Shape.TriangleDown]: (size: number) => {
                 const rx: number = Math.sqrt(size / Math.sqrt(EnhancedScatterChart.R3)),
                     ry: number = rx * Math.sqrt(EnhancedScatterChart.R3) / EnhancedScatterChart.R2;
 
                 return `M0,${ry}L${rx},${-ry} ${-rx},${-ry}Z`;
             },
 
-            "star": (size: number) => {
+            [Shape.Star]: (size: number) => {
                 const outerRadius: number = Math.sqrt(size / EnhancedScatterChart.R2),
                     innerRadius: number = Math.sqrt(size / EnhancedScatterChart.R10),
                     angle: number = Math.PI / EnhancedScatterChart.R5;
@@ -515,41 +515,45 @@ export class EnhancedScatterChart implements IVisual {
                 return `${results}Z`;
             },
 
-            "hexagon": (size: number) => {
+            [Shape.Hexagon]: (size: number) => {
                 const r: number = Math.sqrt(size / (EnhancedScatterChart.R6 * Math.sqrt(EnhancedScatterChart.R3))),
                     r2: number = Math.sqrt(size / (EnhancedScatterChart.R2 * Math.sqrt(EnhancedScatterChart.R3)));
 
                 return `M0,${EnhancedScatterChart.R2 * r}L${-r2},${r} ${-r2},${-r} 0,${-EnhancedScatterChart.R2 * r} ${r2},${-r} ${r2},${r}Z`;
             },
 
-            "x": (size: number) => {
+            [Shape.X]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R10);
 
                 return `M0,${r}L${-r},${EnhancedScatterChart.R2 * r} ${-EnhancedScatterChart.R2 * r},${r} ${-r},0 ${-EnhancedScatterChart.R2 * r},${-r} ${-r},${-EnhancedScatterChart.R2 * r} 0,${-r} ${r},${-EnhancedScatterChart.R2 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},0 ${EnhancedScatterChart.R2 * r},${r} ${r},${EnhancedScatterChart.R2 * r}Z`;
             },
 
-            "uparrow": (size: number) => {
+            [Shape.UpArrow]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                 return `M${r},${EnhancedScatterChart.R3 * r}L${-r},${EnhancedScatterChart.R3 * r} ${-r},${-r} ${-EnhancedScatterChart.R2 * r},${-r} 0,${-EnhancedScatterChart.R3 * r} ${EnhancedScatterChart.R2 * r},${-r} ${r},${-r}Z`;
             },
 
-            "downarrow": (size: number) => {
+            [Shape.DownArrow]: (size: number) => {
                 const r: number = Math.sqrt(size / EnhancedScatterChart.R12);
 
                 return `M0,${EnhancedScatterChart.R3 * r}L${(-EnhancedScatterChart.R2 * r)},${r} ${-r},${r} ${-r},${-EnhancedScatterChart.R3 * r} ${r},${-EnhancedScatterChart.R3 * r} ${r},${r} ${EnhancedScatterChart.R2 * r},${r}Z`;
             }
-        });
+        };
 
-        const defaultValue: ShapeFunction = customSymbolTypes.entries()[0].value;
+        const defaultValue: ShapeFunction = customSymbolTypes[Shape.Circle];
         if (!shape) {
             return defaultValue;
-        } else if (isNaN(shape)) {
-            return customSymbolTypes[shape && shape.toString().toLowerCase()] || defaultValue;
+        } else if (typeof shape !== "number") {
+            const current = shape && (<string>shape).toLowerCase() as Shape;
+            return customSymbolTypes[current] || defaultValue;
         }
-        const result: ShapeEntry = customSymbolTypes.entries()[Math.floor(shape)];
 
-        return result ? result.value : defaultValue;
+        const shapeNames: string[] = Object.values(Shape);
+        const customShape = shapeNames[Math.floor(<number>shape)] as Shape;
+        const result = customSymbolTypes[customShape] || defaultValue;
+
+        return result;
     }
 
     private static getDefinedNumberValue(value: any): number {
@@ -573,7 +577,6 @@ export class EnhancedScatterChart implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         this.init(options);
-        this.handleContextMenu();
     }
 
     public init(options: VisualConstructorOptions): void {
@@ -581,8 +584,8 @@ export class EnhancedScatterChart implements IVisual {
         this.visualHost = options.host;
         this.colorPalette = options.host.colorPalette;
 
-        const localizationManager = options.host.createLocalizationManager();
-        this.formattingSettingsService = new FormattingSettingsService(localizationManager);
+        this.localizationManager = options.host.createLocalizationManager();
+        this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
 
         this.isHighContrast = this.colorPalette.isHighContrast;
         if (this.isHighContrast) {
@@ -685,18 +688,9 @@ export class EnhancedScatterChart implements IVisual {
         this.mainGraphicsSVGSelection = this.mainGraphicsG.append("svg");
         this.mainGraphicsContext = this.mainGraphicsSVGSelection.append("g");
 
-        this.adjustMargins();
-    }
+        this.telemetry = new ExternalLinksTelemetry(this.visualHost.telemetry);
 
-    public handleContextMenu() {
-        this.svg.on('contextmenu', (event) => {
-            const dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.selectionId : {}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
+        this.adjustMargins();
     }
 
     private adjustMargins(): void {
@@ -938,10 +932,6 @@ export class EnhancedScatterChart implements IVisual {
             settings.enableDataPointCardSettings.defaultColor.value.value,
         );
 
-        settings.enableDataPointCardSettings.strokeWidth = colorHelper.isHighContrast
-            ? 2
-            : settings.enableDataPointCardSettings.strokeWidth;
-
         settings.enableLegendCardSettings.labelColor.value.value = colorHelper.getHighContrastColor(
             "foreground",
             settings.enableLegendCardSettings.labelColor.value.value
@@ -957,10 +947,6 @@ export class EnhancedScatterChart implements IVisual {
         settings.enableFillPointCardSettings.show.value = colorHelper.isHighContrast
             ? true
             : settings.enableFillPointCardSettings.show.value;
-
-        settings.enableOutlineCardSettings.show.value = colorHelper.isHighContrast
-            ? false
-            : settings.enableOutlineCardSettings.show.value;
 
         settings.enableCrosshairCardSettings.color = colorHelper.getHighContrastColor(
             "foreground",
@@ -1124,7 +1110,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    public static CREATE_LAZY_FORMATTED_CATEGORY(formatter: IValueFormatter, value: string): () => string {
+    public static createLazyFormattedCategory(formatter: IValueFormatter, value: string): () => string {
         return () => formatter.format(value);
     }
 
@@ -1135,7 +1121,7 @@ export class EnhancedScatterChart implements IVisual {
         return valueFormatter.format(value, "dd MMM yyyy");
     }
 
-    public static IS_DATE_TYPE_COLUMN(
+    public static isDateTypeColumn(
         source: DataViewMetadataColumn
     ): boolean {
         return (source && source.type && source.type.dateTime);
@@ -1214,7 +1200,7 @@ export class EnhancedScatterChart implements IVisual {
         categoryIdx: number) {
         if (measures.measureX) {
             seriesData.push({
-                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureX.source)
+                value: EnhancedScatterChart.isDateTypeColumn(measures.measureX.source)
                     ? EnhancedScatterChart.displayTimestamp(<number>xVal)
                     : xVal,
                 metadata: measures.measureX
@@ -1223,7 +1209,7 @@ export class EnhancedScatterChart implements IVisual {
 
         if (measures.measureY) {
             seriesData.push({
-                value: EnhancedScatterChart.IS_DATE_TYPE_COLUMN(measures.measureY.source)
+                value: EnhancedScatterChart.isDateTypeColumn(measures.measureY.source)
                     ? EnhancedScatterChart.displayTimestamp(<number>yVal)
                     : yVal,
                 metadata: measures.measureY
@@ -1313,19 +1299,19 @@ export class EnhancedScatterChart implements IVisual {
     }
 
     private getValuesFromDataViewValueColumnById(measures, categoryIdx: number): { [property: string]: any } {
-        const size: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureSize, categoryIdx);
-        const colorFill: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureColorFill, categoryIdx);
+        const size: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureSize, categoryIdx);
+        const colorFill: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureColorFill, categoryIdx);
 
         const shapeSymbolType: ShapeFunction = EnhancedScatterChart.getCustomSymbolType(
             EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureShape, categoryIdx));
 
-        const image: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureImage, categoryIdx);
-        const rotation: number = EnhancedScatterChart.getNumberFromDataViewValueColumnById(measures.measureRotation, categoryIdx);
-        const backdrop: string = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureBackdrop, categoryIdx);
-        const xStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXStart, categoryIdx);
-        const xEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXEnd, categoryIdx);
-        const yStart: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYStart, categoryIdx);
-        const yEnd: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYEnd, categoryIdx);
+        const image: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureImage, categoryIdx);
+        const rotation: number = <number>EnhancedScatterChart.getNumberFromDataViewValueColumnById(measures.measureRotation, categoryIdx);
+        const backdrop: string = <string>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureBackdrop, categoryIdx);
+        const xStart: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXStart, categoryIdx);
+        const xEnd: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureXEnd, categoryIdx);
+        const yStart: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYStart, categoryIdx);
+        const yEnd: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(measures.measureYEnd, categoryIdx);
 
         return {
             size,
@@ -1424,8 +1410,9 @@ export class EnhancedScatterChart implements IVisual {
                     seriesData
                 );
                 const currentFill: string = parsedColorFill || color;
-                const stroke: string = settings.enableOutlineCardSettings.show.value ? d3Rgb(currentFill).darker().toString() : currentFill;
+                const stroke: string = d3Rgb(currentFill).darker().toString();
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
+                const strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
 
                 let highlight: number = null;                
 
@@ -1450,8 +1437,8 @@ export class EnhancedScatterChart implements IVisual {
                     x: xVal,
                     y: yVal,
                     radius: { sizeMeasure: measures.measureSize, index: categoryIdx },
-                    strokeWidth: settings.enableDataPointCardSettings.strokeWidth,
-                    formattedCategory: EnhancedScatterChart.CREATE_LAZY_FORMATTED_CATEGORY(categoryFormatter, categoryValue),
+                    strokeWidth: strokeWidth,
+                    formattedCategory: EnhancedScatterChart.createLazyFormattedCategory(categoryFormatter, categoryValue),
                     selected: EnhancedScatterChart.DefaultSelectionStateOfTheDataPoint,
                     contentPosition: EnhancedScatterChart.DefaultContentPosition,
                     svgurl: image,
@@ -1478,7 +1465,7 @@ export class EnhancedScatterChart implements IVisual {
         dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
         index: number
     ): number {
-        const value: number = EnhancedScatterChart.getValueFromDataViewValueColumnById(
+        const value: number = <number>EnhancedScatterChart.getValueFromDataViewValueColumnById(
             dataViewValueColumn,
             index
         );
@@ -1491,7 +1478,7 @@ export class EnhancedScatterChart implements IVisual {
     private static getValueFromDataViewValueColumnById(
         dataViewValueColumn: DataViewCategoryColumn | DataViewValueColumn,
         index: number
-    ): any {
+    ): powerbi.PrimitiveValue {
 
         return dataViewValueColumn && dataViewValueColumn.values
             ? dataViewValueColumn.values[index]
@@ -1535,18 +1522,6 @@ export class EnhancedScatterChart implements IVisual {
             this.interactivityService,
         );
 
-        if (!this.getExternalImageTelemetryTracedProperty()) {
-            let hasExternalImageLink: boolean = false;
-            if (this.formattingSettings.enableBackdropCardSettings.show)
-            {
-                hasExternalImageLink = EnhancedScatterChart.IS_EXTERNAL_LINK(this.formattingSettings.enableBackdropCardSettings.url.value);
-            }
-
-            if (hasExternalImageLink) {
-                this.telemetryTrace();
-            }
-        }
-
         this.eventService.renderingStarted(options);
 
         this.renderLegend();
@@ -1554,6 +1529,8 @@ export class EnhancedScatterChart implements IVisual {
         this.render();
 
         this.eventService.renderingFinished(options);
+
+        this.telemetry.detectExternalImages(this.formattingSettings.enableBackdropCardSettings.url.value);
     }
 
     private renderLegend(): void {
@@ -2005,7 +1982,7 @@ export class EnhancedScatterChart implements IVisual {
             const sizeValue: number = <number>measureSize.values[radiusData.index];
 
             if (sizeValue != null) {
-                return EnhancedScatterChart.PROJECT_SIZE_TO_PIXELS(
+                return EnhancedScatterChart.projectSizeToPixels(
                     sizeValue,
                     actualSizeDataRange,
                     bubblePixelAreaSizeRange) / EnhancedScatterChart.BubbleRadiusDivider;
@@ -2041,7 +2018,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    public static PROJECT_SIZE_TO_PIXELS(
+    public static projectSizeToPixels(
         size: number,
         actualSizeDataRange: EnhancedScatterDataRange,
         bubblePixelAreaSizeRange: EnhancedScatterDataRange
@@ -2080,7 +2057,7 @@ export class EnhancedScatterChart implements IVisual {
         if (actualSizeDataRange.delta === EnhancedScatterChart.MinDelta
             || bubblePixelAreaSizeRange.delta === EnhancedScatterChart.MinDelta) {
 
-            return (EnhancedScatterChart.RANGE_CONTAINS(actualSizeDataRange, value))
+            return (EnhancedScatterChart.rangeContains(actualSizeDataRange, value))
                 ? bubblePixelAreaSizeRange.minRange
                 : null;
         }
@@ -2091,7 +2068,7 @@ export class EnhancedScatterChart implements IVisual {
             + relativeX * bubblePixelAreaSizeRange.delta;
     }
 
-    public static RANGE_CONTAINS(range: EnhancedScatterDataRange, value: number): boolean {
+    public static rangeContains(range: EnhancedScatterDataRange, value: number): boolean {
         return range.minRange <= value && value <= range.maxRange;
     }
 
@@ -2724,7 +2701,9 @@ export class EnhancedScatterChart implements IVisual {
 
         markersMerged
             .classed(EnhancedScatterChart.ImageSelector.className, true)
-            .attr("id", EnhancedScatterChart.MarkerImageSelector.className);
+            .attr("id", EnhancedScatterChart.MarkerImageSelector.className)
+            .attr("tabindex", 0)
+            .attr("focusable", true);
 
         // eslint-disable-next-line
         const thisVisual = this;
@@ -2818,6 +2797,8 @@ export class EnhancedScatterChart implements IVisual {
 
                 return dataPoint.shapeSymbolType(area);
             })
+            .attr("tabindex", 0)
+            .attr("focusable", true)
             .transition()
             .duration((dataPoint: EnhancedScatterChartDataPoint) => {
                 if (this.keyArray.indexOf((<ISelectionId>dataPoint.identity).getKey()) >= 0) {
@@ -2864,7 +2845,7 @@ export class EnhancedScatterChart implements IVisual {
         return newMarkersMerged;
     }
 
-    public static GET_BUBBLE_OPACITY(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
+    public static getBubbleOpacity(d: EnhancedScatterChartDataPoint, hasSelection: boolean): number {
         if (hasSelection && !d.selected) {
             return EnhancedScatterChart.DimmedBubbleOpacity;
         }
@@ -2890,8 +2871,8 @@ export class EnhancedScatterChart implements IVisual {
             showValueAxisLabel: true,
             categoryAxisScaleType: null,
             valueAxisScaleType: null,
-            valueAxisDisplayUnits: +valueAxisSettings.labelDisplayUnits.value.value.toString(),
-            categoryAxisDisplayUnits: +categoryAxisSettings.labelDisplayUnits.value.value.toString(),
+            valueAxisDisplayUnits: +valueAxisSettings.labelDisplayUnits.value,
+            categoryAxisDisplayUnits: +categoryAxisSettings.labelDisplayUnits.value,
             trimOrdinalDataOnOverflow: false
         };
 
@@ -3059,6 +3040,7 @@ export class EnhancedScatterChart implements IVisual {
     public getFormattingModel(): powerbi.visuals.FormattingModel {
 
         this.filterSettingsCards();
+        this.formattingSettings.setLocalizedOptions(this.localizationManager);
 
         return this.formattingSettingsService.buildFormattingModel(this.formattingSettings);
     }
@@ -3107,23 +3089,5 @@ export class EnhancedScatterChart implements IVisual {
         {
             array.splice(index, 1);
         }
-    }
-
-    protected telemetryTrace()
-    {
-        this.visualHost.telemetry.trace(powerbiVisualsApi.VisualEventType.Trace, "External image link detected");
-        this.externalImageTelemetryTraced();
-    }
-
-    public static IS_EXTERNAL_LINK(link: string): boolean {
-        return /^(https):\/\/[^ "]+$/.test(link);
-    }
-
-    public getExternalImageTelemetryTracedProperty(): boolean {
-        return this.ExternalImageTelemetryTraced;
-    }
-
-    public externalImageTelemetryTraced(): void {
-        this.ExternalImageTelemetryTraced = true;
     }
 }

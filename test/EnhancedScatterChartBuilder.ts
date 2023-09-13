@@ -24,8 +24,8 @@
  *  THE SOFTWARE.
  */
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import powerbi from "powerbi-visuals-api";
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.test
 import { VisualBuilderBase } from "powerbi-visuals-utils-testutils";
@@ -47,19 +47,19 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get mainElement(): HTMLElement {
-        return this.element.querySelector(".enhancedScatterChart");
+        return this.element.querySelector(".enhancedScatterChart") as HTMLElement;
     }
 
     public get axisGraphicsContext(): HTMLElement {
-        return this.mainElement.querySelector(".axisGraphicsContext");
+        return this.mainElement.querySelector(".axisGraphicsContext") as HTMLElement;
     }
 
     public get backdropImage(): SVGImageElement {
-        return this.axisGraphicsContext.querySelector("image");
+        return this.axisGraphicsContext.querySelector("image") as SVGImageElement;
     }
 
     public get xAxis(): HTMLElement {
-        return this.axisGraphicsContext.querySelector("g.x.axis");
+        return this.axisGraphicsContext.querySelector("g.x.axis") as HTMLElement;
     }
 
     public get xAxisTicks(): NodeListOf<HTMLElement> {
@@ -67,11 +67,11 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get xAxisLabel(): HTMLElement {
-        return this.axisGraphicsContext.querySelector(".xAxisLabel");
+        return this.axisGraphicsContext.querySelector(".xAxisLabel") as HTMLElement;
     }
 
     public get yAxis(): HTMLElement {
-        return this.svgScrollableAxisGraphicsContext.querySelector("g.y.axis");
+        return this.svgScrollableAxisGraphicsContext.querySelector("g.y.axis") as HTMLElement;
     }
 
     public get yAxisTicks(): NodeListOf<HTMLElement> {
@@ -79,17 +79,17 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get yAxisLabel(): HTMLElement {
-        return this.axisGraphicsContext.querySelector(".yAxisLabel");
+        return this.axisGraphicsContext.querySelector(".yAxisLabel") as HTMLElement;
     }
 
     public get svgScrollableAxisGraphicsContext(): HTMLElement {
-        return this.mainElement
-            .querySelector(".svgScrollable")
-            .querySelector(".axisGraphicsContext");
+        return this?.mainElement
+            ?.querySelector(".svgScrollable")
+            ?.querySelector(".axisGraphicsContext") as HTMLElement;
     }
 
     public get mainGraphicsContext(): HTMLElement {
-        return this.svgScrollableAxisGraphicsContext.querySelector(".mainGraphicsContext");
+        return this.svgScrollableAxisGraphicsContext.querySelector(".mainGraphicsContext") as HTMLElement;
     }
 
     public get dataLabels(): NodeListOf<HTMLElement> {
@@ -107,33 +107,33 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
     }
 
     public get crosshair(): HTMLElement {
-        return this.mainGraphicsContext
-            .querySelector("svg")
-            .querySelector("g.crosshairCanvas");
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.crosshairCanvas") as HTMLElement;
     }
 
     public get dots(): NodeListOf<HTMLElement> {
-        return this.mainGraphicsContext
-            .querySelector("svg")
-            .querySelector("g.ScatterMarkers")
-            .querySelectorAll("path.dot");
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.ScatterMarkers")
+            ?.querySelectorAll("path.dot") as NodeListOf<HTMLElement>;
     }
 
     public get images(): NodeListOf<HTMLElement> {
-        return this.mainGraphicsContext
-            .querySelector("svg")
-            .querySelector("g.ScatterMarkers")
-            .querySelectorAll("image.img");
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.ScatterMarkers")
+            ?.querySelectorAll("image.img") as NodeListOf<HTMLElement>;
     }
 
     public get legendGroup(): HTMLElement {
-        return this.element
-            .querySelector(".legend")
-            .querySelector("#legendGroup");
+        return this?.element
+            ?.querySelector(".legend")
+            ?.querySelector("#legendGroup") as HTMLElement;
     }
 
     public get legendTitle(): HTMLElement {
-        return this.legendGroup.querySelector(".legendTitle");
+        return this.legendGroup.querySelector(".legendTitle") as HTMLElement;
     }
 
     public get legendItemText(): HTMLElement[] {
@@ -146,9 +146,5 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
         });
 
         return legendTexts;
-    }
-
-    public get externalImageTelemetryTracedProperty(): boolean {
-        return this.visual.getExternalImageTelemetryTracedProperty();
     }
 }

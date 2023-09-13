@@ -23,15 +23,15 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 
-import IViewport = powerbiVisualsApi.IViewport;
-import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
-import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
-import NumberRange = powerbiVisualsApi.NumberRange;
+import IViewport = powerbi.IViewport;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import NumberRange = powerbi.NumberRange;
 
 // powerbi.visuals
-import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 // powerbi.extensibility.utils.interactivity
 import { interactivitySelectionService as interactivityService } from "powerbi-visuals-utils-interactivityutils";
@@ -245,4 +245,18 @@ export interface CalculateScaleAndDomainOptions {
     categoryAxisPrecision?: number;
     valueAxisDisplayUnits?: number;
     valueAxisPrecision?: number;
+}
+
+export enum Shape {
+    Circle = "circle",
+    Cross = "cross",
+    Diamond = "diamond",
+    Square = "square",
+    TriangleDown = "triangle-down",
+    TriangleUp = "triangle-up",
+    Star = "star",
+    Hexagon = "hexagon",
+    X = "x",
+    UpArrow = "uparrow",
+    DownArrow = "downarrow"
 }

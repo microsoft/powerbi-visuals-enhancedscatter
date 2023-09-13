@@ -26,9 +26,9 @@
 
 import lodashRange from "lodash.range";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import DataView = powerbiVisualsApi.DataView;
-import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
+import powerbi from "powerbi-visuals-api";
+import DataView = powerbi.DataView;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
 // powerbi.extensibility.visual
 import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
