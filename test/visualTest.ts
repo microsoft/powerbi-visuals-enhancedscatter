@@ -28,6 +28,7 @@ import powerbi from "powerbi-visuals-api";
 import lodashLast from "lodash.last";
 
 // d3
+import { hsl as d3Hsl } from "d3-color";
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
@@ -645,6 +646,40 @@ describe("EnhancedScatterChart", () => {
                     const currentElementStrokeWidth: number = +visualBuilder.dots[index].style.strokeWidth.split("px")[0];
                     expect(firstElementStrokeWidth).toBeGreaterThan(currentElementStrokeWidth)
                 };
+            });
+
+            it("checks stroke color lightness related to element fill color lightness", () => {
+                visualBuilder.visualHost.colorPalette.isHighContrast = true;
+                const blackColor: string = "#000000", whiteColor: string = "#ffffff", 
+                redColor: string = "#ff0000", turquoiseColor: string = "#01b8aa";
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: redColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: turquoiseColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
+
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: whiteColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: blackColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
             });
         });
 

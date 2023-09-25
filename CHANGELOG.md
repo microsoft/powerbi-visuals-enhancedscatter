@@ -1,3 +1,6 @@
+## 3.0.4.0
+* Stroke color changes related to the element fill color
+
 ## 3.0.3.0
 * Include / exclude features added to context menu
 * Dropdown options localization fixed
