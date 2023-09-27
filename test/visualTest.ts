@@ -597,7 +597,8 @@ describe("EnhancedScatterChart", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    expect(element.style.strokeWidth).toBe(`${strokeWidth}px`);
+                    const currentElementStrokeWidth: number = +element.style.strokeWidth.split("px")[0];
+                    expect(currentElementStrokeWidth.toFixed(2)).toEqual(strokeWidth.toFixed(2));
                 });
             });
 
