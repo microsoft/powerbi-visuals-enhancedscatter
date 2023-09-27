@@ -1410,7 +1410,9 @@ export class EnhancedScatterChart implements IVisual {
                     seriesData
                 );
                 const currentFill: string = parsedColorFill || color;
-                let stroke: string = d3Rgb(currentFill).darker().toString();
+
+                /* darker function takes number argument for intensiveness of color change */
+                let stroke: string = d3Rgb(currentFill).darker(3).toString();
                 
                 /*
                     If the color is too dark, we need to make the stroke lighter.
@@ -1424,7 +1426,7 @@ export class EnhancedScatterChart implements IVisual {
                     }
 
                     case d3Hsl(currentFill).l < 0.5: {
-                        stroke = d3Rgb(currentFill).brighter().toString();
+                        stroke = d3Rgb(currentFill).brighter(3).toString();
                         break;
                     }
                 }
