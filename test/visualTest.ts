@@ -650,15 +650,29 @@ describe("EnhancedScatterChart", () => {
 
             it("checks stroke color lightness related to element fill color lightness", () => {
                 visualBuilder.visualHost.colorPalette.isHighContrast = true;
-                const blackColor: string = "#000000", whiteColor: string = "#ffffff", 
-                redColor: string = "#ff0000", turquoiseColor: string = "#01b8aa";
+                const redColor: string = "#ff0000", stratosColor: string = "#000033",
+                cyanColor: string = "#03ffff", turquoiseColor: string = "#01b8aa",
+                blackColor: string = "#000000", whiteColor: string = "#ffffff";
 
                 visualBuilder.visualHost.colorPalette.foreground = { value: redColor };
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.dots.forEach((element: HTMLElement) => {
                     expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
                 });
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: stratosColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
 
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: cyanColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
                 
                 
                 visualBuilder.visualHost.colorPalette.foreground = { value: turquoiseColor };
