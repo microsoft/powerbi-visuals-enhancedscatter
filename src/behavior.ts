@@ -107,7 +107,7 @@ export class VisualBehavior implements IInteractiveBehavior {
             if (event.code !== EnterCode && event.code !== SpaceCode) {
                 return;
             }
-            this.selectionHandler.handleSelection(dataPoint, event.ctrlKey || event.metaKey);
+            this.selectionHandler.handleSelection(dataPoint, event.ctrlKey || event.metaKey || event.shiftKey);
         });
     }
 

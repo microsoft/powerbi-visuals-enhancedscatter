@@ -28,6 +28,7 @@ import powerbi from "powerbi-visuals-api";
 import lodashLast from "lodash.last";
 
 // d3
+import { hsl as d3Hsl } from "d3-color";
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
@@ -596,7 +597,8 @@ describe("EnhancedScatterChart", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    expect(element.style.strokeWidth).toBe(`${strokeWidth}px`);
+                    const currentElementStrokeWidth: number = +element.style.strokeWidth.split("px")[0];
+                    expect(currentElementStrokeWidth.toFixed(2)).toEqual(strokeWidth.toFixed(2));
                 });
             });
 
@@ -645,6 +647,54 @@ describe("EnhancedScatterChart", () => {
                     const currentElementStrokeWidth: number = +visualBuilder.dots[index].style.strokeWidth.split("px")[0];
                     expect(firstElementStrokeWidth).toBeGreaterThan(currentElementStrokeWidth)
                 };
+            });
+
+            it("checks stroke color lightness related to element fill color lightness", () => {
+                visualBuilder.visualHost.colorPalette.isHighContrast = true;
+                const redColor: string = "#ff0000", stratosColor: string = "#000033",
+                cyanColor: string = "#03ffff", turquoiseColor: string = "#01b8aa",
+                blackColor: string = "#000000", whiteColor: string = "#ffffff";
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: redColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: stratosColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
+
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: cyanColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: turquoiseColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
+
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: whiteColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: blackColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
             });
         });
 

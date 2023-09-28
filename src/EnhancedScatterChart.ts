@@ -34,7 +34,7 @@ import powerbi from "powerbi-visuals-api";
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
 import { AxisDomain as d3AxisDomain, axisBottom as d3AxisBottom, axisLeft as d3AxisLeft, axisRight as d3AxisRight } from "d3-axis";
 import { ScaleLinear as d3ScaleLiear } from "d3-scale";
-import { rgb as d3Rgb } from "d3-color";
+import { rgb as d3Rgb, hsl as d3Hsl } from "d3-color";
 import { max as d3Max, min as d3Min } from "d3-array";
 import "d3-transition";
 
@@ -1410,7 +1410,44 @@ export class EnhancedScatterChart implements IVisual {
                     seriesData
                 );
                 const currentFill: string = parsedColorFill || color;
-                const stroke: string = d3Rgb(currentFill).darker().toString();
+
+                /*
+                    If the fill color is dark, we need to make the stroke lighter or if light, then vice versa.
+                    d3Hsl(currentFill).l returns the lightness of the color in the range [0, 1].
+
+                    darker and brighter functions take number argument for intensiveness of color change
+                */
+
+                let stroke: string = d3Rgb(currentFill).darker().toString();
+
+                switch(true) {
+                    case d3Hsl(currentFill).l == 0: {
+                        const whiteColor: string = "#ffffff";
+                        stroke = d3Rgb(whiteColor).darker().toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l < 0.3: {
+                        stroke = d3Rgb(currentFill).brighter(3).toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l < 0.5: {
+                        stroke = d3Rgb(currentFill).brighter().toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l > 0.7: {
+                        stroke = d3Rgb(currentFill).darker(3).toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l >= 0.5: {
+                        stroke = d3Rgb(currentFill).darker().toString();
+                        break;
+                    }
+                }
+
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
                 const strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
 
