@@ -1418,17 +1418,32 @@ export class EnhancedScatterChart implements IVisual {
                     darker and brighter functions take number argument for intensiveness of color change
                 */
 
-                let stroke: string = d3Rgb(currentFill).darker(2).toString();
+                let stroke: string = d3Rgb(currentFill).darker().toString();
 
                 switch(true) {
-                    case d3Hsl(currentFill).l < 0.1: {
-                        const whiteColorHexValue: string = "#ffffff"; 
-                        stroke = d3Rgb(whiteColorHexValue).darker().toString();
+                    case d3Hsl(currentFill).l == 0: {
+                        const whiteColor: string = "#ffffff";
+                        stroke = d3Rgb(whiteColor).darker().toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l < 0.3: {
+                        stroke = d3Rgb(currentFill).brighter(3).toString();
                         break;
                     }
 
                     case d3Hsl(currentFill).l < 0.5: {
-                        stroke = d3Rgb(currentFill).brighter(2).toString();
+                        stroke = d3Rgb(currentFill).brighter().toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l > 0.7: {
+                        stroke = d3Rgb(currentFill).darker(3).toString();
+                        break;
+                    }
+
+                    case d3Hsl(currentFill).l >= 0.5: {
+                        stroke = d3Rgb(currentFill).darker().toString();
                         break;
                     }
                 }
