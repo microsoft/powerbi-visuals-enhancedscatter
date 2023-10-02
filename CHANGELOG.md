@@ -1,5 +1,6 @@
 ## 3.0.5.0
 * Outline disabled for images
+* Dependencies update
 
 ## 3.0.4.0
 * Stroke color changes related to the element fill color
