@@ -772,6 +772,7 @@ export class EnhancedScatterChart implements IVisual {
         );
 
         settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
+        settings.enableOutlineCardSettings.show.value = !(scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex);
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,

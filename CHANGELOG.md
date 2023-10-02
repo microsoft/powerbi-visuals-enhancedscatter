@@ -1,3 +1,6 @@
+## 3.0.5.0
+* Outline disabled for images
+
 ## 3.0.4.0
 * Stroke color changes related to the element fill color
 * ShiftKey enabled for multiple selection
