@@ -1452,7 +1452,12 @@ export class EnhancedScatterChart implements IVisual {
                 }
 
                 const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
-                const strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
+                let strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
+
+                if (fill == null) {
+                    strokeWidth = 1;
+                    stroke = currentFill;
+                }
 
                 let highlight: number = null;                
 

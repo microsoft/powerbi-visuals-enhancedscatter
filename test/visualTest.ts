@@ -568,6 +568,9 @@ describe("EnhancedScatterChart", () => {
         describe("Outline", () => {
             beforeEach(() => {
                 dataView.metadata.objects = {
+                    fillPoint: {
+                        show: false
+                    },
                     outline: {
                         show: true
                     }
