@@ -352,6 +352,7 @@ export class EnhancedScatterChart implements IVisual {
     private formattingSettingsService: FormattingSettingsService;
 
     private hasHighlights: boolean;
+    private useImages: boolean;
 
     private legend: ILegend;
 
@@ -765,6 +766,7 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
+        this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
 
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
@@ -772,9 +774,6 @@ export class EnhancedScatterChart implements IVisual {
         );
 
         settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
-
-        const usingImages: boolean = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
-        settings.enableOutlineCardSettings.show.value = usingImages ? false : settings.enableOutlineCardSettings.show.value;
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
@@ -3116,6 +3115,13 @@ export class EnhancedScatterChart implements IVisual {
                 case "legend": {
                     if (!this.data || !this.data.hasDynamicSeries) {
                         this.removeArrayItem(newCards, settings.enableLegendCardSettings);
+                    }
+
+                    break;
+                }
+                case "outline": {
+                    if (this.useImages) {
+                        this.removeArrayItem(newCards, settings.enableOutlineCardSettings);
                     }
 
                     break;
