@@ -1454,8 +1454,10 @@ export class EnhancedScatterChart implements IVisual {
                 let strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
 
                 if (fill == null) {
-                    strokeWidth = 1;
-                    stroke = currentFill;
+                    if (!settings.enableOutlineCardSettings.show.value) {
+                        stroke = currentFill;
+                        strokeWidth = 1;
+                    }
                 }
 
                 let highlight: number = null;                
