@@ -1450,13 +1450,23 @@ export class EnhancedScatterChart implements IVisual {
                     }
                 }
 
-                const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
+                let fill: string = currentFill;
                 let strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
 
-                if (fill == null && !settings.enableOutlineCardSettings.show.value) {
-                    stroke = currentFill;
-                    strokeWidth = 1;
+                if (!settings.enableFillPointCardSettings.isHidden) {
+                    const fillEnabled = settings.enableFillPointCardSettings.show.value && !settings.enableFillPointCardSettings.isHidden;
+                    const outlineEnabled = settings.enableOutlineCardSettings.show.value;
+                    const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
+        
+                    fill = fillEnabled ? currentFill : null;
+                    strokeWidth = outlineEnabled ? outlineWidth : 0;
+                    stroke = outlineEnabled ? d3Rgb(currentFill).darker().toString() : currentFill;
+        
+                    if (!fill && !outlineEnabled) {
+                        strokeWidth = 1;
+                    }
                 }
+
 
                 let highlight: number = null;                
 
