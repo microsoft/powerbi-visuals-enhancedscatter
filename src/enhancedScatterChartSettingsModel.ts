@@ -236,7 +236,7 @@ export class EnableFillPointCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Fill",
-        value: false,
+        value: true,
         topLevelToggle: true
     });
 

@@ -768,12 +768,12 @@ export class EnhancedScatterChart implements IVisual {
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
         this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
 
+        settings.enableFillPointCardSettings.isHidden = this.useImages;
+
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
             scatterMetadata.idx.size
         );
-
-        settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
@@ -1450,21 +1450,16 @@ export class EnhancedScatterChart implements IVisual {
                     }
                 }
 
-                let fill: string = currentFill;
-                let strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
-
-                if (!settings.enableFillPointCardSettings.isHidden) {
-                    const fillEnabled = settings.enableFillPointCardSettings.show.value && !settings.enableFillPointCardSettings.isHidden;
-                    const outlineEnabled = settings.enableOutlineCardSettings.show.value;
-                    const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
+                const fillEnabled = settings.enableFillPointCardSettings.show.value && !settings.enableFillPointCardSettings.isHidden;
+                const outlineEnabled = settings.enableOutlineCardSettings.show.value;
+                const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
         
-                    fill = fillEnabled ? currentFill : null;
-                    strokeWidth = outlineEnabled ? outlineWidth : 0;
-                    stroke = outlineEnabled ? d3Rgb(currentFill).darker().toString() : currentFill;
+                const fill: string = fillEnabled ? currentFill : null;
+                let strokeWidth: number = outlineEnabled ? outlineWidth : 0;
+                stroke = outlineEnabled ? d3Rgb(currentFill).darker().toString() : currentFill;
         
-                    if (!fill && !outlineEnabled) {
-                        strokeWidth = 1;
-                    }
+                if (!fill && !outlineEnabled) {
+                    strokeWidth = 1;
                 }
 
 
