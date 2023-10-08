@@ -1456,7 +1456,7 @@ export class EnhancedScatterChart implements IVisual {
         
                 const fill: string = fillEnabled ? currentFill : null;
                 let strokeWidth: number = outlineEnabled ? outlineWidth : 0;
-                stroke = outlineEnabled ? d3Rgb(currentFill).darker().toString() : currentFill;
+                stroke = !fillEnabled && !outlineEnabled ? currentFill : stroke;
         
                 if (!fill && !outlineEnabled) {
                     strokeWidth = 1;
