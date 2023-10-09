@@ -766,9 +766,9 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
-        this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
 
-        settings.enableFillPointCardSettings.isHidden = this.useImages;
+        /* Property is used for detection of image bucket in visual */
+        this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
 
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
@@ -1450,7 +1450,7 @@ export class EnhancedScatterChart implements IVisual {
                     }
                 }
 
-                const fillEnabled = settings.enableFillPointCardSettings.show.value && !settings.enableFillPointCardSettings.isHidden;
+                const fillEnabled = settings.enableFillPointCardSettings.show.value && !this.useImages;
                 const outlineEnabled = settings.enableOutlineCardSettings.show.value;
                 const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
         
@@ -3111,7 +3111,7 @@ export class EnhancedScatterChart implements IVisual {
                     break;
                 }
                 case "fillPoint": {
-                    if (settings.enableFillPointCardSettings.isHidden) {
+                    if (this.useImages) {
                         this.removeArrayItem(newCards, settings.enableFillPointCardSettings);
                     }
 
