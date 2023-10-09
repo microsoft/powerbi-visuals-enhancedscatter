@@ -1429,12 +1429,12 @@ export class EnhancedScatterChart implements IVisual {
                         break;
                     }
 
-                    case d3Hsl(currentFill).l < 0.3: {
+                    case d3Hsl(currentFill).l < 0.26: {
                         stroke = d3Rgb(currentFill).brighter(3).toString();
                         break;
                     }
 
-                    case d3Hsl(currentFill).l < 0.5: {
+                    case d3Hsl(currentFill).l < 0.36: {
                         stroke = d3Rgb(currentFill).brighter().toString();
                         break;
                     }

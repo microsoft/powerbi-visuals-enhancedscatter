@@ -625,7 +625,7 @@ describe("EnhancedScatterChart", () => {
             });
 
             it("checks focus-visible state during keyboard navigation", () => {
-                const defaultFocusedStrokeWidth: number = 10;
+                const defaultFocusedStrokeWidth: number = 8;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 const firstElement: HTMLElement = visualBuilder.dots[0];
