@@ -352,6 +352,7 @@ export class EnhancedScatterChart implements IVisual {
     private formattingSettingsService: FormattingSettingsService;
 
     private hasHighlights: boolean;
+    private useImages: boolean;
 
     private legend: ILegend;
 
@@ -766,12 +767,13 @@ export class EnhancedScatterChart implements IVisual {
 
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
 
+        /* Property is used for detection of image bucket in visual */
+        this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
+
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
             scatterMetadata.idx.size
         );
-
-        settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
@@ -1427,12 +1429,12 @@ export class EnhancedScatterChart implements IVisual {
                         break;
                     }
 
-                    case d3Hsl(currentFill).l < 0.3: {
+                    case d3Hsl(currentFill).l < 0.26: {
                         stroke = d3Rgb(currentFill).brighter(3).toString();
                         break;
                     }
 
-                    case d3Hsl(currentFill).l < 0.5: {
+                    case d3Hsl(currentFill).l < 0.36: {
                         stroke = d3Rgb(currentFill).brighter().toString();
                         break;
                     }
@@ -1448,8 +1450,18 @@ export class EnhancedScatterChart implements IVisual {
                     }
                 }
 
-                const fill: string = settings.enableFillPointCardSettings.show.value || settings.enableFillPointCardSettings.isHidden ? currentFill : null;
-                const strokeWidth: number = settings.enableOutlineCardSettings.show.value ? settings.enableOutlineCardSettings.strokeWidth.value : 0;
+                const fillEnabled = settings.enableFillPointCardSettings.show.value && !this.useImages;
+                const outlineEnabled = settings.enableOutlineCardSettings.show.value;
+                const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
+        
+                const fill: string = fillEnabled ? currentFill : null;
+                let strokeWidth: number = outlineEnabled ? outlineWidth : 0;
+                stroke = !fillEnabled && !outlineEnabled ? currentFill : stroke;
+        
+                if (!fill && !outlineEnabled) {
+                    strokeWidth = 1;
+                }
+
 
                 let highlight: number = null;                
 
@@ -3099,7 +3111,7 @@ export class EnhancedScatterChart implements IVisual {
                     break;
                 }
                 case "fillPoint": {
-                    if (settings.enableFillPointCardSettings.isHidden) {
+                    if (this.useImages) {
                         this.removeArrayItem(newCards, settings.enableFillPointCardSettings);
                     }
 
@@ -3108,6 +3120,13 @@ export class EnhancedScatterChart implements IVisual {
                 case "legend": {
                     if (!this.data || !this.data.hasDynamicSeries) {
                         this.removeArrayItem(newCards, settings.enableLegendCardSettings);
+                    }
+
+                    break;
+                }
+                case "outline": {
+                    if (this.useImages) {
+                        this.removeArrayItem(newCards, settings.enableOutlineCardSettings);
                     }
 
                     break;

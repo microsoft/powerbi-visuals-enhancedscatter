@@ -679,7 +679,7 @@ describe("EnhancedScatterChart", () => {
                 visualBuilder.visualHost.colorPalette.foreground = { value: turquoiseColor };
                 visualBuilder.updateFlushAllD3Transitions(dataView);
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
                 });
 
                 
