@@ -55,13 +55,14 @@ import { interactivityBaseService as interactivityService } from "powerbi-visual
 import IInteractivityService = interactivityService.IInteractivityService;
 
 // powerbi.extensibility.utils.test
-import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId, getRandomNumber } from "powerbi-visuals-utils-testutils";
+import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId, getRandomNumber, getRandomNumbers } from "powerbi-visuals-utils-testutils";
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 import { DefaultOpacity, DimmedOpacity } from "../src/behavior";
 
 import { ExternalLinksTelemetry } from "../src/telemetry";
+import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -800,6 +801,61 @@ describe("EnhancedScatterChart", () => {
                     expect(element[0].style.fontSize).toBe(expectedFontSize);
                 });
             });
+        });
+    });
+
+    describe("Shapes", () => {
+        it("checks 'd' attribute equality between numeric shape representation and string representation of shape column" , () => {
+            const shapeNumberRepresentation: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+            const shapeStringRepresentation: string[] = ["circle","cross","diamond","square","triangle-up","triangle-down","star","hexagon","x","uparrow","downarrow"];
+
+            let dAttributeList: string[] = [];
+
+            let dataViewBuilder = new EnhancedScatterChartData();
+            dataViewBuilder.colorValues = [];
+            dataViewBuilder.imageValues = [];
+            dataViewBuilder.valuesCategory = EnhancedScatterChartData.getDateYearRange(
+                new Date(2013, 0, 1),
+                new Date(2023, 0, 10),
+                1);
+
+            const length: number = dataViewBuilder.valuesCategory.length;
+
+            dataViewBuilder.valuesSeries = ["Access","OneNote","Outlook","Word","Excel","PowerPoint","Docs","Sheets","Slides","Chrome"];
+            dataViewBuilder.valuesX = getRandomNumbers(length, 100, 1000);
+            dataViewBuilder.valuesY = getRandomNumbers(length, 100, 1000);
+            dataViewBuilder.shapeValues = shapeNumberRepresentation;
+
+            dataView = dataViewBuilder.getDataView([
+                EnhancedScatterChartData.ColumnCategory,
+                EnhancedScatterChartData.ColumnSeries,
+                EnhancedScatterChartData.ColumnX,
+                EnhancedScatterChartData.ColumnY,
+                EnhancedScatterChartData.ColumnShape]);
+
+            visualBuilder.updateFlushAllD3Transitions(dataView);
+
+            let figures: NodeListOf<HTMLElement> = visualBuilder.dots;
+            figures.forEach(figure => {
+                dAttributeList.push(figure.getAttribute("d") as string);
+            });
+
+            dataViewBuilder.shapeValues = shapeStringRepresentation;
+
+            dataView = dataViewBuilder.getDataView([
+                EnhancedScatterChartData.ColumnCategory,
+                EnhancedScatterChartData.ColumnSeries,
+                EnhancedScatterChartData.ColumnX,
+                EnhancedScatterChartData.ColumnY,
+                EnhancedScatterChartData.ColumnShape]);
+
+            visualBuilder.updateFlushAllD3Transitions(dataView);
+
+            figures = visualBuilder.dots;
+
+            for (let i = 0; i < length; i++) {
+                expect(figures[i].getAttribute("d") as string).toEqual(dAttributeList[i]);
+            }
         });
     });
 

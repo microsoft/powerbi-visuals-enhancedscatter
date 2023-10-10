@@ -454,7 +454,7 @@ export class EnhancedScatterChart implements IVisual {
         };
     }
 
-    private static getCustomSymbolType(shape: powerbi.PrimitiveValue): ShapeFunction {
+    public static getCustomSymbolType(shape: powerbi.PrimitiveValue): ShapeFunction {
         const customSymbolTypes: Record<Shape, ShapeFunction> = {
             [Shape.Circle]: (size: number) => {
                 const r: number = Math.sqrt(size / Math.PI);
