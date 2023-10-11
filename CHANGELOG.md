@@ -1,3 +1,6 @@
+## 3.0.6.0
+* Fixed minor bugs related to shape
+
 ## 3.0.5.0
 * Outline disabled for images
 * Dependencies update
