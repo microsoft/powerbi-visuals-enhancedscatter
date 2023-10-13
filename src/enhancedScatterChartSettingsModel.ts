@@ -361,7 +361,7 @@ export class EnhancedScatterChartSettingsModel extends Model {
                     slices.push(new formattingSettings.ColorPicker({
                         name: "fill",
                         displayName: dataPoint.formattedCategory(),
-                        value: { value: dataPoint.stroke },
+                        value: { value: dataPoint.fill },
                         selector: ColorHelper.normalizeSelector((<ISelectionId>dataPoint.identity).getSelector(), true)
                     }));
                 });
