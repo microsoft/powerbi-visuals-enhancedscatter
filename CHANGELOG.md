@@ -1,4 +1,7 @@
 ## 3.0.6.0
+* Fixed minor bugs related to color fill
+
+## 3.0.6.0
 * Fixed minor bugs related to shape
 
 ## 3.0.5.0
