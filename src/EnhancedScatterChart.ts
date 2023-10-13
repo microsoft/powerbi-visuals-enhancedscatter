@@ -352,7 +352,6 @@ export class EnhancedScatterChart implements IVisual {
     private formattingSettingsService: FormattingSettingsService;
 
     private hasHighlights: boolean;
-    private useImages: boolean;
 
     private legend: ILegend;
 
@@ -766,9 +765,6 @@ export class EnhancedScatterChart implements IVisual {
         }
 
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
-
-        /* Property is used for detection of image bucket in visual */
-        this.useImages = scatterMetadata.idx.image >= EnhancedScatterChart.MinIndex;
 
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
@@ -1450,7 +1446,7 @@ export class EnhancedScatterChart implements IVisual {
                     }
                 }
 
-                const fillEnabled = settings.enableFillPointCardSettings.show.value && !this.useImages;
+                const fillEnabled = settings.enableFillPointCardSettings.show.value && !this.data?.useShape;
                 const outlineEnabled = settings.enableOutlineCardSettings.show.value;
                 const outlineWidth = settings.enableOutlineCardSettings.strokeWidth.value;
         
@@ -2877,7 +2873,7 @@ export class EnhancedScatterChart implements IVisual {
         let markers: Selection<EnhancedScatterChartDataPoint>,
             markersMerged: Selection<EnhancedScatterChartDataPoint>;
 
-        const markersChanged = this.data.useShape ? this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration) :
+        const markersChanged = this.data?.useShape ? this.drawScatterMarkersUsingShapes(markers, markersMerged, scatterData, sizeRange, duration) :
                 this.drawScatterMarkersWithoutShapes(markers, markersMerged, scatterData, sizeRange, duration);
 
         const newMarkers: Selection<EnhancedScatterChartDataPoint> = markersChanged.markers,
@@ -3103,7 +3099,7 @@ export class EnhancedScatterChart implements IVisual {
         settings.cards.forEach(element => {
             switch (element.name) {
                 case "dataPoint": {
-                    if (this.data && this.data.hasGradientRole) {
+                    if (this.data?.hasGradientRole || this.data?.useCustomColor) {
                         this.removeArrayItem(newCards, settings.enableDataPointCardSettings);
                     }
                     settings.populateColorSelector(this.data.legendDataPoints, this.data.dataPoints);
@@ -3111,7 +3107,7 @@ export class EnhancedScatterChart implements IVisual {
                     break;
                 }
                 case "fillPoint": {
-                    if (this.useImages) {
+                    if (this.data?.useShape) {
                         this.removeArrayItem(newCards, settings.enableFillPointCardSettings);
                     }
 
@@ -3125,7 +3121,7 @@ export class EnhancedScatterChart implements IVisual {
                     break;
                 }
                 case "outline": {
-                    if (this.useImages) {
+                    if (this.data?.useShape) {
                         this.removeArrayItem(newCards, settings.enableOutlineCardSettings);
                     }
 
