@@ -720,7 +720,7 @@ export class EnhancedScatterChart implements IVisual {
         visualHost: IVisualHost,
         interactivityService: IInteractivityService<BaseDataPoint>,
     ): EnhancedScatterChartData {
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, [dataView]);
+        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(EnhancedScatterChartSettingsModel, dataView);
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
         this.parseSettings(new ColorHelper(colorPalette));
@@ -3094,13 +3094,11 @@ export class EnhancedScatterChart implements IVisual {
 
         const settings: EnhancedScatterChartSettingsModel = this.formattingSettings;
 
-        const newCards = [...settings.cards];
-
         settings.cards.forEach(element => {
             switch (element.name) {
                 case "dataPoint": {
                     if (this.data?.hasGradientRole || this.data?.useCustomColor) {
-                        this.removeArrayItem(newCards, settings.enableDataPointCardSettings);
+                        settings.enableDataPointCardSettings.visible = false;
                     }
                     settings.populateColorSelector(this.data.legendDataPoints, this.data.dataPoints);
 
@@ -3108,38 +3106,26 @@ export class EnhancedScatterChart implements IVisual {
                 }
                 case "fillPoint": {
                     if (this.data?.useShape) {
-                        this.removeArrayItem(newCards, settings.enableFillPointCardSettings);
+                        settings.enableFillPointCardSettings.visible = false;
                     }
 
                     break;
                 }
                 case "legend": {
                     if (!this.data || !this.data.hasDynamicSeries) {
-                        this.removeArrayItem(newCards, settings.enableLegendCardSettings);
+                        settings.enableLegendCardSettings.visible = false;
                     }
 
                     break;
                 }
                 case "outline": {
                     if (this.data?.useShape) {
-                        this.removeArrayItem(newCards, settings.enableOutlineCardSettings);
+                        settings.enableOutlineCardSettings.visible = false;
                     }
 
                     break;
                 }
             }
         });
-
-        settings.cards = newCards;
-        this.formattingSettings = settings;
-    }
-
-    private removeArrayItem<T>(array: T[], item: T)
-    {
-        const index: number = array.indexOf(item);
-        if (index > -1)
-        {
-            array.splice(index, 1);
-        }
     }
 }
