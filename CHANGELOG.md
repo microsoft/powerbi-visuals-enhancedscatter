@@ -1,5 +1,6 @@
-## 3.0.6.0
+## 3.0.7.0
 * Fixed minor bugs related to color fill
+* Updated to new formatting model
 
 ## 3.0.6.0
 * Fixed minor bugs related to shape
