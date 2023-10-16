@@ -9,7 +9,7 @@ import LegendPosition = legendInterfaces.LegendPosition;
 
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
-import Card = formattingSettings.Card;
+import Card = formattingSettings.SimpleCard;
 import Model = formattingSettings.Model;
 
 import IEnumMember = powerbi.IEnumMember;
@@ -49,8 +49,7 @@ export class EnableDataPointCardSettings extends Card {
     showAllDataPoints = new formattingSettings.ToggleSwitch({
         name: "showAllDataPoints",
         displayNameKey: "Visual_DataPoint_Show_All",
-        value: false,
-        topLevelToggle: false
+        value: false
     });
 
     fill = new formattingSettings.ColorPicker({
@@ -80,8 +79,7 @@ export class ScatterChartAxisCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Show",
-        value: true,
-        topLevelToggle: true
+        value: true
     });
 
     start = new formattingSettings.NumUpDown({
@@ -111,21 +109,22 @@ export class ScatterChartAxisCardSettings extends Card {
     showAxisTitle = new formattingSettings.ToggleSwitch({
         name: "showAxisTitle",
         displayNameKey: "Visual_Axis_Title",
-        value: true,
-        topLevelToggle: false
+        value: true
     });
 }
 
 export class EnableCategoryAxisCardSettings extends ScatterChartAxisCardSettings {
     name: string = "categoryAxis";
     displayNameKey: string = "Visual_XAxis";
-    slices = [this.show, this.start, this.end, this.labelDisplayUnits, this.axisColor, this.showAxisTitle];
+    slices = [this.start, this.end, this.labelDisplayUnits, this.axisColor, this.showAxisTitle];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableValueAxisCardSettings extends ScatterChartAxisCardSettings {
     name: string = "valueAxis";
     displayNameKey: string = "Visual_YAxis";
-    slices = [this.show, this.start, this.end, this.labelDisplayUnits, this.axisColor, this.showAxisTitle];
+    slices = [this.start, this.end, this.labelDisplayUnits, this.axisColor, this.showAxisTitle];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableLegendCardSettings extends Card {
@@ -135,8 +134,7 @@ export class EnableLegendCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Show",
-        value: true,
-        topLevelToggle: true
+        value: true
     });
 
     positionDropDown = new formattingSettings.ItemDropdown({
@@ -153,8 +151,7 @@ export class EnableLegendCardSettings extends Card {
         displayNameKey: "Visual_LegendShowTitle",
         description: "Display a title for legend symbols",
         descriptionKey: "Visual_Description_LegendShowTitle",
-        value: true,
-        topLevelToggle: false
+        value: true
     });
 
     titleText = new formattingSettings.TextInput({
@@ -190,7 +187,8 @@ export class EnableLegendCardSettings extends Card {
 
     name: string = "legend";
     displayNameKey: string = "Visual_Legend";
-    slices = [this.show, this.showTitle, this.titleText, this.labelColor, this.fontSize, this.positionDropDown];
+    slices = [this.showTitle, this.titleText, this.labelColor, this.fontSize, this.positionDropDown];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableCategoryLabelsCardSettings extends Card {
@@ -198,8 +196,7 @@ export class EnableCategoryLabelsCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Show",
-        value: false,
-        topLevelToggle: true
+        value: false
     });
 
     color = new formattingSettings.ColorPicker({
@@ -226,7 +223,8 @@ export class EnableCategoryLabelsCardSettings extends Card {
 
     name: string = "categoryLabels";
     displayNameKey: string = "Visual_CategoryLabels";
-    slices = [this.show, this.color, this.fontSize];
+    slices = [this.color, this.fontSize];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableFillPointCardSettings extends Card {
@@ -235,12 +233,12 @@ export class EnableFillPointCardSettings extends Card {
         name: "show",
         displayNameKey: "Visual_Fill",
         value: true,
-        topLevelToggle: true
     });
 
     name: string = "fillPoint";
     displayNameKey: string = "Visual_FillPoint";
-    slices = [this.show];
+    slices = [];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableBackdropCardSettings extends Card {
@@ -248,8 +246,7 @@ export class EnableBackdropCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Show",
-        value: false,
-        topLevelToggle: true
+        value: false
     });
 
     url = new formattingSettings.TextInput({
@@ -261,7 +258,8 @@ export class EnableBackdropCardSettings extends Card {
 
     name: string = "backdrop";
     displayNameKey: string = "Visual_Backdrop";
-    slices = [this.show, this.url];
+    slices = [this.url];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableCrosshairCardSettings extends Card {
@@ -272,12 +270,12 @@ export class EnableCrosshairCardSettings extends Card {
         name: "show",
         displayNameKey: "Visual_Crosshair",
         value: false,
-        topLevelToggle: true
     });
 
     name: string = "crosshair";
     displayNameKey: string = "Visual_Crosshair";
-    slices = [this.show];
+    slices = [];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnableOutlineCardSettings extends Card {
@@ -285,8 +283,7 @@ export class EnableOutlineCardSettings extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Outline",
-        value: false,
-        topLevelToggle: true
+        value: false
     });
 
     strokeWidth = new formattingSettings.NumUpDown({
@@ -307,7 +304,8 @@ export class EnableOutlineCardSettings extends Card {
 
     name: string = "outline";
     displayNameKey: string = "Visual_Outline";
-    slices = [this.show, this.strokeWidth];
+    slices = [this.strokeWidth];
+    topLevelSlice?: formattingSettings.SimpleSlice<any> = this.show;
 }
 
 export class EnhancedScatterChartSettingsModel extends Model {
@@ -361,7 +359,7 @@ export class EnhancedScatterChartSettingsModel extends Model {
                     slices.push(new formattingSettings.ColorPicker({
                         name: "fill",
                         displayName: dataPoint.formattedCategory(),
-                        value: { value: dataPoint.stroke },
+                        value: { value: dataPoint.fill },
                         selector: ColorHelper.normalizeSelector((<ISelectionId>dataPoint.identity).getSelector(), true)
                     }));
                 });
