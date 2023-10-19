@@ -1,3 +1,6 @@
+## 3.0.8.0
+* Fixed bugs related fillPoint compatibility
+
 ## 3.0.7.0
 * Fixed minor bugs related to color fill
 * Updated to new formatting model
