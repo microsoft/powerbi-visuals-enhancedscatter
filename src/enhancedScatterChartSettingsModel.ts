@@ -229,10 +229,12 @@ export class EnableCategoryLabelsCardSettings extends Card {
 
 export class EnableFillPointCardSettings extends Card {
 
+    public isHidden: boolean = true;
+    
     show = new formattingSettings.ToggleSwitch({
         name: "show",
         displayNameKey: "Visual_Fill",
-        value: true,
+        value: false,
     });
 
     name: string = "fillPoint";

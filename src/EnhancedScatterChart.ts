@@ -374,7 +374,7 @@ export class EnhancedScatterChart implements IVisual {
     private crosshairTextSelection: Selection<any>;
 
     private data: EnhancedScatterChartData;
-    private dataView: DataView;
+    private axisFillValue: Fill;
 
     private xAxisProperties: IAxisProperties;
     private yAxisProperties: IAxisProperties;
@@ -714,6 +714,7 @@ export class EnhancedScatterChart implements IVisual {
         }
     }
 
+    // eslint-disable-next-line max-lines-per-function
     public parseData(
         dataView: DataView,
         colorPalette: IColorPalette,
@@ -764,12 +765,25 @@ export class EnhancedScatterChart implements IVisual {
             categoryFormatter = valueFormatter.createDefaultFormatter(null);
         }
 
+        this.axisFillValue = EnhancedScatterChart.getValueAxisFill(dataView);
+
         this.hasHighlights = dataValues.length > 0 && dataValues.some(value => value.highlights && value.highlights.some(_ => _));
 
         const sizeRange: ValueRange<number> = EnhancedScatterChart.getSizeRangeForGroups(
             grouped,
             scatterMetadata.idx.size
         );
+
+        settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
+
+        if (dataView?.metadata?.objects?.fillPoint?.show === undefined) {
+            if (settings.enableFillPointCardSettings.isHidden) {
+                settings.enableFillPointCardSettings.show.value = true;
+            }
+            else {
+                settings.enableFillPointCardSettings.show.value = false;
+            }
+        }
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
@@ -2117,13 +2131,10 @@ export class EnhancedScatterChart implements IVisual {
         return range.minRange <= value && value <= range.maxRange;
     }
 
-    private getValueAxisFill(): Fill {
-        if (this.dataView && this.dataView.metadata.objects) {
-            const valueAxis: DataViewObject = this.dataView.metadata.objects["valueAxis"];
-
-            if (valueAxis) {
-                return <Fill>valueAxis["axisColor"];
-            }
+    private static getValueAxisFill(dataView: DataView): Fill {
+        const valueAxis: DataViewObject = dataView.metadata?.objects?.["valueAxis"];
+        if (valueAxis) {
+            return <Fill>valueAxis["axisColor"];
         }
 
         return { solid: { color: EnhancedScatterChart.DefaultCategoryAxisFillColor } };
@@ -2545,7 +2556,7 @@ export class EnhancedScatterChart implements IVisual {
             .filter((data) => data === EnhancedScatterChart.EmptyDataValue);
 
         if (xZeroTick) {
-            const xZeroColor: Fill = this.getValueAxisFill();
+            const xZeroColor: Fill = this.axisFillValue;
 
             if (xZeroColor) {
                 xZeroTick
