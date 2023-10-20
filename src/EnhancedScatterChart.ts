@@ -776,8 +776,11 @@ export class EnhancedScatterChart implements IVisual {
 
 
         const hasSizeColumn: boolean = !!(sizeRange && sizeRange.min);
-        // check if fillPoint was affected by size before
+        /*
+            check if fillPoint was affected by size before
+        */
         if (dataView?.metadata?.objects?.fillPoint?.show === undefined) {
+            // We had fillPoint show property 'On' by default when size column applied
             if (hasSizeColumn) {
                 settings.enableFillPointCardSettings.show.value = true;
             }
