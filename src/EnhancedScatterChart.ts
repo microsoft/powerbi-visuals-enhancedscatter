@@ -774,16 +774,18 @@ export class EnhancedScatterChart implements IVisual {
             scatterMetadata.idx.size
         );
 
-        settings.enableFillPointCardSettings.isHidden = !!(sizeRange && sizeRange.min);
 
+        const hasSizeColumn: boolean = !!(sizeRange && sizeRange.min);
+        // check if fillPoint was affected by size before
         if (dataView?.metadata?.objects?.fillPoint?.show === undefined) {
-            if (settings.enableFillPointCardSettings.isHidden) {
+            if (hasSizeColumn) {
                 settings.enableFillPointCardSettings.show.value = true;
             }
             else {
                 settings.enableFillPointCardSettings.show.value = false;
             }
         }
+
 
         const colorHelper: ColorHelper = new ColorHelper(
             colorPalette,
