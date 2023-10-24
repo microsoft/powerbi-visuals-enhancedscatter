@@ -56,12 +56,15 @@
         }
     }
 
-    .notSelected {
-        opacity: 0.6;
-    }
+    .img {
 
-    .selected {
-        opacity: 1;
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: auto;
+        }
     }
 
     .axisGraphicsContext {
