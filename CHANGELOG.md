@@ -1,3 +1,6 @@
+## 3.0.9.0
+* Fixed outline style for images
+
 ## 3.0.8.0
 * Fixed bugs related fillPoint compatibility
 
