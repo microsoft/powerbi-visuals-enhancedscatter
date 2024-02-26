@@ -46,14 +46,25 @@
             fill: transparent;
             stroke-width: 3px;
         }
+        
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            stroke-width: 8 !important;
+        }
     }
 
-    .notSelected {
-        opacity: 0.6;
-    }
+    .img {
 
-    .selected {
-        opacity: 1;
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: auto;
+        }
     }
 
     .axisGraphicsContext {

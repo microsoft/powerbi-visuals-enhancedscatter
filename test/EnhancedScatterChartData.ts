@@ -26,9 +26,9 @@
 
 import lodashRange from "lodash.range";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import DataView = powerbiVisualsApi.DataView;
-import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
+import powerbi from "powerbi-visuals-api";
+import DataView = powerbi.DataView;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
 // powerbi.extensibility.visual
 import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
@@ -51,6 +51,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
     public static ColumnY: string = EnhancedScatterChart.ColumnY;
     public static ColumnSize: string = EnhancedScatterChart.ColumnSize;
     public static ColumnColorFill: string = EnhancedScatterChart.ColumnColorFill;
+    public static ColumnShape: string = EnhancedScatterChart.ColumnShape;
     public static ColumnImage: string = EnhancedScatterChart.ColumnImage;
     public static ColumnBackdrop: string = EnhancedScatterChart.ColumnBackdrop;
     public static ColumnRotation: string = EnhancedScatterChart.ColumnRotation;
@@ -83,6 +84,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
 
     public colorValues: string[] = ["#ff0000", "#008000", "#0000ff"];
 
+    public shapeValues: number[] | string[] = [];
+
     public imageValues: string[] = [
         "Microsoft_Access.png",
         "Microsoft_OneNote.png",
@@ -91,7 +94,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
 
     public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
 
-    private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
+    public static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
         return lodashRange(start.getFullYear(), stop.getFullYear(), yearStep)
             .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
     }
@@ -121,6 +124,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
         let column2Highlight: number[] = [];
         let column3Highlight: number[] = [];
         let column4Highlight: number[] = [];
+        let column5Highlight: number[] = [];
 
         if (withHighlights)
         {
@@ -128,6 +132,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
             column2Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
             column3Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
             column4Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column5Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
         }
 
         return this.createCategoricalDataViewBuilder([
@@ -222,6 +227,16 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                     },
                     values: this.rotationValues,
                     highlights: column4Highlight.length > 0 ? column4Highlight : undefined
+                },
+                {
+                    source: {
+                        displayName: EnhancedScatterChartData.ColumnShape,
+                        format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnShape]: true },
+                    },
+                    values: this.shapeValues,
+                    highlights: column5Highlight.length > 0 ? column5Highlight : undefined
                 }
             ], columnNames).build();
     }

@@ -1,9 +1,24 @@
 # EnhancedScatter
-![Build](https://github.com/microsoft/powerbi-visuals-enhancedscatter/workflows/build/badge.svg)[![Coverage Status](https://coveralls.io/repos/github/Microsoft/powerbi-visuals-enhancedscatter/badge.svg?branch=main)](https://coveralls.io/github/Microsoft/powerbi-visuals-enhancedscatter?branch=main)
+![Build](https://github.com/microsoft/powerbi-visuals-enhancedscatter/workflows/build/badge.svg)
 
 > A few more properties were added to the existing scatter chart visual, including shapes as markers, background image support, and developer crosshairs for positioning elements onto an image background.
 
 ![Enhancedscatter screenshot](https://raw.githubusercontent.com/microsoft/powerbi-visuals-enhancedscatter/master/assets/screenshot.png)
+
+## Supported display figure shapes
+| Shape         | Number value | String value    |
+|---------------|--------------|-----------------|
+| Circle        | 0            | "circle"        |
+| Cross         | 1            | "cross"         |
+| Diamond       | 2            | "diamond"       |
+| Square        | 3            | "square"        |
+| Triangle Down | 4            | "triangle-down" |
+| Triangle Up   | 5            | "triangle-up"   |
+| Star          | 6            | "star"          |
+| Hexagon       | 7            | "hexagon"       |
+| X             | 8            | "x"             |
+| Up Arrow      | 9            | "uparrow"       |
+| Down Arrow    | 10           | "downarrow"     |
 
 # Overview
 Enhanced Scatter introduces a few more properties that were added on top of the existing scatter chart visual, including shapes as markers, background image support, and developer crosshairs for positioning elements onto an image background.

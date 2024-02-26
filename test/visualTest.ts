@@ -24,20 +24,21 @@
  *  THE SOFTWARE.
  */
 
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 import lodashLast from "lodash.last";
 
 // d3
+import { hsl as d3Hsl } from "d3-color";
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
 type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi
-import DataView = powerbiVisualsApi.DataView;
-import DataViewValueColumnGroup = powerbiVisualsApi.DataViewValueColumnGroup;
+import DataView = powerbi.DataView;
+import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
 
 // powerbi.extensibility.visual
-import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
-import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 // powerbi.extensibility.visual.test
@@ -54,11 +55,13 @@ import { interactivityBaseService as interactivityService } from "powerbi-visual
 import IInteractivityService = interactivityService.IInteractivityService;
 
 // powerbi.extensibility.utils.test
-import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId } from "powerbi-visuals-utils-testutils";
+import { MockISelectionId, assertColorsMatch, createVisualHost, createColorPalette, MockISelectionIdBuilder, createSelectionId, getRandomNumber, getRandomNumbers } from "powerbi-visuals-utils-testutils";
 
 import { EnhancedScatterChartDataPoint, ElementProperties, EnhancedScatterChartData as IEnhancedScatterChartData } from "../src/dataInterfaces";
 import { BaseDataPoint } from "powerbi-visuals-utils-interactivityutils/lib/interactivityBaseService";
 import { DefaultOpacity, DimmedOpacity } from "../src/behavior";
+
+import { ExternalLinksTelemetry } from "../src/telemetry";
 
 type CheckerCallback = (dataPoint: EnhancedScatterChartDataPoint, index?: number) => any;
 
@@ -571,19 +574,126 @@ describe("EnhancedScatterChart", () => {
                 };
             });
 
-            it("show", () => {
-                (<any>dataView.metadata.objects).outline.show = true;
+            it("checks stroke width after outline enabled", () => {
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke, true);
+                    expect(element.style.strokeWidth).not.toBe("0px");
                 });
 
                 (<any>dataView.metadata.objects).outline.show = false;
                 visualBuilder.updateFlushAllD3Transitions(dataView);
 
                 visualBuilder.dots.forEach((element: HTMLElement) => {
-                    assertColorsMatch(element.style.fill, element.style.stroke);
+                    expect(element.style.strokeWidth).toBe("0px");
+                });
+            });
+
+            it("checks outline stroke width", () => {
+                const strokeWidth: number = getRandomNumber(1, 5);
+
+                (<any>dataView.metadata.objects).outline.strokeWidth = strokeWidth;
+
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    const currentElementStrokeWidth: number = +element.style.strokeWidth.split("px")[0];
+                    expect(currentElementStrokeWidth.toFixed(2)).toEqual(strokeWidth.toFixed(2));
+                });
+            });
+
+            it("checks stroke before and after apply of high-contrast", () => {
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                const areNotSame: boolean = true;
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke, areNotSame)
+                });
+
+                const backgroundColor: string = "#000000";
+                const foregroundColor: string = "#ffff00";
+    
+                visualBuilder.visualHost.colorPalette.isHighContrast = true;
+                visualBuilder.visualHost.colorPalette.background = { value: backgroundColor };
+                visualBuilder.visualHost.colorPalette.foreground = { value: foregroundColor };
+
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    assertColorsMatch(element.style.fill, element.style.stroke, areNotSame)
+                });
+            });
+
+            it("checks focus-visible state during keyboard navigation", () => {
+                const defaultFocusedStrokeWidth: number = 8;
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+
+                const firstElement: HTMLElement = visualBuilder.dots[0];
+                firstElement.focus();
+
+                const computedStyles: CSSStyleDeclaration = getComputedStyle(firstElement);
+
+                const stroke: string = computedStyles.getPropertyValue("stroke");
+                const fill: string = computedStyles.getPropertyValue("fill");
+                
+                const areNotSame: boolean = true;
+                assertColorsMatch(fill, stroke, areNotSame);
+
+                const firstElementStrokeWidth: number = +computedStyles.getPropertyValue("stroke-width").split("px")[0];
+
+                expect(firstElementStrokeWidth).toBe(defaultFocusedStrokeWidth);
+
+                for(let index = 1; index < visualBuilder.dots.length; index++){
+                    const currentElementStrokeWidth: number = +visualBuilder.dots[index].style.strokeWidth.split("px")[0];
+                    expect(firstElementStrokeWidth).toBeGreaterThan(currentElementStrokeWidth)
+                };
+            });
+
+            it("checks stroke color lightness related to element fill color lightness", () => {
+                visualBuilder.visualHost.colorPalette.isHighContrast = true;
+                const redColor: string = "#ff0000", stratosColor: string = "#000033",
+                cyanColor: string = "#03ffff", turquoiseColor: string = "#01b8aa",
+                blackColor: string = "#000000", whiteColor: string = "#ffffff";
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: redColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: stratosColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
+                });
+
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: cyanColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+                
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: turquoiseColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+
+                
+                visualBuilder.visualHost.colorPalette.foreground = { value: whiteColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeLessThan(d3Hsl(element.style.fill).l);
+                });
+
+
+                visualBuilder.visualHost.colorPalette.foreground = { value: blackColor };
+                visualBuilder.updateFlushAllD3Transitions(dataView);
+                visualBuilder.dots.forEach((element: HTMLElement) => {
+                    expect(d3Hsl(element.style.stroke).l).toBeGreaterThan(d3Hsl(element.style.fill).l);
                 });
             });
         });
@@ -690,6 +800,61 @@ describe("EnhancedScatterChart", () => {
                     expect(element[0].style.fontSize).toBe(expectedFontSize);
                 });
             });
+        });
+    });
+
+    describe("Shapes", () => {
+        it("checks 'd' attribute equality between numeric shape representation and string representation of shape column" , () => {
+            const shapeNumberRepresentation: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+            const shapeStringRepresentation: string[] = ["circle","cross","diamond","square","triangle-up","triangle-down","star","hexagon","x","uparrow","downarrow"];
+
+            let dAttributeList: string[] = [];
+
+            let dataViewBuilder = new EnhancedScatterChartData();
+            dataViewBuilder.colorValues = [];
+            dataViewBuilder.imageValues = [];
+            dataViewBuilder.valuesCategory = EnhancedScatterChartData.getDateYearRange(
+                new Date(2013, 0, 1),
+                new Date(2023, 0, 10),
+                1);
+
+            const length: number = dataViewBuilder.valuesCategory.length;
+
+            dataViewBuilder.valuesSeries = ["Access","OneNote","Outlook","Word","Excel","PowerPoint","Docs","Sheets","Slides","Chrome"];
+            dataViewBuilder.valuesX = getRandomNumbers(length, 100, 1000);
+            dataViewBuilder.valuesY = getRandomNumbers(length, 100, 1000);
+            dataViewBuilder.shapeValues = shapeNumberRepresentation;
+
+            dataView = dataViewBuilder.getDataView([
+                EnhancedScatterChartData.ColumnCategory,
+                EnhancedScatterChartData.ColumnSeries,
+                EnhancedScatterChartData.ColumnX,
+                EnhancedScatterChartData.ColumnY,
+                EnhancedScatterChartData.ColumnShape]);
+
+            visualBuilder.updateFlushAllD3Transitions(dataView);
+
+            let figures: NodeListOf<HTMLElement> = visualBuilder.dots;
+            figures.forEach(figure => {
+                dAttributeList.push(figure.getAttribute("d") as string);
+            });
+
+            dataViewBuilder.shapeValues = shapeStringRepresentation;
+
+            dataView = dataViewBuilder.getDataView([
+                EnhancedScatterChartData.ColumnCategory,
+                EnhancedScatterChartData.ColumnSeries,
+                EnhancedScatterChartData.ColumnX,
+                EnhancedScatterChartData.ColumnY,
+                EnhancedScatterChartData.ColumnShape]);
+
+            visualBuilder.updateFlushAllD3Transitions(dataView);
+
+            figures = visualBuilder.dots;
+
+            for (let i = 0; i < length; i++) {
+                expect(figures[i].getAttribute("d") as string).toEqual(dAttributeList[i]);
+            }
         });
     });
 
@@ -901,7 +1066,7 @@ describe("EnhancedScatterChart", () => {
                 );
             });
 
-            it("images", () => {
+            it("images url", () => {
                 checkDataPointProperty(
                     instance,
                     (dataPoint: EnhancedScatterChartDataPoint, index: number) => {
@@ -1120,42 +1285,87 @@ describe("EnhancedScatterChart", () => {
         });
     });
 
-    describe("Telemetry", () => {
+    describe("URL link", () => {
+
+        it("with empty link", (done) => {
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                let link = "";
+
+                expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
+                done();
+            });
+        });
+
+        it("matches to https pattern", (done) => {
+
+            let link = "https://powerbi.com";
+
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(true);
+                done();
+            });
+        });
+
+        it("matches to ftp pattern", () => {
+            let link = "ftp://microsoft@ftp.someserver.com/program.exe";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(true);
+        });
+
+        it("does not matches to http, https or ftp pattern", () => {
+            let link = "powerbi.com";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
+        });
+
+        it("base64 image does not matches to http, https or ftp pattern", () => {
+            let link = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII=";
+            expect(ExternalLinksTelemetry.containsExternalURL(link).valueOf()).toBe(false);
+        });
+    });
+
+
+    describe("Backward compatibility", () => {
+
+        let colorPalette: IColorPalette,
+            visualHost: IVisualHost,
+            instance: VisualClass;
+
         beforeEach(() => {
-            dataView.metadata.objects = {
-                backdrop: {
-                    show: true
-                }
-            };
+            colorPalette = createColorPalette();
+            visualHost = createVisualHost();
+            instance = visualBuilder.instance;
         });
 
-        it("Trace method is called with no link", (done) => {
-            visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
-                done();
-            });
+        // From version 3.0.2.0 to 3.0.8.0
+        it("checks if fillPoint show property was enabled when size column is applied", () => {
+            const dataView: DataView = defaultDataViewBuilder.getDataView(EnhancedScatterChartData.DefaultSetOfColumns);
+
+            const enhancedScatterChartData: IEnhancedScatterChartData = instance.parseData(
+                    dataView,
+                    colorPalette,
+                    visualHost,
+                    null);
+                    
+            const fillPointShow: boolean = enhancedScatterChartData.settings.enableFillPointCardSettings.show.value;
+            expect(fillPointShow).toBeTrue();
         });
 
-        it("Trace method is called with unsupported link", (done) => {
+        // From version 3.0.2.0 to 3.0.8.0
+        it("checks if fillPoint show property was disabled when size column is not applied", () => {
+            const dataView: DataView = defaultDataViewBuilder.getDataView([
+                EnhancedScatterChartData.ColumnCategory,
+                EnhancedScatterChartData.ColumnSeries,
+                EnhancedScatterChartData.ColumnX,
+                EnhancedScatterChartData.ColumnY,
+            ]);
 
-            (<any>dataView.metadata.objects).backdrop.url = "http://test.url";
-            (<any>dataView.metadata.objects).backdrop.show = true;
+            const enhancedScatterChartData: IEnhancedScatterChartData = instance.parseData(
+                dataView,
+                colorPalette,
+                visualHost,
+                null);
 
-            visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(false);
-                done();
-            });
-        });
-
-        it("Trace method is called with supported link", (done) => {
-
-            (<any>dataView.metadata.objects).backdrop.url = "https://test.url";
-            (<any>dataView.metadata.objects).backdrop.show = true;
-
-            visualBuilder.updateRenderTimeout(dataView, () => {
-                expect(visualBuilder.externalImageTelemetryTracedProperty).toBe(true);
-                done();
-            });
+            const fillPointShow: boolean = enhancedScatterChartData.settings.enableFillPointCardSettings.show.value;
+            expect(fillPointShow).toBeFalse();
         });
     });
 });
