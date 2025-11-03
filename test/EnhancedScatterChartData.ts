@@ -24,11 +24,11 @@
  *  THE SOFTWARE.
  */
 
-import * as lodash from "lodash";
+import lodashRange from "lodash.range";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import DataView = powerbiVisualsApi.DataView;
-import ValueTypeDescriptor = powerbiVisualsApi.ValueTypeDescriptor;
+import powerbi from "powerbi-visuals-api";
+import DataView = powerbi.DataView;
+import ValueTypeDescriptor = powerbi.ValueTypeDescriptor;
 
 // powerbi.extensibility.visual
 import { EnhancedScatterChart } from "../src/EnhancedScatterChart";
@@ -38,7 +38,7 @@ import { valueType } from "powerbi-visuals-utils-typeutils";
 import ValueType = valueType.ValueType;
 
 // powerbi.extensibility.utils.test
-import { testDataViewBuilder, getRandomNumbers } from "powerbi-visuals-utils-testutils";
+import { testDataViewBuilder, getRandomNumbers, getRandomNumber } from "powerbi-visuals-utils-testutils";
 import TestDataViewBuilder = testDataViewBuilder.TestDataViewBuilder;
 
 export class EnhancedScatterChartData extends TestDataViewBuilder {
@@ -51,6 +51,7 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
     public static ColumnY: string = EnhancedScatterChart.ColumnY;
     public static ColumnSize: string = EnhancedScatterChart.ColumnSize;
     public static ColumnColorFill: string = EnhancedScatterChart.ColumnColorFill;
+    public static ColumnShape: string = EnhancedScatterChart.ColumnShape;
     public static ColumnImage: string = EnhancedScatterChart.ColumnImage;
     public static ColumnBackdrop: string = EnhancedScatterChart.ColumnBackdrop;
     public static ColumnRotation: string = EnhancedScatterChart.ColumnRotation;
@@ -83,6 +84,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
 
     public colorValues: string[] = ["#ff0000", "#008000", "#0000ff"];
 
+    public shapeValues: number[] | string[] = [];
+
     public imageValues: string[] = [
         "Microsoft_Access.png",
         "Microsoft_OneNote.png",
@@ -91,12 +94,47 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
 
     public rotationValues: number[] = getRandomNumbers(this.valuesCategory.length, 100, 1000);
 
-    private static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
-        return lodash.range(start.getFullYear(), stop.getFullYear(), yearStep)
+    public static getDateYearRange(start: Date, stop: Date, yearStep: number): Date[] {
+        return lodashRange(start.getFullYear(), stop.getFullYear(), yearStep)
             .map(x => new Date(new Date(start.getTime()).setFullYear(x)));
     }
 
-    public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns): DataView {
+    public generateHightLightedValues(length: number, hightlightedElementNumber?: number): number[] {
+        let array: any[] = [];
+        for (let i: number = 0; i < length; i++) {
+            array[i] = null;
+        }
+        if (hightlightedElementNumber == undefined)
+            return array;
+
+        if (hightlightedElementNumber >= length || hightlightedElementNumber < 0) {
+            array[0] = getRandomNumbers(this.valuesCategory.length, 10, 100)[0];
+        } else {
+            array[hightlightedElementNumber] = getRandomNumbers(this.valuesCategory.length, 10, 100)[0];
+        }
+
+        return array;
+    }
+
+    public getDataView(columnNames: string[] = EnhancedScatterChartData.DefaultSetOfColumns, withHighlights: boolean = false): DataView {
+        const hightlightedElementNumber: number = Math.round(getRandomNumber(0, this.valuesCategory.length - 1));
+        const highlightedValuesCount: number = this.valuesCategory.length;
+
+        let column1Highlight: number[] = [];
+        let column2Highlight: number[] = [];
+        let column3Highlight: number[] = [];
+        let column4Highlight: number[] = [];
+        let column5Highlight: number[] = [];
+
+        if (withHighlights)
+        {
+            column1Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column2Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column3Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column4Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+            column5Highlight = this.generateHightLightedValues(highlightedValuesCount, hightlightedElementNumber);
+        }
+
         return this.createCategoricalDataViewBuilder([
             {
                 source: {
@@ -152,7 +190,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                                 : {}
                         )
                     },
-                    values: this.valuesX
+                    values: this.valuesX,
+                    highlights: column1Highlight.length > 0 ? column1Highlight : undefined
                 },
                 {
                     source: {
@@ -166,7 +205,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                                 : {}
                         )
                     },
-                    values: this.valuesY
+                    values: this.valuesY,
+                    highlights: column2Highlight.length > 0 ? column2Highlight : undefined
                 },
                 {
                     source: {
@@ -175,7 +215,8 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                         isMeasure: true,
                         roles: { [EnhancedScatterChartData.ColumnSize]: true }
                     },
-                    values: this.valuesSize
+                    values: this.valuesSize,
+                    highlights: column3Highlight.length > 0 ? column3Highlight : undefined
                 },
                 {
                     source: {
@@ -184,7 +225,18 @@ export class EnhancedScatterChartData extends TestDataViewBuilder {
                         isMeasure: true,
                         roles: { [EnhancedScatterChartData.ColumnRotation]: true },
                     },
-                    values: this.rotationValues
+                    values: this.rotationValues,
+                    highlights: column4Highlight.length > 0 ? column4Highlight : undefined
+                },
+                {
+                    source: {
+                        displayName: EnhancedScatterChartData.ColumnShape,
+                        format: EnhancedScatterChartData.NumberFormatWithoutPrecision,
+                        isMeasure: true,
+                        roles: { [EnhancedScatterChartData.ColumnShape]: true },
+                    },
+                    values: this.shapeValues,
+                    highlights: column5Highlight.length > 0 ? column5Highlight : undefined
                 }
             ], columnNames).build();
     }

@@ -24,14 +24,14 @@
  *  THE SOFTWARE.
  */
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import powerbi from "powerbi-visuals-api";
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
 // powerbi.extensibility.utils.test
 import { VisualBuilderBase } from "powerbi-visuals-utils-testutils";
 
 // EnhancedScatterChart1443994985041
-import { EnhancedScatterChart as VisualClass } from "../src/EnhancedScatterChart";
+import { EnhancedScatterChartMock as VisualClass } from "../test/EnhancedScatterChartMock";
 
 export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> {
     constructor(width: number, height: number) {
@@ -46,96 +46,105 @@ export class EnhancedScatterChartBuilder extends VisualBuilderBase<VisualClass> 
         return this.visual;
     }
 
-    public get mainElement(): JQuery {
-        return $(this.element).find(".enhancedScatterChart");
+    public get mainElement(): HTMLElement {
+        return this.element.querySelector(".enhancedScatterChart") as HTMLElement;
     }
 
-    public get axisGraphicsContext(): JQuery {
-        return this.mainElement.children(".axisGraphicsContext");
+    public get axisGraphicsContext(): HTMLElement {
+        return this.mainElement.querySelector(".axisGraphicsContext") as HTMLElement;
     }
 
-    public get backdropImage(): JQuery {
-        return this.axisGraphicsContext.children("image");
+    public get backdropImage(): SVGImageElement {
+        return this.axisGraphicsContext.querySelector("image") as SVGImageElement;
     }
 
-    public get xAxis(): JQuery {
-        return this.axisGraphicsContext.children("g.x.axis");
+    public get xAxis(): HTMLElement {
+        return this.axisGraphicsContext.querySelector("g.x.axis") as HTMLElement;
     }
 
-    public get xAxisTicks(): JQuery {
-        return this.xAxis.children("g.tick");
+    public get xAxisTicks(): NodeListOf<HTMLElement> {
+        return this.xAxis.querySelectorAll("g.tick");
     }
 
-    public get xAxisLabel(): JQuery {
-        return this.axisGraphicsContext.children(".xAxisLabel");
+    public get xAxisLabel(): HTMLElement {
+        return this.axisGraphicsContext.querySelector(".xAxisLabel") as HTMLElement;
     }
 
-    public get yAxis(): JQuery {
-        return this.svgScrollableAxisGraphicsContext.children("g.y.axis");
+    public get yAxis(): HTMLElement {
+        return this.svgScrollableAxisGraphicsContext.querySelector("g.y.axis") as HTMLElement;
     }
 
-    public get yAxisTicks(): JQuery {
-        return this.yAxis.children("g.tick");
+    public get yAxisTicks(): NodeListOf<HTMLElement> {
+        return this.yAxis.querySelectorAll("g.tick");
     }
 
-    public get yAxisLabel(): JQuery {
-        return this.axisGraphicsContext.children(".yAxisLabel");
+    public get yAxisLabel(): HTMLElement {
+        return this.axisGraphicsContext.querySelector(".yAxisLabel") as HTMLElement;
     }
 
-    public get svgScrollableAxisGraphicsContext(): JQuery {
-        return this.mainElement
-            .children(".svgScrollable")
-            .children(".axisGraphicsContext");
+    public get svgScrollableAxisGraphicsContext(): HTMLElement {
+        return this?.mainElement
+            ?.querySelector(".svgScrollable")
+            ?.querySelector(".axisGraphicsContext") as HTMLElement;
     }
 
-    public get mainGraphicsContext(): JQuery {
-        return this.svgScrollableAxisGraphicsContext
-            .children(".mainGraphicsContext");
+    public get mainGraphicsContext(): HTMLElement {
+        return this.svgScrollableAxisGraphicsContext.querySelector(".mainGraphicsContext") as HTMLElement;
     }
 
-    public get dataLabels(): JQuery {
-        return this.mainGraphicsContext
-            .children(".labels");
+    public get dataLabels(): NodeListOf<HTMLElement> {
+        return this.mainGraphicsContext.querySelectorAll(".labels");
     }
 
-    public get dataLabelsText(): JQuery {
-        return this.dataLabels
-            .children("text.data-labels");
+    public get dataLabelsText(): HTMLElement[] {
+        const texts: HTMLElement[] = [];
+        [].forEach.call(this.dataLabels, function(element) {
+            const text: HTMLElement = element.querySelectorAll("text.data-labels");
+            texts.push(text);
+        });
+
+        return texts;
     }
 
-    public get crosshair(): JQuery {
-        return this.mainGraphicsContext
-            .children("svg")
-            .children("g.crosshairCanvas");
+    public get crosshair(): HTMLElement {
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.crosshairCanvas") as HTMLElement;
     }
 
-    public get dots(): JQuery {
-        return this.mainGraphicsContext
-            .children("svg")
-            .children("g.ScatterMarkers")
-            .children("path.dot");
+    public get dots(): NodeListOf<HTMLElement> {
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.ScatterMarkers")
+            ?.querySelectorAll("path.dot") as NodeListOf<HTMLElement>;
     }
 
-    public get images(): JQuery {
-        return this.mainGraphicsContext
-            .children("svg")
-            .children("g.ScatterMarkers")
-            .children("image.img");
+    public get images(): NodeListOf<HTMLElement> {
+        return this?.mainGraphicsContext
+            ?.querySelector("svg")
+            ?.querySelector("g.ScatterMarkers")
+            ?.querySelectorAll("image.img") as NodeListOf<HTMLElement>;
     }
 
-    public get legendGroup(): JQuery {
-        return $(this.element)
-            .children(".legend")
-            .children("#legendGroup");
+    public get legendGroup(): HTMLElement {
+        return this?.element
+            ?.querySelector(".legend")
+            ?.querySelector("#legendGroup") as HTMLElement;
     }
 
-    public get legendTitle(): JQuery {
-        return this.legendGroup.children(".legendTitle");
+    public get legendTitle(): HTMLElement {
+        return this.legendGroup.querySelector(".legendTitle") as HTMLElement;
     }
 
-    public get legendItemText(): JQuery {
-        return this.legendGroup
-            .children(".legendItem")
-            .children("text.legendText");
+    public get legendItemText(): HTMLElement[] {
+        const legendItems: NodeListOf<HTMLElement> = this.legendGroup.querySelectorAll(".legendItem");
+        const legendTexts: HTMLElement[] = [];
+
+        [].forEach.call(legendItems, function(element) {
+            const legendText: HTMLElement = element.querySelectorAll("text.legendText");
+            legendTexts.push(legendText);
+        });
+
+        return legendTexts;
     }
 }

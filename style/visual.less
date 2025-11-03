@@ -28,9 +28,8 @@
  * Imports external styles.
  * We compile it as a less file in order to wrap the external CSS rules.
  */
-@import (less) "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
-@import (less) "node_modules/powerbi-visuals-utils-formattingutils/lib/index.css";
-@import (less) "node_modules/powerbi-visuals-utils-chartutils/lib/index.css";
+ @import (less) "../node_modules/powerbi-visuals-utils-interactivityutils/lib/index.css";
+ @import (less) "../node_modules/powerbi-visuals-utils-chartutils/lib/index.css";
 
 .enhancedScatterChart {
     @enhancedScatterChartColor: #777777;
@@ -47,14 +46,25 @@
             fill: transparent;
             stroke-width: 3px;
         }
+        
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            stroke-width: 8 !important;
+        }
     }
 
-    .notSelected {
-        opacity: 0.6;
-    }
+    .img {
 
-    .selected {
-        opacity: 1;
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: auto;
+        }
     }
 
     .axisGraphicsContext {

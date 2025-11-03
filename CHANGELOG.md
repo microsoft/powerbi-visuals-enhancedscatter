@@ -1,3 +1,47 @@
+## 3.0.9.0
+* Fixed outline style for images
+
+## 3.0.8.0
+* Fixed bugs related fillPoint compatibility
+
+## 3.0.7.0
+* Fixed minor bugs related to color fill
+* Updated to new formatting model
+
+## 3.0.6.0
+* Fixed minor bugs related to shape
+
+## 3.0.5.0
+* Outline disabled for images
+* Dependencies update
+
+## 3.0.4.0
+* Stroke color changes related to the element fill color
+* ShiftKey enabled for multiple selection
+
+## 3.0.3.0
+* Include / exclude features added to context menu
+* Dropdown options localization fixed
+* Outline stroke width setting added
+* Keyboard navigation support added
+* README updated with shapes usage explanation
+
+## 3.0.2
+* Category and Value axes default coordinates load fix
+* FillPoint default value fix
+* powerbi-visuals-tools 4.2.0+
+
+## 3.0.1
+* Console error bug fixes
+
+## 3.0.0
+* API 5.2.0+
+* Dependencies update
+* Major bugs fixes
+* Support Highlight feature add
+* Eslint support
+* Puppeeter support
+
 ## 2.0.1
 * Backdrop URL field was restored
 * API 3.2.0

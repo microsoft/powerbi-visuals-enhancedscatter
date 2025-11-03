@@ -23,9 +23,8 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-// d3
-import * as d3 from "d3";
-type Selection<T1, T2 = T1> = d3.Selection<any, T1, any, T2>;
+import { Selection as d3Selection} from "d3-selection";
+type Selection<T1, T2 = T1> = d3Selection<any, T1, any, T2>;
 
 // powerbi.extensibility.utils.interactivity
 import { interactivityBaseService as interactivityService, interactivityUtils } from "powerbi-visuals-utils-interactivityutils";
@@ -44,6 +43,9 @@ export interface BehaviorOptions extends IBehaviorOptions<BaseDataPoint> {
     interactivityService: IInteractivityService<BaseDataPoint>;
 }
 
+const EnterCode: string = "Enter";
+const SpaceCode: string = "Space";
+
 export const DefaultOpacity: number = 0.85;
 export const DimmedOpacity: number = 0.4;
 
@@ -61,10 +63,12 @@ export function getFillOpacity(
 }
 
 export class VisualBehavior implements IInteractiveBehavior {
-    public options: BehaviorOptions;
+    private options: BehaviorOptions;
+    private selectionHandler: ISelectionHandler;
 
     public bindEvents(options: BehaviorOptions, selectionHandler: ISelectionHandler): void {
         this.options = options;
+        this.selectionHandler = selectionHandler;
 
         const {
             dataPointsSelection,
@@ -75,23 +79,61 @@ export class VisualBehavior implements IInteractiveBehavior {
         options.clearCatcher.on("click", () => {
             selectionHandler.handleClearSelection();
         });
+
+        this.bindKeyboardEventToDataPoints();
+        this.bindContextMenu();
     }
 
-    public renderSelection(hasSelection: boolean) {
+    public renderSelection(hasHighlights: boolean) {
         const {
             dataPointsSelection,
             interactivityService,
         } = this.options;
 
-        const hasHighlights: boolean = interactivityService.hasSelection();
+        const hasSelection: boolean = interactivityService.hasSelection();
 
         dataPointsSelection.style("opacity", (dataPoint: EnhancedScatterChartDataPoint) => {
             return getFillOpacity(
                 dataPoint.selected,
                 dataPoint.highlight,
-                !dataPoint.highlight && hasSelection,
-                !dataPoint.selected && hasHighlights
+                !dataPoint.highlight && hasHighlights,
+                !dataPoint.selected && hasSelection
             );
+        });
+    }
+
+    private bindKeyboardEventToDataPoints(): void {
+        this.options.dataPointsSelection.on("keydown", (event: KeyboardEvent, dataPoint: EnhancedScatterChartDataPoint) => {
+            if (event.code !== EnterCode && event.code !== SpaceCode) {
+                return;
+            }
+            this.selectionHandler.handleSelection(dataPoint, event.ctrlKey || event.metaKey || event.shiftKey);
+        });
+    }
+
+    private bindContextMenu(): void {
+        this.options.dataPointsSelection.on("contextmenu", (event: PointerEvent, dataPoint: EnhancedScatterChartDataPoint) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    dataPoint,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
+        });
+
+        this.options.clearCatcher.on("contextmenu", (event: PointerEvent) => {
+            if (event) {
+                this.selectionHandler.handleContextMenu(
+                    null,
+                    {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
+                event.preventDefault();
+            }
         });
     }
 }

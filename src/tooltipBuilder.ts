@@ -24,17 +24,18 @@
  *  THE SOFTWARE.
  */
 
-import powerbiVisualsApi from "powerbi-visuals-api";
+import powerbi from "powerbi-visuals-api";
 
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
-import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
-import DataViewValueColumn = powerbiVisualsApi.DataViewValueColumn;
-import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
+import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewValueColumn = powerbi.DataViewValueColumn;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 
 // powerbi.extensibility.utils.formatting
 import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
 
-export module tooltipBuilder {
+// eslint-disable-next-line
+export namespace tooltipBuilder {
     export interface TooltipSeriesDataItem {
         value?: any;
         highlightedValue?: any;
@@ -54,8 +55,8 @@ export module tooltipBuilder {
         categories?: DataViewCategoryColumn[],
         seriesData?: TooltipSeriesDataItem[]): VisualTooltipDataItem[] {
 
-        let categorySource: TooltipCategoryDataItem,
-            seriesSource: TooltipSeriesDataItem[] = [];
+        let categorySource: TooltipCategoryDataItem;
+        const seriesSource: TooltipSeriesDataItem[] = [];
 
         if (categories && categories.length > 0) {
             if (categories.length > 1) {
@@ -102,7 +103,7 @@ export module tooltipBuilder {
         categoryValue: TooltipCategoryDataItem,
         seriesValues: TooltipSeriesDataItem[]): VisualTooltipDataItem[] {
 
-        let items: VisualTooltipDataItem[] = [];
+        const items: VisualTooltipDataItem[] = [];
 
         if (categoryValue) {
             if (categoryValue.metadata.length > 1) {
@@ -116,7 +117,7 @@ export module tooltipBuilder {
                     displayName += categoryValue.metadata[i].displayName;
                 }
 
-                let categoryFormattedValue: string = getFormattedValue(
+                const categoryFormattedValue: string = getFormattedValue(
                     categoryValue.metadata[0],
                     categoryValue.value);
 
@@ -126,7 +127,7 @@ export module tooltipBuilder {
                 });
             }
             else {
-                let categoryFormattedValue: string = getFormattedValue(
+                const categoryFormattedValue: string = getFormattedValue(
                     categoryValue.metadata[0],
                     categoryValue.value);
 
@@ -145,7 +146,7 @@ export module tooltipBuilder {
                     value: any = seriesData.value;
 
                 if (value || value === 0) {
-                    let formattedValue: string = getFormattedValue(
+                    const formattedValue: string = getFormattedValue(
                         seriesMetadataColumn,
                         value);
 

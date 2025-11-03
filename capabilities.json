@@ -423,12 +423,8 @@
     ],
     "objects": {
         "dataPoint": {
-            "displayName": "Data colors",
-            "displayNameKey": "Visual_DataPoint",
             "properties": {
                 "defaultColor": {
-                    "displayName": "Default color",
-                    "displayNameKey": "Visual_DefaultColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -438,15 +434,11 @@
                     }
                 },
                 "showAllDataPoints": {
-                    "displayName": "Show all",
-                    "displayNameKey": "Visual_DataPoint_Show_All",
                     "type": {
                         "bool": true
                     }
                 },
                 "fill": {
-                    "displayName": "Fill",
-                    "displayNameKey": "Visual_Fill",
                     "type": {
                         "fill": {
                             "solid": {
@@ -456,8 +448,6 @@
                     }
                 },
                 "fillRule": {
-                    "displayName": "Color saturation",
-                    "displayNameKey": "Visual_ColorSaturation",
                     "type": {
                         "fillRule": {}
                     },
@@ -474,40 +464,28 @@
             }
         },
         "categoryAxis": {
-            "displayName": "X-Axis",
-            "displayNameKey": "Visual_XAxis",
             "properties": {
                 "show": {
-                    "displayName": "Show",
-                    "displayNameKey": "Visual_Show",
                     "type": {
                         "bool": true
                     }
                 },
                 "start": {
-                    "displayName": "Start",
-                    "displayNameKey": "Visual_Axis_Start",
                     "type": {
                         "numeric": true
                     }
                 },
                 "end": {
-                    "displayName": "End",
-                    "displayNameKey": "Visual_Axis_End",
                     "type": {
                         "numeric": true
                     }
                 },
                 "showAxisTitle": {
-                    "displayName": "Title",
-                    "displayNameKey": "Visual_Axis_Title",
                     "type": {
                         "bool": true
                     }
                 },
                 "axisColor": {
-                    "displayName": "Color",
-                    "displayNameKey": "Visual_Axis_LabelColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -517,8 +495,6 @@
                     }
                 },
                 "labelDisplayUnits": {
-                    "displayName": "Display units",
-                    "displayNameKey": "Visual_DisplayUnits",
                     "type": {
                         "formatting": {
                             "labelDisplayUnits": true
@@ -528,40 +504,28 @@
             }
         },
         "valueAxis": {
-            "displayName": "Y-Axis",
-            "displayNameKey": "Visual_YAxis",
             "properties": {
                 "show": {
-                    "displayName": "Show",
-                    "displayNameKey": "Visual_Show",
                     "type": {
                         "bool": true
                     }
                 },
                 "start": {
-                    "displayName": "Start",
-                    "displayNameKey": "Visual_Axis_Start",
                     "type": {
                         "numeric": true
                     }
                 },
                 "end": {
-                    "displayName": "End",
-                    "displayNameKey": "Visual_Axis_End",
                     "type": {
                         "numeric": true
                     }
                 },
                 "showAxisTitle": {
-                    "displayName": "Title",
-                    "displayNameKey": "Visual_Axis_Title",
                     "type": {
                         "bool": true
                     }
                 },
                 "axisColor": {
-                    "displayName": "Color",
-                    "displayNameKey": "Visual_Axis_LabelColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -571,8 +535,6 @@
                     }
                 },
                 "labelDisplayUnits": {
-                    "displayName": "Display units",
-                    "displayNameKey": "Visual_DisplayUnits",
                     "type": {
                         "formatting": {
                             "labelDisplayUnits": true
@@ -582,87 +544,28 @@
             }
         },
         "legend": {
-            "displayName": "Legend",
-            "displayNameKey": "Visual_Legend",
             "properties": {
                 "show": {
-                    "displayName": "Show",
-                    "displayNameKey": "Visual_Show",
                     "type": {
                         "bool": true
                     }
                 },
-                "position": {
-                    "displayName": "Position",
-                    "displayNameKey": "Visual_LegendPosition",
-                    "description": "Select the location for the legend",
-                    "descriptionKey": "Visual_Description_LegendPosition",
+                "positionDropDown": {
                     "type": {
-                        "enumeration": [
-                            {
-                                "value": "Top",
-                                "displayName": "Top",
-                                "displayNameKey": "Visual_LegendPosition_Top"
-                            },
-                            {
-                                "value": "Bottom",
-                                "displayName": "Bottom",
-                                "displayNameKey": "Visual_LegendPosition_Bottom"
-                            },
-                            {
-                                "value": "Left",
-                                "displayName": "Left",
-                                "displayNameKey": "Visual_LegendPosition_Left"
-                            },
-                            {
-                                "value": "Right",
-                                "displayName": "Right",
-                                "displayNameKey": "Visual_LegendPosition_Right"
-                            },
-                            {
-                                "value": "TopCenter",
-                                "displayName": "Top Center",
-                                "displayNameKey": "Visual_LegendPosition_TopCenter"
-                            },
-                            {
-                                "value": "BottomCenter",
-                                "displayName": "Bottom Center",
-                                "displayNameKey": "Visual_LegendPosition_BottomCenter"
-                            },
-                            {
-                                "value": "LeftCenter",
-                                "displayName": "Left Center",
-                                "displayNameKey": "Visual_LegendPosition_LeftCenter"
-                            },
-                            {
-                                "value": "RightCenter",
-                                "displayName": "Right center",
-                                "displayNameKey": "Visual_LegendPosition_RightCenter"
-                            }
-                        ]
+                        "text": true
                     }
                 },
                 "showTitle": {
-                    "displayName": "Title",
-                    "displayNameKey": "Visual_LegendShowTitle",
-                    "description": "Display a title for legend symbols",
-                    "descriptionKey": "Visual_Description_LegendShowTitle",
                     "type": {
                         "bool": true
                     }
                 },
                 "titleText": {
-                    "displayName": "Legend Name",
-                    "displayNameKey": "Visual_LegendName",
-                    "description": "Title text",
-                    "descriptionKey": "Visual_Description_LegendName",
                     "type": {
                         "text": true
                     }
                 },
                 "labelColor": {
-                    "displayName": "Color",
-                    "displayNameKey": "Visual_LegendTitleColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -672,8 +575,6 @@
                     }
                 },
                 "fontSize": {
-                    "displayName": "Text Size",
-                    "displayNameKey": "Visual_TextSize",
                     "type": {
                         "formatting": {
                             "fontSize": true
@@ -683,19 +584,13 @@
             }
         },
         "categoryLabels": {
-            "displayName": "Category labels",
-            "displayNameKey": "Visual_CategoryLabels",
             "properties": {
                 "show": {
-                    "displayName": "Show",
-                    "displayNameKey": "Visual_Show",
                     "type": {
                         "bool": true
                     }
                 },
                 "color": {
-                    "displayName": "Color",
-                    "displayNameKey": "Visual_LabelsFill",
                     "type": {
                         "fill": {
                             "solid": {
@@ -705,8 +600,6 @@
                     }
                 },
                 "fontSize": {
-                    "displayName": "Text Size",
-                    "displayNameKey": "Visual_TextSize",
                     "type": {
                         "formatting": {
                             "fontSize": true
@@ -716,12 +609,8 @@
             }
         },
         "fillPoint": {
-            "displayName": "Fill point",
-            "displayNameKey": "Visual_FillPoint",
             "properties": {
                 "show": {
-                    "displayName": "Fill",
-                    "displayNameKey": "Visual_Fill",
                     "type": {
                         "bool": true
                     }
@@ -729,19 +618,13 @@
             }
         },
         "backdrop": {
-            "displayName": "Backdrop",
-            "displayNameKey": "Visual_Backdrop",
             "properties": {
                 "show": {
-                    "displayName": "Show",
-                    "displayNameKey": "Visual_Show",
                     "type": {
                         "bool": true
                     }
                 },
                 "url": {
-                    "displayName": "Image URL",
-                    "displayNameKey": "Visual_Backdrop_ImageURL",
                     "type": {
                         "text": true
                     }
@@ -749,12 +632,8 @@
             }
         },
         "crosshair": {
-            "displayName": "Crosshair",
-            "displayNameKey": "Visual_Crosshair",
             "properties": {
                 "show": {
-                    "displayName": "Crosshair",
-                    "displayNameKey": "Visual_Crosshair",
                     "type": {
                         "bool": true
                     }
@@ -762,18 +641,28 @@
             }
         },
         "outline": {
-            "displayName": "Outline",
-            "displayNameKey": "Visual_Outline",
             "properties": {
                 "show": {
-                    "displayName": "Outline",
-                    "displayNameKey": "Visual_Outline",
                     "type": {
                         "bool": true
+                    }
+                },
+                "strokeWidth": {
+                    "type": {
+                        "numeric": true
                     }
                 }
             }
         }
     },
-    "supportsMultiVisualSelection": true
+    "supportsMultiVisualSelection": true,
+    "supportsHighlight": true,
+    "supportsKeyboardFocus": true,
+    "privileges": [
+        {
+            "name": "WebAccess",
+            "essential": true,
+            "parameters": ["https://*"]
+        }
+    ]
 }
